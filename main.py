@@ -13,7 +13,8 @@ import random
 
 def df_import():
     # import FR data (adjustments for delimeters and encoding - latin)
-    df = pd.read_csv("~/Dropbox/Botva/TUM/Master_Thesis/object-identification/datasets/processed_files/france_rna_processed.csv", encoding='latin-1', sep = ';', error_bad_lines=False)
+    wordbook_name = "~/Dropbox/Botva/TUM/Master_Thesis/object-identification/datasets/processed_files/france_rna_processed.csv"
+    df = pd.read_csv(wordbook_name, encoding='latin-1', sep = ';', error_bad_lines=False)
 #    df = pd.read_csv("~/Dropbox/Botva/TUM/Master_Thesis/object-identification/datasets/raw_files/rna_waldec_20201201_dpt_01.csv", error_bad_lines=False)
 #    df = df.astype(str)
     print(df)
