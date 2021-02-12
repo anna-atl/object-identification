@@ -73,6 +73,21 @@ def frequent_words(df_processed):
 
     return word_count
 
+def levenstein_distance(texts_1,texts_2):
+    lvn_array = np.zeros((len(texts_1),len(texts_2)))
+    print(lvn_array)
+
+    text_1_num = 0
+    text_2_num = 0
+
+    for text_1 in texts_1:
+        for text_2 in texts_2:
+            lvn_array[text_1_num,text_2_num] = Levenshtein.ratio(text_1,text_2)
+            text_2_num += 1
+        text_2_num = 0
+        text_1_num += 1
+    return lvn_array
+
 df = df_import()
 
 df_processed = df_prepare(df)
