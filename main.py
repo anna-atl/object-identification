@@ -95,7 +95,10 @@ def create_shingles_dict(texts,k):
     for text in texts:
     #    print(text)
     #    text = text.encode()
-        shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        if len(text) >= k:
+            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        else:
+            shingles = [text + ' ' * (k - len(text))]
     #    print(shingles)
         for shingle in shingles:
             if shingle not in shingles_list: #check, maybe if is not needed bc its a set
@@ -110,7 +113,10 @@ def create_doc_shingles(texts,k):
     docs = [[] for i in range(len(texts))]
 
     for doc, text in zip(docs, texts):
-        shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        if len(text) >= k:
+            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        else:
+            shingles = [text + ' ' * (k - len(text))]
         for shingle in shingles:
             doc.append(shingles_dict[shingle])
     return docs
@@ -181,7 +187,7 @@ def create_df_with_attributes(matches,texts):
 df = df_import()
 df_processed = df_prepare(df)
 
-k = 2 #shingles size
+k = 3 #shingles size
 texts = df_processed['name']
 shingles_list, shingles_dict = create_shingles_dict(texts,k)
 
