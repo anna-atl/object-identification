@@ -12,11 +12,33 @@ import matplotlib.pyplot as plt
 import random
 
 def df_import():
+
     # import FR data (adjustments for delimeters and encoding - latin)
-    wordbook_name = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
-    df = pd.read_csv(wordbook_name, encoding='latin-1', sep = ';', error_bad_lines=False)
+    wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
+    df_1 = pd.read_csv(wordbook_name_1, error_bad_lines=False)
+    df_1 = df_1.head(100)
+    df_1 = df_1.rename(columns={"CompanyName":"name"})
+    df = df_1[['name']]
+
+    wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
+    df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
+    df_2 = df_2.head(100)
+    df_2 = df_2.rename(columns={"CompanyName": "name"})
+    df_2 = df_2[['name']]
+    df = df.append(df_2)
+
+    wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
+    df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
+    df_3 = df_3.head(100)
+    df_3 = df_3[['name']]
+    df = df.append(df_3)
+
+    #    wordbook_name = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
+#    df = pd.read_csv(wordbook_name, encoding='latin-1', sep = ';', error_bad_lines=False)
+
 #    df = pd.read_csv("~/Dropbox/Botva/TUM/Master_Thesis/object-identification/datasets/raw_files/rna_waldec_20201201_dpt_01.csv", error_bad_lines=False)
 #    df = df.astype(str)
+
     print(df)
     print(df.dtypes)
     return df
@@ -185,6 +207,7 @@ def create_df_with_attributes(matches,texts):
     return df_matches_full
 
 df = df_import()
+
 df_processed = df_prepare(df)
 
 k = 3 #shingles size
