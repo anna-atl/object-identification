@@ -13,31 +13,78 @@ import random
 
 def df_import():
 
-    # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
     df_1 = pd.read_csv(wordbook_name_1, error_bad_lines=False)
     df_1 = df_1.head(100)
     df_1 = df_1.rename(columns={"CompanyName":"name"})
-    df = df_1[['name']]
+    df_1 = df_1[['name']]
+    df_1['datasource'] = 'basiccomp'
+    df = df_1
+    del df_1
 
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
     df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
     df_2 = df_2.head(100)
     df_2 = df_2.rename(columns={"CompanyName": "name"})
     df_2 = df_2[['name']]
+    df_2['datasource'] = 'peopledatalab'
     df = df.append(df_2)
+    del df_2
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
     df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
     df_3 = df_3.head(100)
     df_3 = df_3[['name']]
+    df_3['datasource'] = 'powrbot_austria'
     df = df.append(df_3)
+    del df_3
 
-    #    wordbook_name = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
-#    df = pd.read_csv(wordbook_name, encoding='latin-1', sep = ';', error_bad_lines=False)
+    # import FR data (adjustments for delimeters and encoding - latin)
+    wordbook_name_4 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
+    df_4 = pd.read_csv(wordbook_name_4, encoding='latin-1', sep = ';', error_bad_lines=False)
+    df_4 = df_4.head(100)
+    df_4 = df_4[['name']]
+    df_4['datasource'] = 'rna'
+    df = df.append(df_4)
+    del df_4
 
-#    df = pd.read_csv("~/Dropbox/Botva/TUM/Master_Thesis/object-identification/datasets/raw_files/rna_waldec_20201201_dpt_01.csv", error_bad_lines=False)
-#    df = df.astype(str)
+    wordbook_name_5 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-belgium.csv"
+    df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
+    df_5 = df_5.head(100)
+    df_5 = df_5.rename(columns={"name;;": "name"})
+    df_5 = df_5[['name']]
+    df_5['datasource'] = 'powrbot_belgium'
+    df = df.append(df_5)
+    del df_5
+
+    wordbook_name_6 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-france.csv"
+    df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
+    df_6 = df_6.head(100)
+    df_6 = df_6.rename(columns={"name;": "name"})
+    df_6 = df_6[['name']]
+    df_6['datasource'] = 'powrbot_france'
+    df = df.append(df_6)
+    del df_6
+
+    wordbook_name_7 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-germany.csv"
+    df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
+    df_7 = df_7.head(100)
+    df_7 = df_7.rename(columns={"name;": "name"})
+    df_7 = df_7[['name']]
+    df_7['datasource'] = 'powrbot_germany'
+    df = df.append(df_7)
+    del df_7
+
+    wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
+    df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
+    df_8 = df_8.head(100)
+    df_8 = df_8.rename(columns={"name;;": "name"})
+    df_8 = df_8[['name']]
+    df_8['datasource'] = 'powrbot_uk'
+    df = df.append(df_8)
+    del df_8
+
+    df = df.reset_index(drop=True)
 
     print(df)
     print(df.dtypes)
@@ -53,7 +100,6 @@ def df_prepare(df):
     print(df.dtypes)
 
     return df
-
 
 def frequent_words(df_processed):
     b = TextBlob("bonjour")
@@ -112,6 +158,7 @@ def levenstein_distance(texts_1,texts_2):
 
 #creating shingles_dict
 def create_shingles_dict(texts,k):
+    print("Started creating shingles...")
     shingles_list = set()
 
     for text in texts:
@@ -132,6 +179,7 @@ def create_shingles_dict(texts,k):
 
 #converting docs to shingles
 def create_doc_shingles(texts,k):
+    print("Started creating shingles for docs...")
     docs = [[] for i in range(len(texts))]
 
     for doc, text in zip(docs, texts):
@@ -145,6 +193,7 @@ def create_doc_shingles(texts,k):
 
 #creating signatures array
 def create_signatures_array(docs,shingles_list,signature_size):
+    print("Started creating signatures...")
     signatures = np.zeros((signature_size, len(docs))) #create an array
 
     shingles_shuffled = [i for i in range(len(shingles_list))]
@@ -157,6 +206,7 @@ def create_signatures_array(docs,shingles_list,signature_size):
     return signatures
 
 def create_buckets(signatures,bands_number):
+    print("Started creating buckets...")
     r = int(len(signatures)/bands_number) #rows per band
 
     buckets_bands = [{} for i in range(bands_number)]
@@ -175,6 +225,7 @@ def jaccard(list1, list2):
     return intersection/union
 
 def create_matches(buckets_bands):
+    print("Started creating matches...")
     matches = {}
     for buckets in buckets_bands:
         for key, values_list in buckets.items():
@@ -191,6 +242,7 @@ def create_matches(buckets_bands):
 
 #generate df with all potential matches
 def create_df_with_attributes(matches,texts):
+    print("Started adding matches attributes...")
     df_matches = pd.DataFrame.from_dict(matches, orient='index')
     df_matches['matches_tuple'] = df_matches.index
     df_matches[['doc_1','doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
