@@ -31,6 +31,7 @@ def df_import():
     df = df_1
     del df_1
 
+    ''' this dataset is temporarly removed because of it's size
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
     df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
     df_2 = df_2.rename(columns={"CompanyName": "name"})
@@ -38,6 +39,7 @@ def df_import():
     df_2['datasource'] = 'peopledatalab'
     df = df.append(df_2)
     del df_2
+    '''
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
     df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
@@ -46,7 +48,7 @@ def df_import():
     df = df.append(df_3)
     del df_3
 
-    ''' this dataset is temporarly removed
+    ''' this dataset is temporarly removed because of it's size
     wordbook_name_4 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
     df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False)
     df_4 = df_4.rename(columns={"CompanyName":"name"})
@@ -97,11 +99,15 @@ def df_import():
     return df
 
 def df_prepare(df):
+    '''
+    This def cleans names from non text-number characters
+    :param df: df with column name from raw datasets
+    :return: df with cleaned names
+    '''
     df = df.apply(lambda x: x.astype(str).str.upper())
     df['name'] = df['name'].apply(lambda x: x.replace('.',''))
     df['name'] = df['name'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['name'] = df['name'].str.replace(' +', ' ')
-    df['name_split'] = df['name'].str.split(' ')
     print(df)
     print(df.dtypes)
 
