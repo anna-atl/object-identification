@@ -16,3 +16,29 @@ def create_df_with_attributes(matches,texts):
     df_matches_full = pd.merge(df_matches_full, df_texts,  how='left', left_on=['doc_2'], right_on = ['index'])
     df_matches_full = df_matches_full.drop(['index'], axis=1)
     return df_matches_full
+
+
+
+
+def test_shingles_dict():
+	R = [('ollo',2,['ol','lo']),('lolo',2,['lo','lo'])]
+	texts = []
+	results = []
+
+	for i in range(len(R)):
+		text, k, res = R[i]
+		texts.append(text)
+		results.append(res)
+
+	for i in range(len(R)):
+		text, k, res = R[i]
+
+
+		if main.create_shingles_dict(texts, k) != results:
+			raise Exception("Test {} failed".format(R[i]))
+		else:
+			print("Test {} successful".format(R[i]))
+
+
+#	make appends
+# list of inputs and outputs

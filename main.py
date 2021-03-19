@@ -14,15 +14,18 @@ import random
 
 pd.set_option('display.max_columns', None)
 
-
-def df_import(n):
+def df_import():
+    '''
+    This function imports all dfs, keeps only comp names, created datasource column with datasource file info
+    and merges all dfs together
+    :return: merged df with columns name and datasource
+    '''
     start_time = time.time()
     print('Started downloading datasets')
 
     # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
     df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False)
-    df_1 = df_1.head(n)
     df_1 = df_1[['name']]
     df_1['datasource'] = 'rna'
     df = df_1
@@ -30,7 +33,6 @@ def df_import(n):
 
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
     df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
-    df_2 = df_2.head(n)
     df_2 = df_2.rename(columns={"CompanyName": "name"})
     df_2 = df_2[['name']]
     df_2['datasource'] = 'peopledatalab'
@@ -39,16 +41,14 @@ def df_import(n):
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
     df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
-    df_3 = df_3.head(n)
     df_3 = df_3[['name']]
     df_3['datasource'] = 'powrbot_austria'
     df = df.append(df_3)
     del df_3
 
-    '''
+    ''' this dataset is temporarly removed
     wordbook_name_4 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
     df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False)
-    df_4 = df_4.head(n)
     df_4 = df_4.rename(columns={"CompanyName":"name"})
     df_4 = df_4[['name']]
     df_4['datasource'] = 'basiccomp'
@@ -58,7 +58,6 @@ def df_import(n):
 
     wordbook_name_5 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-belgium.csv"
     df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
-    df_5 = df_5.head(n)
     df_5 = df_5.rename(columns={"name;;": "name"})
     df_5 = df_5[['name']]
     df_5['datasource'] = 'powrbot_belgium'
@@ -67,7 +66,6 @@ def df_import(n):
 
     wordbook_name_6 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-france.csv"
     df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
-    df_6 = df_6.head(n)
     df_6 = df_6.rename(columns={"name;": "name"})
     df_6 = df_6[['name']]
     df_6['datasource'] = 'powrbot_france'
@@ -76,7 +74,6 @@ def df_import(n):
 
     wordbook_name_7 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-germany.csv"
     df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
-    df_7 = df_7.head(n)
     df_7 = df_7.rename(columns={"name;": "name"})
     df_7 = df_7[['name']]
     df_7['datasource'] = 'powrbot_germany'
@@ -85,19 +82,18 @@ def df_import(n):
 
     wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
     df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
-    df_8 = df_8.head(n)
     df_8 = df_8.rename(columns={"name;;": "name"})
     df_8 = df_8[['name']]
     df_8['datasource'] = 'powrbot_uk'
     df = df.append(df_8)
     del df_8
 
+    df = df.sort_values(by=['name'])
     df = df.reset_index(drop=True)
 
     print(df)
     print(df.dtypes)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
-
     return df
 
 def df_prepare(df):
@@ -274,11 +270,9 @@ def create_df_with_attributes(matches,df):
     df_matches_full = df_matches_full.drop(['index'], axis=1)
     return df_matches_full
 
-def main(n):
+def main(df, n):
     start_time = time.time()
     print ('Started working with %s dataset size' % n)
-    df = df_import(n)
-
     df_processed = df_prepare(df)
 
     k = 3 #shingles size
@@ -297,18 +291,20 @@ def main(n):
     matches = create_matches(buckets_bands,docs)
 
     df_matches_full = create_df_with_attributes(matches,df)
-#    df_matches_full = create_df_with_attributes(matches,texts)
+    del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
     return time.time() - start_time
 
 if __name__ == "__main__":
-    datasets_size = [100000]
+    datasets_size = [1000]
     time_spent = []
+    df = df_import()
+
     for n in datasets_size:
-        a = main(n)
+        a = main(df.head(n), n)
         time_spent.append(a)
 
     for a, n in zip(time_spent,datasets_size):
-        print('for {} dataset size it took {} seconds'.format(n*8, a))
+        print('for {} dataset size it took {} seconds'.format(n, a))
         print('end')
