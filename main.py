@@ -21,9 +21,10 @@ def df_prepare(df):
     :param df: df with column name from raw datasets
     :return: df with cleaned names
     '''
-    df.drop(df[df['name'] == '#NAME?'].index, inplace=True)
+    df['name'] = df['name'].apply(lambda x: x.replace(';', ''))
+    df = df.drop(df[df['name'] == '#NAME?'].index, inplace=False)
     df = df.apply(lambda x: x.astype(str).str.upper())
-    df['name_clean'] = df['name'].apply(lambda x: x.replace('.',''))
+    df['name_clean'] = df['name'].apply(lambda x: x.replace('.', ''))
     df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
     df['name_clean'] = df['name_clean'].str.strip()
@@ -303,18 +304,18 @@ def main(df, n):
     texts = df['name_clean'] #which column to use for minhash
     shingles_list, shingles_dict = create_shingles_dict(texts,k)
 
-    docs = create_doc_shingles(texts,k,shingles_dict)
+    docs = create_doc_shingles(texts, k, shingles_dict)
 
     signature_size = 50
-    signatures = create_signatures_array(docs,shingles_list,signature_size)
+    signatures = create_signatures_array(docs, shingles_list, signature_size)
 
     bands_number = 5
-    buckets_bands = create_buckets(signatures,bands_number)
+    buckets_bands = create_buckets(signatures, bands_number)
 
     #threshold = 0.7
-    matches = create_matches(buckets_bands,docs)
+    matches = create_matches(buckets_bands, docs)
 
-    df_matches_full = create_df_with_attributes(matches,df)
+    df_matches_full = create_df_with_attributes(matches, df)
     del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
