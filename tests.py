@@ -5,23 +5,20 @@ import numpy as np
 class TestDfPreparation:
 	df_input = pd.DataFrame(columns=['name'])
 	df_output = pd.DataFrame(columns=['name'])
+	df_result = pd.DataFrame(columns=['name'])
 
 def test_df_prepare():
-	R = []
-
-	a = pd.DataFrame(np.array([['lo.***l'], ['lol'], ['lol']]),columns=['name'])
-	R.append(a)
-	b = pd.DataFrame(np.array([['LO L'], ['LOL'], ['LOL']]),columns=['name'])
-	R.append(b)
-
-	c = main.df_prepare(a)
-	print(c)
-
-	for i, j in zip(c['name'],b['name']):
+#	R = []
+#	t = TestDfPreparation()
+#	t.df_input.append(pd.Series(['lo.***l', 'lol', 'lol'], index=['name']))
+	df_input = pd.DataFrame(np.array([['Lt.** *D'], [' ltd''//@'], ['%  '], ['#NAME?'], ['LTD ']]),columns=['name'])
+	df_output = pd.DataFrame(np.array([['LT D'], ['LTD'], ['LTD']]),columns=['name_clean'])
+	r = main.df_prepare(df_input)
+	for i, j in zip(df_output['name_clean'], r['name_clean']):
 		if i != j:
-			raise Exception("Test {} failed".format(i,j))
+			raise Exception("Test {} failed with {} result".format(i, j))
 		else:
-			print("Test {} successful".format(i,j))
+			print("Test {} successful with {} result".format(i, j))
 
 class TestShingles:
 	texts = []
@@ -55,8 +52,11 @@ def test_shingles_dict():
 		else:
 			print("Test {} successful".format(t.texts))
 
-
 def test_shingles_doc():
+	'''
+	test texts in input should be upper case and without spaces before and after the string
+	:return:
+	'''
 	R = []
 
 	t = TestShingles()
@@ -67,10 +67,10 @@ def test_shingles_doc():
 	R.append(t)
 
 	t = TestShingles()
-	t.texts = ["LTD", "MPB"]
+	t.texts = ["LTD", "MPB",'LT D']
 	t.k = 3
-	t.shingles_dict = {'LTD': 0, 'MPB': 1}
-	t.docs = [[0],[1]]
+	t.shingles_dict = {'LTD': 0, 'MPB': 1, 'LT ': 2, 'T D': 3}
+	t.docs = [[0],[1],[2,3]]
 	R.append(t)
 
 	for t in R:
@@ -91,6 +91,6 @@ def test_jaccard():
 
 
 #test_jaccard()
-#test_shingles_doc()
+#test_shingles_dict()
 #test_shingles_doc()
 test_df_prepare()

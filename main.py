@@ -14,6 +14,25 @@ import random
 
 pd.set_option('display.max_columns', None)
 
+
+def df_prepare(df):
+    '''
+    This def cleans names from non text-number characters
+    :param df: df with column name from raw datasets
+    :return: df with cleaned names
+    '''
+    df.drop(df[df['name'] == '#NAME?'].index, inplace=True)
+    df = df.apply(lambda x: x.astype(str).str.upper())
+    df['name_clean'] = df['name'].apply(lambda x: x.replace('.',''))
+    df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
+    df['name_clean'] = df['name_clean'].str.strip()
+    df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
+    df = df.dropna()
+    print(df)
+
+    return df
+
 def df_import():
     '''
     This function imports all dfs, keeps only comp names, created datasource column with datasource file info
@@ -25,7 +44,7 @@ def df_import():
 
     # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
-    df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False)
+    df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False) #error_bad_lines=False skips bad data
     df_1 = df_1[['name']]
     df_1['datasource'] = 'rna'
     df = df_1
@@ -90,7 +109,9 @@ def df_import():
     df = df.append(df_8)
     del df_8
 
+    df = df_prepare(df)
     df = df.sort_values(by=['name'])
+
     df = df.reset_index(drop=True)
 
     print(df)
@@ -98,20 +119,6 @@ def df_import():
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
     return df
 
-def df_prepare(df):
-    '''
-    This def cleans names from non text-number characters
-    :param df: df with column name from raw datasets
-    :return: df with cleaned names
-    '''
-    df = df.apply(lambda x: x.astype(str).str.upper())
-    df['name'] = df['name'].apply(lambda x: x.replace('.',''))
-    df['name'] = df['name'].str.replace('[^0-9a-zA-Z]+', ' ')
-    df['name'] = df['name'].str.replace(' +', ' ')
-    print(df)
-    print(df.dtypes)
-
-    return df
 
 def frequent_words(df_processed):
     b = TextBlob("bonjour")
@@ -169,11 +176,17 @@ def levenstein_distance(texts_1,texts_2):
         text_2_num = 0
         text_1_num += 1
     print("Calculating levenstein distance took --- %s seconds ---" % (time.time() - start_time))
-
     return lvn_array
 
 #creating shingles_dict
 def create_shingles_dict(texts,k):
+    '''
+    This function creates a list and dict of shingles
+    :param texts:one string column of a df, which is going to be divided in shingles
+    :param k: shingle size
+    :return: list of all shingles with order
+    dict of shingles, shingle as a key, index of the shingle in the list as a value
+    '''
     start_time = time.time()
     print("Started creating shingles...")
     shingles_list = set()
@@ -194,6 +207,13 @@ def create_shingles_dict(texts,k):
 
 #converting docs to shingles
 def create_doc_shingles(texts,k,shingles_dict):
+    '''
+
+    :param texts:
+    :param k:
+    :param shingles_dict:
+    :return:
+    '''
     start_time = time.time()
     print("Started creating shingles for docs...")
     docs = [[] for i in range(len(texts))]
@@ -213,7 +233,6 @@ def create_signatures_array(docs,shingles_list,signature_size):
     start_time = time.time()
     print("Started creating signatures...")
     signatures = np.zeros((signature_size, len(docs))) #create an array
-
     shingles_shuffled = [i for i in range(len(shingles_list))]
 
     for signature in signatures:
@@ -279,10 +298,9 @@ def create_df_with_attributes(matches,df):
 def main(df, n):
     start_time = time.time()
     print ('Started working with %s dataset size' % n)
-    df_processed = df_prepare(df)
 
     k = 3 #shingles size
-    texts = df_processed['name'] #which column to use for minhash
+    texts = df['name_clean'] #which column to use for minhash
     shingles_list, shingles_dict = create_shingles_dict(texts,k)
 
     docs = create_doc_shingles(texts,k,shingles_dict)
@@ -300,16 +318,21 @@ def main(df, n):
     del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
-    return time.time() - start_time
+    return time.time() - start_time, df_matches_full
 
 if __name__ == "__main__":
     datasets_size = [1000]
     time_spent = []
+    df_matches_outputs = []
+
     df = df_import()
 
     for n in datasets_size:
-        a = main(df.head(n), n)
+        a, df_matches_full = main(df.head(n), n)
+        df_matches_full = df_matches_full.drop(columns=['name_x', 'name_y'], axis=1)
+        df_matches_full.to_csv("df_matches_full_{}.csv".format(n))
         time_spent.append(a)
+        df_matches_outputs.append(df_matches_full)
 
     for a, n in zip(time_spent,datasets_size):
         print('for {} dataset size it took {} seconds'.format(n, a))
