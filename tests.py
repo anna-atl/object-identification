@@ -1,4 +1,3 @@
-import main
 import pandas as pd
 import numpy as np
 
@@ -89,8 +88,47 @@ def test_jaccard():
 		else:
 			print("Test {} successful".format(R[i]))
 
+def test_set():
+	shingles_list = set()
+	shingles = ['de','de']
+
+	for shingle in shingles:
+		shingles_list.add(shingle)
+	print(shingles_list)
+
+
+def test_lists_append():
+	shingles_frequency = [0]*6
+	shingles = [1, 2, 5]
+
+	for shingle in shingles:
+		shingles_frequency[shingle] += 1
+		print(shingles_frequency)
+
+def test_lists_append():
+	shingles_set = set()
+	shingles = ['de', 'en', 'en']
+
+	for shingle in shingles:
+		shingles_set.add(shingle)
+
+	shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
+	print(shingles_set)
+	print(shingles_dict)
+	print(len(shingles_set))
+	print(len(shingles))
+
+	shingles_frequency = [0]*(len(shingles_dict))
+
+	for shingle in shingles:
+		shingles_frequency[shingles_dict[shingle]] += 1
+		print(shingles_frequency)
+
+#import main
 
 #test_jaccard()
 #test_shingles_dict()
 #test_shingles_doc()
-test_df_prepare()
+#test_df_prepare()
+
+test_lists_append()

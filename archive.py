@@ -42,3 +42,46 @@ def test_shingles_dict():
 
 #	make appends
 # list of inputs and outputs
+
+
+
+
+def frequent_words(df_processed):
+    b = TextBlob("bonjour")
+    b.detect_language()
+    print(df_processed['name'])
+    all_words = df_processed['name']
+    all_words_cleaned = []
+
+    for text in all_words:
+        text = [x.strip(string.punctuation) for x in text]
+        all_words_cleaned.append(text)
+
+    text_words = [" ".join(text) for text in all_words_cleaned]
+    final_text_words = " ".join(text_words)
+    # final_text_words[:1000]
+
+    print(all_words)
+    stopwords = set(STOPWORDS)
+    stopwords.update(["LE", "DE", "LA", "ET", "DES", "DU", "LES", "EN", "ET", "A", "POUR", "SUR", "SOU", "S", "D", "L"])
+
+    wordcloud_names = WordCloud(stopwords=stopwords, background_color="white", max_font_size=50,
+                                max_words=100).generate(final_text_words)
+
+    # Lines 4 to 7
+    plt.figure(figsize=(15, 15))
+    plt.imshow(wordcloud_names, interpolation='bilinear')
+    plt.axis("off")
+    plt.show()
+    filtered_words = [word for word in final_text_words.split() if word not in stopwords]
+    counted_words = collections.Counter(filtered_words)
+
+    word_count = {}
+
+    for letter, count in counted_words.most_common(100):
+        word_count[letter] = count
+
+    for i, j in word_count.items():
+        print('Word: {0}, count: {1}'.format(i, j))
+
+    return word_count

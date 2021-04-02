@@ -11,9 +11,7 @@ import Levenshtein
 
 import matplotlib.pyplot as plt
 import random
-
 pd.set_option('display.max_columns', None)
-
 
 def df_prepare(df):
     '''
@@ -21,10 +19,10 @@ def df_prepare(df):
     :param df: df with column name from raw datasets
     :return: df with cleaned names
     '''
-    df['name'] = df['name'].apply(lambda x: x.replace(';', ''))
-    df = df.drop(df[df['name'] == '#NAME?'].index, inplace=False)
     df = df.apply(lambda x: x.astype(str).str.upper())
-    df['name_clean'] = df['name'].apply(lambda x: x.replace('.', ''))
+    df['name_clean'] = df['name'].apply(lambda x: x.replace(';', ''))
+    df = df.drop(df[df['name_clean'] == '#NAME?'].index, inplace=False)
+    df['name_clean'] = df['name_clean'].apply(lambda x: x.replace('.', ''))
     df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
     df['name_clean'] = df['name_clean'].str.strip()
@@ -51,7 +49,6 @@ def df_import():
     df = df_1
     del df_1
 
-    ''' this dataset is temporarly removed because of it's size
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
     df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
     df_2 = df_2.rename(columns={"CompanyName": "name"})
@@ -59,7 +56,6 @@ def df_import():
     df_2['datasource'] = 'peopledatalab'
     df = df.append(df_2)
     del df_2
-    '''
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
     df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
@@ -120,47 +116,6 @@ def df_import():
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
     return df
 
-
-def frequent_words(df_processed):
-    b = TextBlob("bonjour")
-    b.detect_language()
-    print(df_processed['name'])
-    all_words = df_processed['name']
-    all_words_cleaned = []
-
-    for text in all_words:
-        text = [x.strip(string.punctuation) for x in text]
-        all_words_cleaned.append(text)
-
-    text_words = [" ".join(text) for text in all_words_cleaned]
-    final_text_words = " ".join(text_words)
-    # final_text_words[:1000]
-
-    print(all_words)
-    stopwords = set(STOPWORDS)
-    stopwords.update(["LE", "DE", "LA", "ET", "DES", "DU", "LES", "EN", "ET", "A", "POUR", "SUR", "SOU", "S", "D", "L"])
-
-    wordcloud_names = WordCloud(stopwords=stopwords, background_color="white", max_font_size=50,
-                                max_words=100).generate(final_text_words)
-
-    # Lines 4 to 7
-    plt.figure(figsize=(15, 15))
-    plt.imshow(wordcloud_names, interpolation='bilinear')
-    plt.axis("off")
-    plt.show()
-    filtered_words = [word for word in final_text_words.split() if word not in stopwords]
-    counted_words = collections.Counter(filtered_words)
-
-    word_count = {}
-
-    for letter, count in counted_words.most_common(100):
-        word_count[letter] = count
-
-    for i, j in word_count.items():
-        print('Word: {0}, count: {1}'.format(i, j))
-
-    return word_count
-
 def levenstein_distance(texts_1,texts_2):
     start_time = time.time()
 
@@ -190,7 +145,7 @@ def create_shingles_dict(texts,k):
     '''
     start_time = time.time()
     print("Started creating shingles...")
-    shingles_list = set()
+    shingles_set = set()
 
     for text in texts:
         if len(text) >= k:
@@ -198,13 +153,13 @@ def create_shingles_dict(texts,k):
         else:
             shingles = [text + ' ' * (k - len(text))]
         for shingle in shingles:
-            if shingle not in shingles_list: #check, maybe if is not needed bc its a set
-                shingles_list.add(shingle)
+           # if shingle not in shingles_list: #check, maybe if is not needed bc its a set
+            shingles_set.add(shingle)
 
-    shingles_list = sorted(shingles_list)
-    shingles_dict = dict(zip(shingles_list,range(len(shingles_list))))
+    shingles_set = sorted(shingles_set)
+    shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
     print("Creating shingles took --- %s seconds ---" % (time.time() - start_time))
-    return shingles_list, shingles_dict
+    return shingles_set, shingles_dict
 
 #converting docs to shingles
 def create_doc_shingles(texts,k,shingles_dict):
@@ -229,17 +184,44 @@ def create_doc_shingles(texts,k,shingles_dict):
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
     return docs
 
+#converting docs to shingles
+def create_doc_shingles_test(texts,k,shingles_dict):
+    '''
+
+    :param texts:
+    :param k:
+    :param shingles_dict:
+    :return:
+    '''
+    start_time = time.time()
+    print("Started creating shingles for docs...")
+    docs = [[] for i in range(len(texts))]
+    shingles_frequency = [0] * len(shingles_dict)
+
+    for doc, text in zip(docs, texts):
+        if len(text) >= k:
+            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        else:
+            shingles = [text + ' ' * (k - len(text))]
+        for shingle in shingles:
+            doc.append(shingles_dict[shingle])
+            shingles_frequency[shingles_dict[shingle]] += 1
+
+    print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
+    print(shingles_frequency.index(max(shingles_frequency)))
+    return docs, shingles_frequency
+
 #creating signatures array
-def create_signatures_array(docs,shingles_list,signature_size):
+def create_signatures_array(docs,shingles_set,signature_size):
     start_time = time.time()
     print("Started creating signatures...")
-    signatures = np.zeros((signature_size, len(docs))) #create an array
-    shingles_shuffled = [i for i in range(len(shingles_list))]
+    signatures = np.zeros((signature_size, len(docs))) #create a df with # rows = signature_size and #columns = docs
+    shingles_shuffled = [i for i in range(len(shingles_set))]  #create list of shingles indexes for further randomizing
 
     for signature in signatures:
         random.shuffle(shingles_shuffled)
         for doc_index, doc in enumerate(docs):
-            doc_a = [shingles_shuffled[i] for i in doc]
+            doc_a = [shingles_shuffled[i] for i in doc] #
             signature[doc_index] = min(doc_a)
     print("Creating signatures took --- %s seconds ---" % (time.time() - start_time))
     return signatures
@@ -251,10 +233,10 @@ def create_buckets(signatures,bands_number):
 
     buckets_bands = [{} for i in range(bands_number)]
 
-    for band, buckets in zip(range(bands_number),buckets_bands):
+    for band, buckets in zip(range(bands_number), buckets_bands):
         for i in range(len(signatures[0])):
-            buckets.setdefault(tuple(signatures[band*r:band*r+r,i]),[]).append(i)
-        filtered = {key:item for key, item in buckets.items() if len(item)>1}
+            buckets.setdefault(tuple(signatures[band*r:band*r+r, i]), []).append(i)
+        filtered = {key: item for key, item in buckets.items() if len(item)>1}
         buckets.clear()
         buckets.update(filtered)
     print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
@@ -273,8 +255,8 @@ def create_matches(buckets_bands,docs):
         for key, values_list in buckets.items():
             for value_1 in values_list:
                 for value_2 in values_list:
-                    if value_2 > value_1 and (value_1,value_2) not in matches:
-                        matches.setdefault((value_1,value_2),[]).append(jaccard(docs[value_1], docs[value_2]))
+                    if value_2 > value_1 and (value_1, value_2) not in matches:
+                        matches.setdefault((value_1, value_2), []).append(jaccard(docs[value_1], docs[value_2]))
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
 
     return matches
@@ -284,7 +266,7 @@ def create_df_with_attributes(matches,df):
     print("Started adding matches attributes...")
     df_matches = pd.DataFrame.from_dict(matches, orient='index')
     df_matches['matches_tuple'] = df_matches.index
-    df_matches[['doc_1','doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
     df_matches = df_matches.drop(['matches_tuple'], axis=1)
     df_matches = df_matches.reset_index(drop=True)
 
@@ -298,16 +280,18 @@ def create_df_with_attributes(matches,df):
 
 def main(df, n):
     start_time = time.time()
-    print ('Started working with %s dataset size' % n)
+    print ('Started working with the dataset (%s size):' % n)
+    print(df)
 
     k = 3 #shingles size
     texts = df['name_clean'] #which column to use for minhash
-    shingles_list, shingles_dict = create_shingles_dict(texts,k)
+    shingles_set, shingles_dict = create_shingles_dict(texts, k)
 
     docs = create_doc_shingles(texts, k, shingles_dict)
+    docs, shingles_frequency = create_doc_shingles_test(texts, k, shingles_dict)
 
     signature_size = 50
-    signatures = create_signatures_array(docs, shingles_list, signature_size)
+    signatures = create_signatures_array(docs, shingles_set, signature_size)
 
     bands_number = 5
     buckets_bands = create_buckets(signatures, bands_number)
@@ -322,7 +306,7 @@ def main(df, n):
     return time.time() - start_time, df_matches_full
 
 if __name__ == "__main__":
-    datasets_size = [1000]
+    datasets_size = [1000000]
     time_spent = []
     df_matches_outputs = []
 
@@ -330,11 +314,11 @@ if __name__ == "__main__":
 
     for n in datasets_size:
         a, df_matches_full = main(df.head(n), n)
-        df_matches_full = df_matches_full.drop(columns=['name_x', 'name_y'], axis=1)
+#        df_matches_full = df_matches_full.drop(columns=['name_x', 'name_y'], axis=1)
         df_matches_full.to_csv("df_matches_full_{}.csv".format(n))
         time_spent.append(a)
         df_matches_outputs.append(df_matches_full)
 
-    for a, n in zip(time_spent,datasets_size):
+    for a, n in zip(time_spent, datasets_size):
         print('for {} dataset size it took {} seconds'.format(n, a))
         print('end')
