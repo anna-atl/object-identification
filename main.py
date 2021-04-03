@@ -108,37 +108,17 @@ def df_import():
 
     df = df_prepare(df)
     df = df.sort_values(by=['name'])
-
     df = df.reset_index(drop=True)
-
     print(df)
     print(df.dtypes)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
     return df
 
-def levenstein_distance(texts_1,texts_2):
-    start_time = time.time()
-
-    lvn_array = np.zeros((len(texts_1),len(texts_2)))
-    print(lvn_array)
-
-    text_1_num = 0
-    text_2_num = 0
-
-    for text_1 in texts_1:
-        for text_2 in texts_2:
-            lvn_array[text_1_num,text_2_num] = Levenshtein.ratio(text_1,text_2)
-            text_2_num += 1
-        text_2_num = 0
-        text_1_num += 1
-    print("Calculating levenstein distance took --- %s seconds ---" % (time.time() - start_time))
-    return lvn_array
-
 #creating shingles_dict
 def create_shingles_dict(texts,k):
     '''
     This function creates a list and dict of shingles
-    :param texts:one string column of a df, which is going to be divided in shingles
+    :param texts:one string column of a df (comp names), which is going to be divided in shingles
     :param k: shingle size
     :return: list of all shingles with order
     dict of shingles, shingle as a key, index of the shingle in the list as a value
@@ -146,23 +126,22 @@ def create_shingles_dict(texts,k):
     start_time = time.time()
     print("Started creating shingles...")
     shingles_set = set()
-
     for text in texts:
-        if len(text) >= k:
-            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
-        else:
-            shingles = [text + ' ' * (k - len(text))]
-        for shingle in shingles:
-           # if shingle not in shingles_list: #check, maybe if is not needed bc its a set
-            shingles_set.add(shingle)
-
+        words = [word for word in text.split()]
+        for word in words:
+            if len(word) >= k:
+                shingles = [word[i:i + k] for i in range(len(word) - k + 1)]
+            else:
+                shingles = [word + '_' * (k - len(word))]
+            for shingle in shingles:
+                shingles_set.add(shingle)
     shingles_set = sorted(shingles_set)
     shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
     print("Creating shingles took --- %s seconds ---" % (time.time() - start_time))
     return shingles_set, shingles_dict
 
 #converting docs to shingles
-def create_doc_shingles(texts,k,shingles_dict):
+def create_doc_shingles(texts, k, shingles_dict):
     '''
     :param texts:
     :param k:
@@ -174,43 +153,19 @@ def create_doc_shingles(texts,k,shingles_dict):
     docs = [[] for i in range(len(texts))]
 
     for doc, text in zip(docs, texts):
-        if len(text) >= k:
-            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
-        else:
-            shingles = [text + ' ' * (k - len(text))]
-        for shingle in shingles:
-            doc.append(shingles_dict[shingle])
+        words = [word for word in text.split()]
+        for word in words:
+            if len(text) >= k:
+                shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+            else:
+                shingles = [text + '_' * (k - len(text))]
+            for shingle in shingles:
+                doc.append(shingles_dict[shingle])
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
     return docs
 
-#converting docs to shingles
-def create_doc_shingles_test(texts,k,shingles_dict):
-    '''
-    :param texts:
-    :param k:
-    :param shingles_dict:
-    :return:
-    '''
-    start_time = time.time()
-    print("Started creating shingles for docs...")
-    docs = [[] for i in range(len(texts))]
-    shingles_frequency = [0] * len(shingles_dict)
-
-    for doc, text in zip(docs, texts):
-        if len(text) >= k:
-            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
-        else:
-            shingles = [text + ' ' * (k - len(text))]
-        for shingle in shingles:
-            doc.append(shingles_dict[shingle]) #doc - list of shingles(numbers)
-            shingles_frequency[shingles_dict[shingle]] += 1
-
-    print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
-    print(shingles_frequency.index(max(shingles_frequency)))
-    return docs, shingles_frequency
-
 #creating signatures array
-def create_signatures_array(docs,shingles_set,signature_size):
+def create_signatures_array(docs, shingles_set, signature_size):
     start_time = time.time()
     print("Started creating signatures...")
     signatures = np.zeros((signature_size, len(docs))) #create a df with # rows = signature_size and #columns = docs
@@ -224,7 +179,7 @@ def create_signatures_array(docs,shingles_set,signature_size):
     print("Creating signatures took --- %s seconds ---" % (time.time() - start_time))
     return signatures
 
-def create_buckets(signatures,bands_number):
+def create_buckets(signatures, bands_number):
     start_time = time.time()
     print("Started creating buckets...")
     r = int(len(signatures)/bands_number) #rows per band
@@ -244,20 +199,42 @@ def create_buckets(signatures,bands_number):
     print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
     return buckets_bands
 
-def create_shingles_weights(shingles_frequency):
-    shingles_weights = [1/shingle_frequency for shingle_frequency in shingles_frequency]
-    #keeping floats because python floats are faster than int
-    return shingles_weights
+def create_shingles_weights_new(texts, shingles_dict, k):
+    shingles_weights = [0] * len(shingles_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
+    tokens = {} #token - unique word
+
+    for text in texts:
+        words = [word for word in text.split()]
+        for word_index, word in enumerate(reversed(words)):
+            tokens.setdefault(word, []).append(word_index + 1)
+    avg = {key: sum(value)/len(value)/len(value) for key, value in tokens.items()}
+    tokens.update(avg)
+
+    texts = [x.strip(' ') for x in texts] #remove spaces
+
+    for text in texts:
+        if len(text) >= k:
+            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        else:
+            shingles = [text + ' ' * (k - len(text))]
+        for shingle in shingles:
+            doc.append(shingles_dict[shingle]) #doc - list of shingles(numbers)
+
+            shingles_weights[shingles_dict[shingle]] = 1
+
+
+    for shingle in shingles:
+        doc.append(shingles_dict[shingle])
+
+
+
+
+    return tokens
 
 def jaccard(list1, list2): #is not counting duplicate shingles
     intersection = len(set(list1).intersection(list2))
     union = (len(set(list1)) + len(set(list2))) - intersection
     return intersection/union
-
-def jaccard_sum(list1, list2, shingles_weights):
-    intersection = set(list1).intersection(list2)
-    union = set(list1 + list2)
-    return sum([shingles_weights[i] for i in intersection])/sum([shingles_weights[i] for i in union])
 
 def create_matches(buckets_bands, docs):
     start_time = time.time()
@@ -269,19 +246,6 @@ def create_matches(buckets_bands, docs):
                 for value_2 in values_list:
                     if value_2 > value_1 and (value_1, value_2) not in matches:
                         matches.setdefault((value_1, value_2), []).append(jaccard(docs[value_1], docs[value_2])) #docs[value_1] - shingle numbers
-    print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
-    return matches
-
-def create_matches_sum(buckets_bands, docs, shingles_weights):
-    start_time = time.time()
-    print("Started creating matches...")
-    matches = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
-    for buckets in buckets_bands:
-        for key, values_list in buckets.items(): #values_list - doc indexes in one buckets
-            for value_1 in values_list: #iterating through doc_indexes
-                for value_2 in values_list:
-                    if value_2 > value_1 and (value_1, value_2) not in matches:
-                        matches.setdefault((value_1, value_2), []).append(jaccard_sum(docs[value_1], docs[value_2], shingles_weights)) #docs[value_1] - shingle numbers
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
     return matches
 
@@ -312,7 +276,6 @@ def main(df, n):
     shingles_set, shingles_dict = create_shingles_dict(texts, k)
 
     docs = create_doc_shingles(texts, k, shingles_dict)
-    docs, shingles_frequency = create_doc_shingles_test(texts, k, shingles_dict)
 
     signature_size = 50
     signatures = create_signatures_array(docs, shingles_set, signature_size)
@@ -322,15 +285,12 @@ def main(df, n):
 
     #threshold = 0.7
     matches = create_matches(buckets_bands, docs)
-    shingles_weights = create_shingles_weights(shingles_frequency)
-    matches_sum = create_matches_sum(buckets_bands, docs, shingles_weights)
 
     df_matches_full = create_df_with_attributes(matches, df)
-    df_matches_sum_full = create_df_with_attributes(matches_sum, df)
     del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
-    return time.time() - start_time, df_matches_full, df_matches_sum_full
+    return time.time() - start_time, df_matches_full
 
 if __name__ == "__main__":
     datasets_size = [1000000]

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import string
 
 class TestDfPreparation:
 	df_input = pd.DataFrame(columns=['name'])
@@ -31,23 +32,25 @@ def test_shingles_dict():
 	R = []
 
 	t = TestShingles()
+	t.texts = ["LTD ", "LTD", " LTD", "BP LTD"]
+	t.k = 3
+	#	t.shingles_list = ["LTD", "TD "] #with spaces
+	t.shingles_list = ["LTD", "BPL", "PLT"]  # without spaces
+	#	t.shingles_dict = {'LTD': 0, 'TD ': 1} #with spaces
+	t.shingles_dict = {'LTD': 0, 'BPL': 1, 'PLT': 2}  # without spaces
+	R.append(t)
+
+	t = TestShingles()
 	t.texts = ["LTD", "LTD"]
 	t.k = 3
 	t.shingles_list = ["LTD"]
 	t.shingles_dict = {'LTD': 0}
 	R.append(t)
 
-	t = TestShingles()
-	t.texts = ["LTD ", "LTD"]
-	t.k = 3
-	t.shingles_list = ["LTD", "TD "]
-	t.shingles_dict = {'LTD': 0, 'TD ': 1}
-	R.append(t)
-
 	for t in R:
 		a, b = main.create_shingles_dict(t.texts, t.k)
 		if t.shingles_list != a or t.shingles_dict != b:
-			raise Exception("Test {} failed".format(t.texts))
+			raise Exception("Test {} failed with result {}".format(t.texts, b))
 		else:
 			print("Test {} successful".format(t.texts))
 
@@ -75,7 +78,7 @@ def test_shingles_doc():
 	for t in R:
 		a = main.create_doc_shingles(t.texts, t.k, t.shingles_dict)
 		if t.docs != a:
-			raise Exception("Test {} failed".format(t.texts))
+			raise Exception("Test {} failed with result {}".format(t.texts, a))
 		else:
 			print("Test {} successful".format(t.texts))
 
@@ -123,6 +126,10 @@ def test_shingles_weights():
 		else:
 			print("Test {} successful".format(R[i]))
 
+def test_shingles_weights_new():
+	R = [(['bc', 'bc ltd', 'bc ltd', 'ls', 'ls ltd'])]
+	for i in range(len(R)):
+		print(main.create_shingles_weights_new(R[i]))
 
 def test_set():
 	shingles_list = set()
@@ -130,7 +137,6 @@ def test_set():
 	for shingle in shingles:
 		shingles_list.add(shingle)
 	print(shingles_list)
-
 
 def test_lists_append():
 	shingles_frequency = [0]*6
@@ -171,10 +177,10 @@ import main
 #test_jaccard()
 #test_jaccard_sum()
 #test_jaccard_sum_test()
-test_shingles_weights()
-
+#test_shingles_weights()
+#test_shingles_weights_new()
 #test_shingles_dict()
-#test_shingles_doc()
+test_shingles_doc()
 #test_df_prepare()
 #test_lists_append()
 #test_df()

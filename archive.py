@@ -95,3 +95,49 @@ def jaccard_sum_test(list1, list2, shingles_frequency):
     sum_int = sum([shingles_frequency[i] for i in intersection])
     sum_union = sum([shingles_frequency[i] for i in union])
     return len(intersection)/len(union), sum_int/sum_union
+
+# if shingle not in shingles_list: #check, maybe if is not needed bc its a set
+
+
+
+
+def test_create_shingles_dict_words(texts, k):
+	shingles_set = set()
+	for text in texts:
+		words = [word for word in text.split()]
+		for word in words:
+			if len(word) >= k:
+				shingles = [word[i:i + k] for i in range(len(word) - k + 1)]
+			else:
+				shingles = [word + '_' * (k - len(word))]
+			for shingle in shingles:
+				shingles_set.add(shingle)
+	shingles_set = sorted(shingles_set)
+	shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
+	return shingles_set, shingles_dict
+
+def test_shingles_dict_words():
+	R = []
+
+	t = TestShingles()
+	t.texts = ["LTD ", "LTD", " L TD", "BP LTD"]
+	t.k = 3
+	#	t.shingles_list = ["LTD", "TD "] #with spaces
+	t.shingles_list = ["LTD", "BPL", "PLT"]  # without spaces
+	#	t.shingles_dict = {'LTD': 0, 'TD ': 1} #with spaces
+	t.shingles_dict = {'LTD': 0, 'BPL': 1, 'PLT': 2}  # without spaces
+	R.append(t)
+
+	t = TestShingles()
+	t.texts = ["LTD", "LTD"]
+	t.k = 3
+	t.shingles_list = ["LTD"]
+	t.shingles_dict = {'LTD': 0}
+	R.append(t)
+
+	for t in R:
+		a, b = test_create_shingles_dict_words(t.texts, t.k)
+		if t.shingles_list != a or t.shingles_dict != b:
+			raise Exception("Test {} failed with result {}".format(t.texts, b))
+		else:
+			print("Test {} successful".format(t.texts))
