@@ -69,10 +69,10 @@ def test_shingles_doc():
 	R.append(t)
 
 	t = TestShingles()
-	t.texts = ["LTD", "MPB",'LT D']
+	t.texts = ["LTD", "MPB", 'LT D']
 	t.k = 3
-	t.shingles_dict = {'LTD': 0, 'MPB': 1, 'LT ': 2, 'T D': 3}
-	t.docs = [[0],[1],[2,3]]
+	t.shingles_dict = {'LTD': 0, 'MPB': 1, 'LT_': 2, 'D__': 3}
+	t.docs = [[0], [1], [2, 3]]
 	R.append(t)
 
 	for t in R:

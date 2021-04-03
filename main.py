@@ -155,10 +155,10 @@ def create_doc_shingles(texts, k, shingles_dict):
     for doc, text in zip(docs, texts):
         words = [word for word in text.split()]
         for word in words:
-            if len(text) >= k:
-                shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+            if len(word) >= k:
+                shingles = [word[i:i + k] for i in range(len(word) - k + 1)]
             else:
-                shingles = [text + '_' * (k - len(text))]
+                shingles = [word + '_' * (k - len(word))]
             for shingle in shingles:
                 doc.append(shingles_dict[shingle])
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
