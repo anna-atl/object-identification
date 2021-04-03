@@ -27,6 +27,7 @@ class TestShingles:
 	shingles_dict = {}
 	docs = []
 	signature_size = 50
+	tokens = {}
 
 def test_shingles_dict():
 	R = []
@@ -48,9 +49,9 @@ def test_shingles_dict():
 	R.append(t)
 
 	for t in R:
-		a, b = main.create_shingles_dict(t.texts, t.k)
+		a, b, c = main.create_shingles_dict(t.texts, t.k)
 		if t.shingles_list != a or t.shingles_dict != b:
-			raise Exception("Test {} failed with result {}".format(t.texts, b))
+			raise Exception("Test {} failed with result {} and tokens {}".format(t.texts, b, c))
 		else:
 			print("Test {} successful".format(t.texts))
 
@@ -65,22 +66,24 @@ def test_shingles_doc():
 	t.texts = ["LTD", "LTD"]
 	t.k = 3
 	t.shingles_dict = {'LTD': 0}
-	t.docs = [[0],[0]]
+	t.docs = [[0], [0]]
+	t.tokens = {'LTD': 0.25, 'BP': 2.0}
 	R.append(t)
 
 	t = TestShingles()
-	t.texts = ["LTD", "MPB", 'LT D']
+	t.texts = ["LTD", 'LT D', "MPB"]
 	t.k = 3
 	t.shingles_dict = {'LTD': 0, 'MPB': 1, 'LT_': 2, 'D__': 3}
-	t.docs = [[0], [1], [2, 3]]
+	t.docs = [[0], [2, 3], [1]]
+	t.tokens = {'LT': 0.2, 'D': 0.3, 'LTD': 0.1, 'MPB': 0.8}
 	R.append(t)
 
 	for t in R:
-		a = main.create_doc_shingles(t.texts, t.k, t.shingles_dict)
+		a, b = main.create_doc_shingles(t.texts, t.k, t.shingles_dict, t.tokens)
 		if t.docs != a:
-			raise Exception("Test {} failed with result {}".format(t.texts, a))
+			raise Exception("Test {} failed with result {} with {} weights".format(t.texts, a, b))
 		else:
-			print("Test {} successful".format(t.texts))
+			print("Test {} successful with result {} with {} weights".format(t.texts, a, b))
 
 def test_jaccard():
 	R = [("cat", "dog", 0), ("dog", "god", 1), ("aaa", "aab", 0.5), ("aaa", "aabcd", 0.25)]   #in future we will need to fix it (2/3 instead of 1/2)
