@@ -100,24 +100,33 @@ def test_jaccard_sum_test():
 	for i in range(len(R)):
 		w1, w2, fr, res, res_sum = R[i]
 		t1, t2 = jaccard_sum_test(w1, w2, fr)
-	if t1 != res or t2 != res_sum:
-		raise Exception("Test {} failed with {}".format(R[i], jaccard_sum_test(w1, w2, fr)))
-	else:
-		print("Test {} successful".format(R[i]))
+		if t1 != res or t2 != res_sum:
+			raise Exception("Test {} failed with {}".format(R[i], jaccard_sum_test(w1, w2, fr)))
+		else:
+			print("Test {} successful".format(R[i]))
 
 def test_jaccard_sum():
 	R = [([4, 2, 3], [3, 2, 1], [0, 10, 1, 2, 20], 3/33)]
 	for i in range(len(R)):
 		w1, w2, fr, res_sum = R[i]
-	if res_sum != main.jaccard_sum(w1, w2, fr):
-		raise Exception("Test {} failed with {}".format(R[i], main.jaccard_sum(w1, w2, fr)))
-	else:
-		print("Test {} successful".format(R[i]))
+		if res_sum != main.jaccard_sum(w1, w2, fr):
+			raise Exception("Test {} failed with {}".format(R[i], main.jaccard_sum(w1, w2, fr)))
+		else:
+			print("Test {} successful".format(R[i]))
+
+def test_shingles_weights():
+	R = [([4, 2, 3], [1/4, 1/2, 1/3])]
+	for i in range(len(R)):
+		l1, res = R[i]
+		if res != main.create_shingles_weights(l1):
+			raise Exception("Test {} failed with {}".format(R[i], main.create_shingles_weights(l1)))
+		else:
+			print("Test {} successful".format(R[i]))
+
 
 def test_set():
 	shingles_list = set()
 	shingles = ['de','de']
-
 	for shingle in shingles:
 		shingles_list.add(shingle)
 	print(shingles_list)
@@ -160,8 +169,10 @@ def test_df():
 import main
 
 #test_jaccard()
-test_jaccard_sum()
+#test_jaccard_sum()
 #test_jaccard_sum_test()
+test_shingles_weights()
+
 #test_shingles_dict()
 #test_shingles_doc()
 #test_df_prepare()

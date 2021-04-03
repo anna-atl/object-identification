@@ -164,7 +164,6 @@ def create_shingles_dict(texts,k):
 #converting docs to shingles
 def create_doc_shingles(texts,k,shingles_dict):
     '''
-
     :param texts:
     :param k:
     :param shingles_dict:
@@ -187,7 +186,6 @@ def create_doc_shingles(texts,k,shingles_dict):
 #converting docs to shingles
 def create_doc_shingles_test(texts,k,shingles_dict):
     '''
-
     :param texts:
     :param k:
     :param shingles_dict:
@@ -246,15 +244,20 @@ def create_buckets(signatures,bands_number):
     print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
     return buckets_bands
 
+def create_shingles_weights(shingles_frequency):
+    shingles_weights = [1/shingle_frequency for shingle_frequency in shingles_frequency]
+    #keeping floats because python floats are faster than int
+    return shingles_weights
+
 def jaccard(list1, list2): #is not counting duplicate shingles
     intersection = len(set(list1).intersection(list2))
     union = (len(set(list1)) + len(set(list2))) - intersection
     return intersection/union
 
-def jaccard_sum(list1, list2, shingles_frequency):
+def jaccard_sum(list1, list2, shingles_weights):
     intersection = set(list1).intersection(list2)
     union = set(list1 + list2)
-    return sum([shingles_frequency[i] for i in intersection])/sum([shingles_frequency[i] for i in union])
+    return sum([shingles_weights[i] for i in intersection])/sum([shingles_weights[i] for i in union])
 
 def create_matches(buckets_bands, docs):
     start_time = time.time()
@@ -266,6 +269,19 @@ def create_matches(buckets_bands, docs):
                 for value_2 in values_list:
                     if value_2 > value_1 and (value_1, value_2) not in matches:
                         matches.setdefault((value_1, value_2), []).append(jaccard(docs[value_1], docs[value_2])) #docs[value_1] - shingle numbers
+    print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
+    return matches
+
+def create_matches_sum(buckets_bands, docs, shingles_weights):
+    start_time = time.time()
+    print("Started creating matches...")
+    matches = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
+    for buckets in buckets_bands:
+        for key, values_list in buckets.items(): #values_list - doc indexes in one buckets
+            for value_1 in values_list: #iterating through doc_indexes
+                for value_2 in values_list:
+                    if value_2 > value_1 and (value_1, value_2) not in matches:
+                        matches.setdefault((value_1, value_2), []).append(jaccard_sum(docs[value_1], docs[value_2], shingles_weights)) #docs[value_1] - shingle numbers
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
     return matches
 
@@ -306,12 +322,15 @@ def main(df, n):
 
     #threshold = 0.7
     matches = create_matches(buckets_bands, docs)
+    shingles_weights = create_shingles_weights(shingles_frequency)
+    matches_sum = create_matches_sum(buckets_bands, docs, shingles_weights)
 
     df_matches_full = create_df_with_attributes(matches, df)
+    df_matches_sum_full = create_df_with_attributes(matches_sum, df)
     del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
-    return time.time() - start_time, df_matches_full
+    return time.time() - start_time, df_matches_full, df_matches_sum_full
 
 if __name__ == "__main__":
     datasets_size = [1000000]
@@ -321,9 +340,10 @@ if __name__ == "__main__":
     df = df_import()
 
     for n in datasets_size:
-        a, df_matches_full = main(df.head(n), n)
+        a, df_matches_full, df_matches_sum_full = main(df.head(n), n)
 #        df_matches_full = df_matches_full.drop(columns=['name_x', 'name_y'], axis=1)
         df_matches_full.to_csv("df_matches_full_{}.csv".format(n))
+        df_matches_sum_full.to_csv("df_matches_full_sum_{}.csv".format(n))
         time_spent.append(a)
         df_matches_outputs.append(df_matches_full)
 
