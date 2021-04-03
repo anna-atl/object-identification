@@ -80,13 +80,39 @@ def test_shingles_doc():
 			print("Test {} successful".format(t.texts))
 
 def test_jaccard():
-	R = [("cat", "dog", 0), ("dog", "god", 1), ("aaa", "aab", 0.5)]   #in future we will need to fix it (2/3 instead of 1/2)
+	R = [("cat", "dog", 0), ("dog", "god", 1), ("aaa", "aab", 0.5), ("aaa", "aabcd", 0.25)]   #in future we will need to fix it (2/3 instead of 1/2)
 	for i in range(len(R)):
 		w1, w2, res = R[i]
 		if main.jaccard(w1, w2) != res:
-			raise Exception("Test {} failed".format(R[i]))
+			raise Exception("Test {} failed with {}".format(R[i], main.jaccard(w1, w2)))
 		else:
 			print("Test {} successful".format(R[i]))
+
+def jaccard_sum_test(list1, list2, shingles_frequency):
+    intersection = set(list1).intersection(list2)
+    union = set(list1 + list2)
+    sum_int = sum([shingles_frequency[i] for i in intersection])
+    sum_union = sum([shingles_frequency[i] for i in union])
+    return len(intersection)/len(union), sum_int/sum_union
+
+def test_jaccard_sum_test():
+	R = [([4, 2, 3], [3, 2, 1], [0, 10, 1, 2, 20], 0.5, 3/33)]
+	for i in range(len(R)):
+		w1, w2, fr, res, res_sum = R[i]
+		t1, t2 = jaccard_sum_test(w1, w2, fr)
+	if t1 != res or t2 != res_sum:
+		raise Exception("Test {} failed with {}".format(R[i], jaccard_sum_test(w1, w2, fr)))
+	else:
+		print("Test {} successful".format(R[i]))
+
+def test_jaccard_sum():
+	R = [([4, 2, 3], [3, 2, 1], [0, 10, 1, 2, 20], 3/33)]
+	for i in range(len(R)):
+		w1, w2, fr, res_sum = R[i]
+	if res_sum != main.jaccard_sum(w1, w2, fr):
+		raise Exception("Test {} failed with {}".format(R[i], main.jaccard_sum(w1, w2, fr)))
+	else:
+		print("Test {} successful".format(R[i]))
 
 def test_set():
 	shingles_list = set()
@@ -124,11 +150,20 @@ def test_lists_append():
 		shingles_frequency[shingles_dict[shingle]] += 1
 		print(shingles_frequency)
 
-#import main
+def test_df():
+	signatures = np.zeros((2, 3))
+	print(signatures)
+	for signature in signatures:
+		print(signature)
+
+
+import main
 
 #test_jaccard()
+test_jaccard_sum()
+#test_jaccard_sum_test()
 #test_shingles_dict()
 #test_shingles_doc()
 #test_df_prepare()
-
-test_lists_append()
+#test_lists_append()
+#test_df()

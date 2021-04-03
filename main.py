@@ -204,7 +204,7 @@ def create_doc_shingles_test(texts,k,shingles_dict):
         else:
             shingles = [text + ' ' * (k - len(text))]
         for shingle in shingles:
-            doc.append(shingles_dict[shingle])
+            doc.append(shingles_dict[shingle]) #doc - list of shingles(numbers)
             shingles_frequency[shingles_dict[shingle]] += 1
 
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
@@ -218,11 +218,11 @@ def create_signatures_array(docs,shingles_set,signature_size):
     signatures = np.zeros((signature_size, len(docs))) #create a df with # rows = signature_size and #columns = docs
     shingles_shuffled = [i for i in range(len(shingles_set))]  #create list of shingles indexes for further randomizing
 
-    for signature in signatures:
+    for signature in signatures:   #iterating through rows of the signatures df
         random.shuffle(shingles_shuffled)
-        for doc_index, doc in enumerate(docs):
-            doc_a = [shingles_shuffled[i] for i in doc] #
-            signature[doc_index] = min(doc_a)
+        for doc_index, doc in enumerate(docs): #for iterating over indexes in list as well
+            doc_a = [shingles_shuffled[i] for i in doc] # --check this-- recreating shingles list of a doc with randomization
+            signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
     print("Creating signatures took --- %s seconds ---" % (time.time() - start_time))
     return signatures
 
@@ -231,34 +231,42 @@ def create_buckets(signatures,bands_number):
     print("Started creating buckets...")
     r = int(len(signatures)/bands_number) #rows per band
 
-    buckets_bands = [{} for i in range(bands_number)]
+    buckets_bands = [{} for i in range(bands_number)] #create a list of dict which is number of buckets
+    #buckets are going to be created (buckets - potential similar items)
 
-    for band, buckets in zip(range(bands_number), buckets_bands):
-        for i in range(len(signatures[0])):
+    for band, buckets in zip(range(bands_number), buckets_bands): #buckets - dict:1,2,3,4,5. key - one bucket
+        for i in range(len(signatures[0])): #iterating through docs
             buckets.setdefault(tuple(signatures[band*r:band*r+r, i]), []).append(i)
-        filtered = {key: item for key, item in buckets.items() if len(item)>1}
+            #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
+            #if the signatures of this bucket are same then key is the signature and values: doc index
+            #if unique signature then only one doc_index will be as a value
+        filtered = {key: item for key, item in buckets.items() if len(item) > 1} #filter out where one value (one doc with this signature)
         buckets.clear()
         buckets.update(filtered)
     print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
     return buckets_bands
 
-def jaccard(list1, list2):
+def jaccard(list1, list2): #is not counting duplicate shingles
     intersection = len(set(list1).intersection(list2))
     union = (len(set(list1)) + len(set(list2))) - intersection
     return intersection/union
 
-def create_matches(buckets_bands,docs):
+def jaccard_sum(list1, list2, shingles_frequency):
+    intersection = set(list1).intersection(list2)
+    union = set(list1 + list2)
+    return sum([shingles_frequency[i] for i in intersection])/sum([shingles_frequency[i] for i in union])
+
+def create_matches(buckets_bands, docs):
     start_time = time.time()
     print("Started creating matches...")
-    matches = {}
+    matches = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets in buckets_bands:
-        for key, values_list in buckets.items():
-            for value_1 in values_list:
+        for key, values_list in buckets.items(): #values_list - doc indexes in one buckets
+            for value_1 in values_list: #iterating through doc_indexes
                 for value_2 in values_list:
                     if value_2 > value_1 and (value_1, value_2) not in matches:
-                        matches.setdefault((value_1, value_2), []).append(jaccard(docs[value_1], docs[value_2]))
+                        matches.setdefault((value_1, value_2), []).append(jaccard(docs[value_1], docs[value_2])) #docs[value_1] - shingle numbers
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
-
     return matches
 
 #generate df with all potential matches

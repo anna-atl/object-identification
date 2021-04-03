@@ -85,3 +85,13 @@ def frequent_words(df_processed):
         print('Word: {0}, count: {1}'.format(i, j))
 
     return word_count
+
+
+
+
+def jaccard_sum_test(list1, list2, shingles_frequency):
+    intersection = set(list1).intersection(list2)
+    union = set(list1 + list2)
+    sum_int = sum([shingles_frequency[i] for i in intersection])
+    sum_union = sum([shingles_frequency[i] for i in union])
+    return len(intersection)/len(union), sum_int/sum_union
