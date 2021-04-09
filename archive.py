@@ -141,3 +141,34 @@ def test_shingles_dict_words():
 			raise Exception("Test {} failed with result {}".format(t.texts, b))
 		else:
 			print("Test {} successful".format(t.texts))
+
+
+
+
+def create_shingles_weights_new(texts, shingles_dict, k):
+    shingles_weights = [0] * len(shingles_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
+    tokens = {} #token - unique word
+
+    for text in texts:
+        words = [word for word in text.split()]
+        for word_index, word in enumerate(reversed(words)):
+            tokens.setdefault(word, []).append(word_index + 1)
+    avg = {key: sum(value)/len(value)/len(value) for key, value in tokens.items()}
+    tokens.update(avg)
+
+    texts = [x.strip(' ') for x in texts] #remove spaces
+
+    for text in texts:
+        if len(text) >= k:
+            shingles = [text[i:i + k] for i in range(len(text) - k + 1)]
+        else:
+            shingles = [text + ' ' * (k - len(text))]
+        for shingle in shingles:
+            doc.append(shingles_dict[shingle]) #doc - list of shingles(numbers)
+
+            shingles_weights[shingles_dict[shingle]] = 1
+
+
+    for shingle in shingles:
+        doc.append(shingles_dict[shingle])
+    return tokens
