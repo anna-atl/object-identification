@@ -149,14 +149,16 @@ def create_doc_tokens(texts, tokens_weights_dict, tokens_dict):
     start_time = time.time()
     print("Started creating shingles for docs...")
     docs = [[] for i in range(len(texts))]
+    token_weights = [0] * len(tokens_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
 
     for doc, text in zip(docs, texts):
         words = [word for word in text.split()]
         for word in words:
             doc.append(tokens_dict[word])
+            token_weights[tokens_dict[word]] = tokens_dict[word]
 
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
-    return docs
+    return docs, token_weights
 
 #creating signatures array
 def create_signatures_array(docs, signature_size, tokens_set):
@@ -194,13 +196,13 @@ def create_buckets(signatures, bands_number):
     return buckets_bands
 
 
-def jaccard_weighted(list1, list2, tokens_weights_dict): #is not counting duplicate shingles
+def jaccard_weighted(list1, list2, token_weights): #is not counting duplicate shingles
     intersection = set(list1).intersection(list2)
     union = set(list1 + list2)
 #    union = set(list1).union(list2) #for multisets
-    return sum([tokens_weights_dict[i] for i in intersection])/sum([tokens_weights_dict[i] for i in union])
+    return sum([token_weights[i] for i in intersection])/sum([token_weights[i] for i in union])
 
-def create_matches(buckets_bands, docs, tokens_weights_dict):
+def create_matches(buckets_bands, docs, token_weights):
     start_time = time.time()
     print("Started creating matches...")
     matches = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
@@ -209,7 +211,7 @@ def create_matches(buckets_bands, docs, tokens_weights_dict):
             for value_1 in values_list: #iterating through doc_indexes
                 for value_2 in values_list:
                     if value_2 > value_1 and (value_1, value_2) not in matches:
-                        matches.setdefault((value_1, value_2), []).append(jaccard_weighted(docs[value_1], docs[value_2], tokens_weights_dict)) #docs[value_1] - shingle numbers
+                        matches.setdefault((value_1, value_2), []).append(jaccard_weighted(docs[value_1], docs[value_2], token_weights)) #docs[value_1] - shingle numbers
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
     return matches
 
@@ -238,19 +240,19 @@ def main(df, n):
     texts = df['name_clean'] #which column to use for minhash
     tokens_weights_dict, tokens_set, tokens_dict = create_tokens_dict(texts)
 
-    docs = create_doc_tokens(texts, tokens_weights_dict, tokens_dict)
+    docs, token_weights = create_doc_tokens(texts, tokens_weights_dict, tokens_dict)
 
     signature_size = 50
-    signatures = create_signatures_array(docs, signature_size)
+    signatures = create_signatures_array(docs, signature_size, tokens_set)
 
     bands_number = 5
     buckets_bands = create_buckets(signatures, bands_number)
 
     #threshold = 0.7
-    matches = create_matches(buckets_bands, docs, tokens_weights_dict)
+    matches = create_matches(buckets_bands, docs, token_weights)
 
     df_matches_full = create_df_with_attributes(matches, df)
-    del df_matches_full
+    del df
     print(df_matches_full)
     print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
     return time.time() - start_time, df_matches_full
