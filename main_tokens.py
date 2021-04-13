@@ -265,7 +265,6 @@ if __name__ == "__main__":
 
     for n in datasets_size:
         a, df_matches_full = main(df.head(n), n)
-#        df_matches_full = df_matches_full.drop(columns=['name_x', 'name_y'], axis=1)
         df_matches_full.to_csv("df_matches_full_{}.csv".format(n))
         time_spent.append(a)
         df_matches_outputs.append(df_matches_full)
