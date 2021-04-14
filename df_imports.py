@@ -16,7 +16,25 @@ def df_prepare(df):
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
     df['name_clean'] = df['name_clean'].str.strip()
     df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
-    df = df.dropna()
+
+    df['country_clean'] = df['country'].apply(lambda x: x.replace('.', ''))
+    df['country_clean'] = df['country_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['country_clean'] = df['country_clean'].str.replace(' +', ' ')
+    df['country_clean'] = df['country_clean'].str.strip()
+
+    df['city_clean'] = df['city'].apply(lambda x: x.replace('.', ''))
+    df['city_clean'] = df['city_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['city_clean'] = df['city_clean'].str.replace(' +', ' ')
+    df['city_clean'] = df['city_clean'].str.strip()
+
+    df['street_clean'] = df['street'].apply(lambda x: x.replace('.', ''))
+    df['street_clean'] = df['street_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['street_clean'] = df['street_clean'].str.replace(' +', ' ')
+    df['street_clean'] = df['street_clean'].str.strip()
+
+#    df = df.dropna()
+    df.dropna(subset=['name_clean'])
+
     print(df)
 
     return df

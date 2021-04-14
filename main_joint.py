@@ -11,10 +11,10 @@ import random
 pd.set_option('display.max_columns', None)
 
 class minhash_params:
-    def __init__(self, matching_attribute, hash_type, weights_method, bands_number = 5, signature_size = 50, shingle_size = 3):
+    def __init__(self, matching_attribute, hash_type, weights_method, bands_number=5, signature_size=50):
         self.matching_attribute = matching_attribute
-        self.hash_type = hash_type #'tokens', 'shingles'
-        self.weights_method = weights_method # 1 - no weights, 2 - frequency weights, 3 - sophisticated weights
+        self.hash_type = hash_type #'tokens', 'shingles', 'exact'
+        self.weights_method = weights_method # 'normal', 'frequency', 'weighted'
         self.bands_number = bands_number
         self.shingle_size = shingle_size
         self.signature_size = signature_size
@@ -205,6 +205,7 @@ if __name__ == "__main__":
     ps3 = minhash_params('name_clean', ['tokens'], 'frequency')
     ps4 = minhash_params('name_clean', ['shingles', 3], 'normal')
     ps5 = minhash_params('name_clean', ['shingles', 3], 'frequency')
+    ps6 = minhash_params('street_clean', ['shingles', 3], 'normal', signature_size=30)
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     start_time = time.time()
@@ -214,7 +215,7 @@ if __name__ == "__main__":
     for n in datasets_size:
         start_time = time.time()
         print('Started MinHash with the dataset (%s size):' % n)
-        matched_pairs = minhash(df.head(n), ps3)
+        matched_pairs = minhash(df.head(n), ps6)
         print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
 
         df_matches_full = create_df_with_attributes(matched_pairs, df)
