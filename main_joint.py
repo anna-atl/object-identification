@@ -10,15 +10,11 @@ import df_imports
 import random
 pd.set_option('display.max_columns', None)
 
-
-class attribute_match_params:
-#    hash_type = 1 #1 - tokens, 2 - shingles
-#    weights_method = 1 # 1 - no weights, 2 - frequency weights, 3 - sophisticated weights
-
+class minhash_params:
     def __init__(self, matching_attribute, hash_type, weights_method, bands_number = 5, signature_size = 50, shingle_size = 3):
         self.matching_attribute = matching_attribute
-        self.hash_type = hash_type
-        self.weights_method = weights_method
+        self.hash_type = hash_type #'tokens', 'shingles'
+        self.weights_method = weights_method # 1 - no weights, 2 - frequency weights, 3 - sophisticated weights
         self.bands_number = bands_number
         self.shingle_size = shingle_size
         self.signature_size = signature_size
@@ -34,7 +30,7 @@ class scenario_params:
 
 
 #creating shingles_dict
-def create_hashes(docs, hash_type):
+def create_hashes(docs, hash_type, weights_method):
     '''
     This function creates a list and dict of shingles
     :param texts:one string column of a df (comp names), which is going to be divided in shingles
@@ -45,16 +41,19 @@ def create_hashes(docs, hash_type):
     hashes_set = set()#hash - hashed token or shingle
     hash_weights_dict = {} #token - unique word, value - tokens index
 
-    if hash_type == 'tokens':
+    if hash_type[0] == 'tokens':
         for doc in docs:
             words = [word for word in doc.split()]
             for word_index, word in enumerate(reversed(words)):
-                hash_weights_dict.setdefault(word, []).append(word_index + 1)
                 hashes_set.add(word)
-        avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
-        hash_weights_dict.update(avg)
+                if weights_method == 'weighted':
+                    hash_weights_dict.setdefault(word, []).append(word_index + 1)
+        if weights_method == 'weighted':
+            avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
+            hash_weights_dict.update(avg)
 
-    elif hash_type == 'shingles':
+    elif hash_type[0] == 'shingles':
+        k = hash_type[1]
         for doc in docs:
             if len(doc) >= k:
                 shingles = [doc[i:i + k] for i in range(len(doc) - k + 1)]
@@ -62,28 +61,34 @@ def create_hashes(docs, hash_type):
                 shingles = [doc + '_' * (k - len(doc))]
             for shingle in shingles:
                 hashes_set.add(shingle)
-                hash_weights_dict.setdefault(shingle, []).append(word_index + 1)
-#how K and how the row above???
+                if weights_method == 'weighted':
+                    continue
+                    #hash_weights_dict.setdefault(shingle, []).append(word_index + 1)
+#how the row above???
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
     return hash_weights_dict, hashes_set, hashes_dict
 
 
 #converting docs to shingles
-def create_doc_tokens(docs, hash_type, hash_weights_dict, hashes_dict):
+def create_doc_tokens(docs, hash_type, weights_method, hash_weights_dict, hashes_dict):
     '''
     '''
     docs_hashed = [[] for i in range(len(docs))]
     hash_weights_list = [0] * len(hashes_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
 
-    if hash_type == 'tokens':
+    if hash_type[0] == 'tokens':
         for doc_hashed, doc in zip(docs_hashed, docs):
             words = [word for word in doc.split()]
             for word in words:
                 doc_hashed.append(hashes_dict[word])
-                hash_weights_list[hashes_dict[word]] = hash_weights_dict[word]
+                if weights_method == 'weighted':
+                    hash_weights_list[hashes_dict[word]] = hash_weights_dict[word]
+                elif weights_method == 'frequency':
+                    hash_weights_list[hashes_dict[word]] += 1
 
-    elif hash_type == 'shingles':
+    elif hash_type[0] == 'shingles':
+        k = hash_type[1]
         for doc_hashed, doc in zip(docs_hashed, docs):
             if len(doc) >= k:
                 shingles = [doc[i:i + k] for i in range(len(doc) - k + 1)]
@@ -91,6 +96,11 @@ def create_doc_tokens(docs, hash_type, hash_weights_dict, hashes_dict):
                 shingles = [doc + '_' * (k - len(doc))]
             for shingle in shingles:
                 doc_hashed.append(hashes_dict[shingle])
+                if weights_method == 'frequency':
+                    hash_weights_list[hashes_dict[shingle]] += 1
+
+    if weights_method == 'frequency':
+        hash_weights_list = [1 / hash_weight for hash_weight in hash_weights_list]
 
     return docs_hashed, hash_weights_list
 
@@ -122,32 +132,51 @@ def create_buckets(signatures, bands_number):
         buckets_of_band.update(filtered)
     return buckets_of_bands
 
-def jaccard_weighted(list1, list2, token_weights): #is not counting duplicate shingles
+def jaccard_weighted(list1, list2, weights_method, hash_weights_list): #is not counting duplicate hashes
     intersection = set(list1).intersection(list2)
     union = set(list1 + list2)
-#    union = set(list1).union(list2) #for multisets
-    return sum([token_weights[i] for i in intersection])/sum([token_weights[i] for i in union])
+    #    union = set(list1).union(list2) #for multisets
+    if weights_method == 'normal':
+        return len(intersection)/len(union)
+    else:
+        return sum([hash_weights_list[i] for i in intersection])/sum([hash_weights_list[i] for i in union])
 
-def create_matches(buckets_bands, docs, token_weights):
-    matches = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
-    for buckets in buckets_bands:
-        for key, values_list in buckets.items(): #values_list - doc indexes in one buckets
-            for value_1 in values_list: #iterating through doc_indexes
-                for value_2 in values_list:
-                    if value_2 > value_1 and (value_1, value_2) not in matches:
-                        matches.setdefault((value_1, value_2), []).append(jaccard_weighted(docs[value_1], docs[value_2], token_weights)) #docs[value_1] - shingle numbers
-    return matches
+def calculate_matches_ratios(buckets_of_bands, docs_hashed, weights_method, hash_weights_list):
+    matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
+    for buckets_of_band in buckets_of_bands:
+        for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
+            for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
+                for doc_index_2 in docs_in_bucket:
+                    if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], weights_method, hash_weights_list))
+    return matched_pairs
 
-def main(df, parameters):
+#generate df with all potential matches
+def create_df_with_attributes(matches,df):
+    print("Started adding matches attributes...")
+    df_matches = pd.DataFrame.from_dict(matches, orient='index')
+    df_matches['matches_tuple'] = df_matches.index
+    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+    df_matches = df_matches.drop(['matches_tuple'], axis=1)
+    df_matches = df_matches.reset_index(drop=True)
+    df['index'] = df.index
+
+    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on = ['index'])
+    df_matches_full = df_matches_full.drop(['index'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on = ['index'])
+    df_matches_full = df_matches_full.drop(['index'], axis=1)
+    return df_matches_full
+
+def minhash(df, parameters):
     docs = df[parameters.matching_attribute] #which column to use for minhash
     start_time = time.time()
     print("Started creating hashes...")
-    hash_weights_dict, hashes_set, hashes_dict = create_hashes(docs, parameters.hash_type)
+    hash_weights_dict, hashes_set, hashes_dict = create_hashes(docs, parameters.hash_type, parameters.weights_method)
     print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started converting docs to hashes...")
-    docs_hashed, hash_weights_list = create_doc_tokens(docs, parameters.hash_type, hash_weights_dict, hashes_dict)
+    docs_hashed, hash_weights_list = create_doc_tokens(docs, parameters.hash_type, parameters.weights_method, hash_weights_dict, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
@@ -162,17 +191,20 @@ def main(df, parameters):
 
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
-    matches = create_matches(buckets_of_bands, docs_hashed, hash_weights_list)
+    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, parameters.weights_method, hash_weights_list)
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
 
-    print(matches)
-    return matches
-
+    print(matched_pairs)
+    return matched_pairs
 
 if __name__ == "__main__":
     datasets_size = [1000000]
 
-    ps1 = attribute_match_params('name_clean', 'tokens':, 1)
+    ps1 = minhash_params('name_clean', ['tokens'], 'weighted')
+    ps2 = minhash_params('name_clean', ['tokens'], 'normal')
+    ps3 = minhash_params('name_clean', ['tokens'], 'frequency')
+    ps4 = minhash_params('name_clean', ['shingles', 3], 'normal')
+    ps5 = minhash_params('name_clean', ['shingles', 3], 'frequency')
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     start_time = time.time()
@@ -181,15 +213,14 @@ if __name__ == "__main__":
 
     for n in datasets_size:
         start_time = time.time()
-        print('Started working with the dataset (%s size):' % n)
-        matches = main(df.head(n), ps1)
-        print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
+        print('Started MinHash with the dataset (%s size):' % n)
+        matched_pairs = minhash(df.head(n), ps3)
+        print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
 
+        df_matches_full = create_df_with_attributes(matched_pairs, df)
+        df_matches_full.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
 
-
-        df_matches_full = create_df_with_attributes(matches, df)
-
-        df_matches_full.to_csv("df_matches_full_{}_{}.csv".format(n, datetime.date))
+    '''
         time_spent.append(a)
         df_matches_outputs.append(df_matches_full)
         print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
@@ -197,4 +228,6 @@ if __name__ == "__main__":
 
     for a, n in zip(time_spent, datasets_size):
         print('for {} dataset size it took {} seconds'.format(n, a))
-        print('end')
+
+    '''
+    print('end')
