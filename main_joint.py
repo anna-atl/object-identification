@@ -13,10 +13,9 @@ pd.set_option('display.max_columns', None)
 class minhash_params:
     def __init__(self, matching_attribute, hash_type, weights_method, bands_number=5, signature_size=50):
         self.matching_attribute = matching_attribute
-        self.hash_type = hash_type #'tokens', 'shingles', 'exact'
+        self.hash_type = hash_type #[tokens], [shingles, shingle_size], [exact]
         self.weights_method = weights_method # 'normal', 'frequency', 'weighted'
         self.bands_number = bands_number
-        self.shingle_size = shingle_size
         self.signature_size = signature_size
 """
 class scenario_params:
@@ -27,7 +26,6 @@ class scenario_params:
     def __init__(self, df_size):
         pass
 """
-
 
 #creating shingles_dict
 def create_hashes(docs, hash_type, weights_method):
@@ -64,7 +62,7 @@ def create_hashes(docs, hash_type, weights_method):
                 if weights_method == 'weighted':
                     continue
                     #hash_weights_dict.setdefault(shingle, []).append(word_index + 1)
-#how the row above???
+    #how the row above???
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
     return hash_weights_dict, hashes_set, hashes_dict
@@ -169,6 +167,8 @@ def create_df_with_attributes(matches,df):
 
 def minhash(df, parameters):
     docs = df[parameters.matching_attribute] #which column to use for minhash
+    docs = docs.dropna()
+
     start_time = time.time()
     print("Started creating hashes...")
     hash_weights_dict, hashes_set, hashes_dict = create_hashes(docs, parameters.hash_type, parameters.weights_method)
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     ps3 = minhash_params('name_clean', ['tokens'], 'frequency')
     ps4 = minhash_params('name_clean', ['shingles', 3], 'normal')
     ps5 = minhash_params('name_clean', ['shingles', 3], 'frequency')
-    ps6 = minhash_params('street_clean', ['shingles', 3], 'normal', signature_size=30)
+    ps6 = minhash_params('url_clean', ['shingles', 3], 'normal')
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     start_time = time.time()

@@ -8,9 +8,6 @@ class TestDfPreparation:
 	df_result = pd.DataFrame(columns=['name'])
 
 def test_df_prepare():
-#	R = []
-#	t = TestDfPreparation()
-#	t.df_input.append(pd.Series(['lo.***l', 'lol', 'lol'], index=['name']))
 	df_input = pd.DataFrame(np.array([['Lt.** *D'], [' ltd''//@'], ['%  '], ['#NAME?'], ['LTD ']]),columns=['name'])
 	df_output = pd.DataFrame(np.array([['LT D'], ['LTD'], ['LTD']]),columns=['name_clean'])
 	r = main.df_prepare(df_input)
@@ -134,46 +131,6 @@ def test_shingles_weights_new():
 	for i in range(len(R)):
 		print(main.create_shingles_weights_new(R[i]))
 
-def test_set():
-	shingles_list = set()
-	shingles = ['de','de']
-	for shingle in shingles:
-		shingles_list.add(shingle)
-	print(shingles_list)
-
-def test_lists_append():
-	shingles_frequency = [0]*6
-	shingles = [1, 2, 5]
-
-	for shingle in shingles:
-		shingles_frequency[shingle] += 1
-		print(shingles_frequency)
-
-def test_lists_append():
-	shingles_set = set()
-	shingles = ['de', 'en', 'en']
-
-	for shingle in shingles:
-		shingles_set.add(shingle)
-
-	shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
-	print(shingles_set)
-	print(shingles_dict)
-	print(len(shingles_set))
-	print(len(shingles))
-
-	shingles_frequency = [0]*(len(shingles_dict))
-
-	for shingle in shingles:
-		shingles_frequency[shingles_dict[shingle]] += 1
-		print(shingles_frequency)
-
-def test_df():
-	signatures = np.zeros((2, 3))
-	print(signatures)
-	for signature in signatures:
-		print(signature)
-
 
 import main
 
@@ -185,5 +142,3 @@ import main
 #test_shingles_dict()
 test_shingles_doc()
 #test_df_prepare()
-#test_lists_append()
-#test_df()

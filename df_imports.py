@@ -9,6 +9,7 @@ def df_prepare(df):
     :return: df with cleaned names
     '''
     df = df.apply(lambda x: x.astype(str).str.upper())
+    #should fix it - to apply above function only to _clean columns
     df['name_clean'] = df['name'].apply(lambda x: x.replace(';', ''))
     df = df.drop(df[df['name_clean'] == '#NAME?'].index, inplace=False)
     df['name_clean'] = df['name_clean'].apply(lambda x: x.replace('.', ''))
@@ -16,25 +17,33 @@ def df_prepare(df):
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
     df['name_clean'] = df['name_clean'].str.strip()
     df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
+    df['name_clean'] = df['name_clean'].replace('NAN', np.nan)
 
     df['country_clean'] = df['country'].apply(lambda x: x.replace('.', ''))
     df['country_clean'] = df['country_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['country_clean'] = df['country_clean'].str.replace(' +', ' ')
     df['country_clean'] = df['country_clean'].str.strip()
+    df['country_clean'] = df['country_clean'].replace('NAN', np.nan)
 
     df['city_clean'] = df['city'].apply(lambda x: x.replace('.', ''))
     df['city_clean'] = df['city_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['city_clean'] = df['city_clean'].str.replace(' +', ' ')
     df['city_clean'] = df['city_clean'].str.strip()
+    df['city_clean'] = df['city_clean'].replace('NAN', np.nan)
 
     df['street_clean'] = df['street'].apply(lambda x: x.replace('.', ''))
     df['street_clean'] = df['street_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['street_clean'] = df['street_clean'].str.replace(' +', ' ')
     df['street_clean'] = df['street_clean'].str.strip()
+    df['street_clean'] = df['street_clean'].replace('NAN', np.nan)
+
+    df['url_clean'] = df['url'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['url_clean'] = df['url_clean'].str.replace(' +', ' ')
+    df['url_clean'] = df['url_clean'].str.strip()
+    df['url_clean'] = df['url_clean'].replace('NAN', np.nan)
 
 #    df = df.dropna()
-    df.dropna(subset=['name_clean'])
-
+    df = df.dropna(subset=['name_clean'])
     print(df)
 
     return df
@@ -96,7 +105,9 @@ def df_import():
     del df_4
 
     wordbook_name_5 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-belgium.csv"
-    df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
+    #test mode:
+    df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False, nrows=10)
+    #df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
     df_5 = df_5.rename(columns={"name;;": "name"})
     df_5['country'] = 'belgium'
     df_5['city'] = np.nan
@@ -109,7 +120,9 @@ def df_import():
     del df_5
 
     wordbook_name_6 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-france.csv"
-    df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
+    #test mode:
+    df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False, nrows=10)
+    #df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
     df_6 = df_6.rename(columns={"name;": "name"})
     df_6['country'] = 'france'
     df_6['city'] = np.nan
@@ -122,7 +135,9 @@ def df_import():
     del df_6
 
     wordbook_name_7 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-germany.csv"
-    df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
+    #test mode:
+    df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False, nrows=10)
+    #df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
     df_7 = df_7.rename(columns={"name;": "name"})
     df_7['country'] = 'germany'
     df_7['city'] = np.nan
@@ -135,7 +150,9 @@ def df_import():
     del df_7
 
     wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
-    df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
+    #test mode:
+    df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False, nrows=10)
+    #df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
     df_8 = df_8.rename(columns={"name;;": "name"})
     df_8['country'] = 'united kingdom'
     df_8['city'] = np.nan
