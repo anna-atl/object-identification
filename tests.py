@@ -7,6 +7,7 @@ class TestDfPreparation:
 	df_output = pd.DataFrame(columns=['name'])
 	df_result = pd.DataFrame(columns=['name'])
 
+
 def test_df_prepare():
 	df_input = pd.DataFrame(np.array([['Lt.** *D'], [' ltd''//@'], ['%  '], ['#NAME?'], ['LTD ']]),columns=['name'])
 	df_output = pd.DataFrame(np.array([['LT D'], ['LTD'], ['LTD']]),columns=['name_clean'])

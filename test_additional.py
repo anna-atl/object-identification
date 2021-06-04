@@ -1,6 +1,13 @@
 import pandas as pd
 import numpy as np
 
+def test_nan():
+	wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
+	# test mode:
+	df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False, nrows=10)
+	df_8['city'] = np.nan
+	print(df_8.dtypes)
+
 def test_set():
 	shingles_list = set()
 	shingles = ['de','de']
@@ -53,4 +60,4 @@ def test_df():
 #    df_2['zip'] = np.nan
 
 #test_lists_append()
-test_df()
+test_nan()

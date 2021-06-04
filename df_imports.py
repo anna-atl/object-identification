@@ -59,8 +59,8 @@ def df_import():
     # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
     #test mode:
-    df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep=';', error_bad_lines=False, nrows=10)
-    #df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False) #error_bad_lines=False skips bad data
+    #df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep=';', error_bad_lines=False, nrows=10)
+    df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False) #error_bad_lines=False skips bad data
     df_1 = df_1[['name', 'country', 'city', 'zip', 'street', 'url']]
     df_1['datasource'] = 'rna'
     df = df_1

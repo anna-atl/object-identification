@@ -150,7 +150,7 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, weights_method, hash
     return matched_pairs
 
 #generate df with all potential matches
-def create_df_with_attributes(matches,df):
+def create_df_with_attributes(matches,df,docs_mapping):
     print("Started adding matches attributes...")
     df_matches = pd.DataFrame.from_dict(matches, orient='index')
     df_matches['matches_tuple'] = df_matches.index
@@ -158,17 +158,19 @@ def create_df_with_attributes(matches,df):
     df_matches = df_matches.drop(['matches_tuple'], axis=1)
     df_matches = df_matches.reset_index(drop=True)
     df['index'] = df.index
+    df_mapped = pd.merge(df, docs_mapping,  how='left', left_on=['index'], right_on=['old_index'])
 
-    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on = ['index'])
+    df_matches_full = pd.merge(df_matches, df_mapped,  how='left', left_on=['doc_1'], right_on=['new_index'])
     df_matches_full = df_matches_full.drop(['index'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on = ['index'])
+#    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
+    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, df_mapped,  how='left', left_on=['doc_2'], right_on=['new_index'])
     df_matches_full = df_matches_full.drop(['index'], axis=1)
+#    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
+    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
     return df_matches_full
 
-def minhash(df, parameters):
-    docs = df[parameters.matching_attribute] #which column to use for minhash
-    docs = docs.dropna()
-
+def minhash(docs, parameters):
     start_time = time.time()
     print("Started creating hashes...")
     hash_weights_dict, hashes_set, hashes_dict = create_hashes(docs, parameters.hash_type, parameters.weights_method)
@@ -198,14 +200,15 @@ def minhash(df, parameters):
     return matched_pairs
 
 if __name__ == "__main__":
-    datasets_size = [1000000]
+    datasets_size = [100000]
 
-    ps1 = minhash_params('name_clean', ['tokens'], 'weighted')
+    ps1 = [minhash_params('name_clean', ['tokens'], 'weighted')]
     ps2 = minhash_params('name_clean', ['tokens'], 'normal')
     ps3 = minhash_params('name_clean', ['tokens'], 'frequency')
     ps4 = minhash_params('name_clean', ['shingles', 3], 'normal')
     ps5 = minhash_params('name_clean', ['shingles', 3], 'frequency')
-    ps6 = minhash_params('url_clean', ['shingles', 3], 'normal')
+    ps6 = [minhash_params('url_clean', ['shingles', 3], 'normal')]
+    ps7 = [minhash_params('name_clean', ['tokens'], 'weighted'), minhash_params('url_clean', ['shingles', 3], 'normal')]
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     start_time = time.time()
@@ -213,13 +216,24 @@ if __name__ == "__main__":
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     for n in datasets_size:
-        start_time = time.time()
-        print('Started MinHash with the dataset (%s size):' % n)
-        matched_pairs = minhash(df.head(n), ps6)
-        print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
+        for attribute in ps6:
+            #    docs_with_na = df[parameters.matching_attribute] #which column to use for minhash
+            docs = df[attribute.matching_attribute]
+            docs = docs.dropna()  # create a mapping df with old index and new index
 
-        df_matches_full = create_df_with_attributes(matched_pairs, df)
-        df_matches_full.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
+            start_time = time.time()
+            print('Started MinHash for the {} with the dataset ({} size):'.format(attribute.matching_attribute, n))
+            matched_pairs = minhash(docs.head(n), attribute)
+            print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
+
+            docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]))
+            docs_mapping = docs_mapping.dropna()  # create a mapping df with old index and new index
+            docs_mapping['old_index'] = docs_mapping.index
+            docs_mapping = docs_mapping.reset_index(drop=True)
+            docs_mapping['new_index'] = docs_mapping.index
+
+            df_matches_full = create_df_with_attributes(matched_pairs, df, docs_mapping)
+            df_matches_full.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
 
     '''
         time_spent.append(a)
