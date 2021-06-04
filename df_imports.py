@@ -39,11 +39,15 @@ def df_prepare(df):
 
     df['url_clean'] = df['url'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['url_clean'] = df['url_clean'].str.replace(' +', ' ')
+    df['url_clean'] = df['url_clean'].str.replace('WWW ', '')
+    df['url_clean'] = df['url_clean'].str.replace('HTTP ', '')
+    df['url_clean'] = df['url_clean'].str.replace('HTTPS ', '')
     df['url_clean'] = df['url_clean'].str.strip()
     df['url_clean'] = df['url_clean'].replace('NAN', np.nan)
+    df = df.sort_values(by=['url_clean'])
 
-#    df = df.dropna()
-    df = df.dropna(subset=['name_clean'])
+    #    df = df.dropna()
+#    df = df.dropna(subset=['name_clean'])
     print(df)
 
     return df
