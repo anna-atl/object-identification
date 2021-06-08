@@ -6,6 +6,7 @@ import collections
 #import binascii
 import datetime
 import df_imports
+from functools import reduce
 
 import random
 pd.set_option('display.max_columns', None)
@@ -150,24 +151,28 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, weights_method, hash
     return matched_pairs
 
 #generate df with all potential matches
-def create_df_with_attributes(matches,df,docs_mapping):
+def create_df_with_attributes(df_matches, df):
     print("Started adding matches attributes...")
-    df_matches = pd.DataFrame.from_dict(matches, orient='index')
-    df_matches['matches_tuple'] = df_matches.index
-    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
-    df_matches = df_matches.drop(['matches_tuple'], axis=1)
-    df_matches = df_matches.reset_index(drop=True)
+#    df_matches = pd.DataFrame.from_dict(matches, orient='index')
+ #   df_matches['matches_tuple'] = df_matches.index
+#    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+#    df_matches = df_matches.drop(['matches_tuple'], axis=1)
+#    df_matches = df_matches.reset_index(drop=True)
     df['index'] = df.index
-    df_mapped = pd.merge(df, docs_mapping,  how='left', left_on=['index'], right_on=['old_index'])
+#    df_mapped = pd.merge(df, docs_mapping,  how='left', left_on=['index'], right_on=['old_index'])
+    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['old_index_x'], right_on = ['index'])
+    df_matches_full = df_matches_full.drop(['index'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['old_index_y'], right_on = ['index'])
+    df_matches_full = df_matches_full.drop(['index'], axis=1)
 
-    df_matches_full = pd.merge(df_matches, df_mapped,  how='left', left_on=['doc_1'], right_on=['new_index'])
-    df_matches_full = df_matches_full.drop(['index'], axis=1)
+#    df_matches_full = pd.merge(df_matches, df_mapped,  how='left', left_on=['doc_1'], right_on=['new_index'])
+#    df_matches_full = df_matches_full.drop(['index'], axis=1)
 #    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
-    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df_mapped,  how='left', left_on=['doc_2'], right_on=['new_index'])
-    df_matches_full = df_matches_full.drop(['index'], axis=1)
+#    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
+#    df_matches_full = pd.merge(df_matches_full, df_mapped,  how='left', left_on=['doc_2'], right_on=['new_index'])
+#    df_matches_full = df_matches_full.drop(['index'], axis=1)
 #    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
-    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
+#    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
     return df_matches_full
 
 def minhash(docs, parameters):
@@ -196,8 +201,14 @@ def minhash(docs, parameters):
     matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, parameters.weights_method, hash_weights_list)
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
 
-    print(matched_pairs)
-    return matched_pairs
+    df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
+    df_matches['matches_tuple'] = df_matches.index
+    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+    df_matches = df_matches.drop(['matches_tuple'], axis=1)
+    df_matches = df_matches.reset_index(drop=True)
+
+    print(df_matches)
+    return df_matches
 
 if __name__ == "__main__":
     datasets_size = [100000]
@@ -211,29 +222,43 @@ if __name__ == "__main__":
     ps7 = [minhash_params('name_clean', ['tokens'], 'weighted'), minhash_params('url_clean', ['shingles', 3], 'normal')]
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
+    matches_dfs = []
+
     start_time = time.time()
     df = df_imports.df_import()
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     for n in datasets_size:
-        for attribute in ps6:
+        for attribute in ps7:
             #    docs_with_na = df[parameters.matching_attribute] #which column to use for minhash
             docs = df[attribute.matching_attribute]
-            docs = docs.dropna()  # create a mapping df with old index and new index
+            docs = docs.dropna()
 
             start_time = time.time()
             print('Started MinHash for the {} with the dataset ({} size):'.format(attribute.matching_attribute, n))
-            matched_pairs = minhash(docs.head(n), attribute)
+            df_matches = minhash(docs.head(n), attribute)
             print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
 
             docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]))
-            docs_mapping = docs_mapping.dropna()  # create a mapping df with old index and new index
+            docs_mapping = docs_mapping.dropna()
             docs_mapping['old_index'] = docs_mapping.index
             docs_mapping = docs_mapping.reset_index(drop=True)
             docs_mapping['new_index'] = docs_mapping.index
 
-            df_matches_full = create_df_with_attributes(matched_pairs, df, docs_mapping)
-            df_matches_full.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
+            df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
+            df_matches_full = df_matches_full.drop(['new_index'], axis=1)
+            df_matches_full = df_matches_full.drop(['doc_1'], axis=1)
+            df_matches_full = df_matches_full.drop(['0_y'], axis=1)
+            df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
+            df_matches_full = df_matches_full.drop(['new_index'], axis=1)
+            df_matches_full = df_matches_full.drop(['doc_2'], axis=1)
+#            df_matches_full = df_matches_full.drop(['0'], axis=1)
+            matches_dfs.append(df_matches_full)
+
+        df_matches_all = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['old_index_x', 'old_index_y']), matches_dfs)
+
+        df_matches_all = create_df_with_attributes(df_matches_all, df)
+        df_matches_all.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
 
     '''
         time_spent.append(a)
