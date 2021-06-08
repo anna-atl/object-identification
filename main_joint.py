@@ -207,7 +207,7 @@ def minhash(docs, parameters):
     df_matches = df_matches.drop(['matches_tuple'], axis=1)
     df_matches = df_matches.reset_index(drop=True)
 
-    print(df_matches)
+#    print(df_matches)
     return df_matches
 
 if __name__ == "__main__":
@@ -229,15 +229,17 @@ if __name__ == "__main__":
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     for n in datasets_size:
+        start_time_all = time.time()
+        print('Started overall matching for the dataset ({} size):'.format(len(df.head(n))))
         for attribute in ps7:
             #    docs_with_na = df[parameters.matching_attribute] #which column to use for minhash
             docs = df[attribute.matching_attribute]
             docs = docs.dropna()
 
             start_time = time.time()
-            print('Started MinHash for the {} with the dataset ({} size):'.format(attribute.matching_attribute, n))
+            print('Started MinHash for the {} attribute:'.format(attribute.matching_attribute))
             df_matches = minhash(docs.head(n), attribute)
-            print("MinHash algorithm took --- %s seconds ---" % (time.time() - start_time))
+            print("MinHash algorithm took for the {} attribute with {} size --- {} seconds ---".format(attribute.matching_attribute, len(docs.head(n)), time.time() - start_time))
 
             docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]))
             docs_mapping = docs_mapping.dropna()
@@ -254,20 +256,10 @@ if __name__ == "__main__":
             df_matches_full = df_matches_full.drop(['doc_2'], axis=1)
 #            df_matches_full = df_matches_full.drop(['0'], axis=1)
             matches_dfs.append(df_matches_full)
-
+        print("The whole matching algorithm took --- %s seconds ---" % (time.time() - start_time_all))
         df_matches_all = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['old_index_x', 'old_index_y']), matches_dfs)
 
         df_matches_all = create_df_with_attributes(df_matches_all, df)
-        df_matches_all.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
+#        df_matches_all.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
 
-    '''
-        time_spent.append(a)
-        df_matches_outputs.append(df_matches_full)
-        print("Whole algorithm took --- %s seconds ---" % (time.time() - start_time))
-
-
-    for a, n in zip(time_spent, datasets_size):
-        print('for {} dataset size it took {} seconds'.format(n, a))
-
-    '''
     print('end')

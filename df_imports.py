@@ -48,8 +48,7 @@ def df_prepare(df):
 
     #    df = df.dropna()
 #    df = df.dropna(subset=['name_clean'])
-    print(df)
-
+#    print(df)
     return df
 
 def df_import():
@@ -171,6 +170,6 @@ def df_import():
     df = df_prepare(df)
     df = df.sort_values(by=['name'])
     df = df.reset_index(drop=True)
-    print(df)
-    print(df.dtypes)
+#    print(df)
+#    print(df.dtypes)
     return df
