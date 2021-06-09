@@ -46,8 +46,7 @@ def df_prepare(df):
     df['url_clean'] = df['url_clean'].replace('NAN', np.nan)
     df = df.sort_values(by=['url_clean'])
 
-    #    df = df.dropna()
-#    df = df.dropna(subset=['name_clean'])
+    df = df.dropna()
 #    print(df)
     return df
 
@@ -60,6 +59,7 @@ def df_import():
 
     # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
+    print('Started to import from', wordbook_name_1)
     #test mode:
     #df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep=';', error_bad_lines=False, nrows=10)
     df_1 = pd.read_csv(wordbook_name_1, encoding='latin-1', sep = ';', error_bad_lines=False) #error_bad_lines=False skips bad data
@@ -69,6 +69,7 @@ def df_import():
     del df_1
 
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
+    print('Started to import from', wordbook_name_2)
     #test mode:
     #df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False, nrows=10)
     df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
@@ -82,6 +83,7 @@ def df_import():
     del df_2
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
+    print('Started to import from', wordbook_name_3)
     #test mode:
     #df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False, nrows=10)
     df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
@@ -95,7 +97,9 @@ def df_import():
     df = df.append(df_3)
     del df_3
 
+    ''' this dataset is temporarly not used because of it's size
     wordbook_name_4 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
+    print('Started to import from', wordbook_name_4)
     #test mode:
     #df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False, nrows=10)
     df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False)
@@ -105,8 +109,10 @@ def df_import():
     df_4['datasource'] = 'basiccomp'
     df = df.append(df_4)
     del df_4
+    '''
 
     wordbook_name_5 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-belgium.csv"
+    print('Started to import from', wordbook_name_5)
     #test mode:
     #df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False, nrows=10)
     df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
@@ -122,6 +128,7 @@ def df_import():
     del df_5
 
     wordbook_name_6 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-france.csv"
+    print('Started to import from', wordbook_name_6)
     #test mode:
     #df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False, nrows=10)
     df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
@@ -137,6 +144,7 @@ def df_import():
     del df_6
 
     wordbook_name_7 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-germany.csv"
+    print('Started to import from', wordbook_name_7)
     #test mode:
     #df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False, nrows=10)
     df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
@@ -152,6 +160,7 @@ def df_import():
     del df_7
 
     wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
+    print('Started to import from', wordbook_name_8)
     #test mode:
     #df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False, nrows=10)
     df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
@@ -166,6 +175,7 @@ def df_import():
     df = df.append(df_8)
     del df_8
 
+    print('Started cleaning up the input data')
     df = df_prepare(df)
     df = df.sort_values(by=['name'])
     df = df.reset_index(drop=True)

@@ -3,11 +3,9 @@ import time
 import numpy as np
 import string
 import collections
-#import binascii
 import datetime
 import df_imports
 from functools import reduce
-
 import random
 pd.set_option('display.max_columns', None)
 
@@ -192,7 +190,7 @@ def minhash(docs, parameters):
     return df_matches
 
 if __name__ == "__main__":
-    datasets_size = [100000]
+    datasets_size = [1000000]
 
     ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
         , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
