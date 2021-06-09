@@ -11,22 +11,19 @@ from functools import reduce
 import random
 pd.set_option('display.max_columns', None)
 
-class minhash_params:
-    def __init__(self, matching_attribute, hash_type, weights_method, bands_number=5, signature_size=50):
+class normal_matching_params:
+    def __init__(self, matching_attribute, attribute_weight, matching_method):
         self.matching_attribute = matching_attribute
-        self.hash_type = hash_type #[tokens], [shingles, shingle_size], [exact]
-        self.weights_method = weights_method # 'normal', 'frequency', 'weighted'
+        self.matching_method = matching_method
+
+class minhash_matching_params:
+    def __init__(self, matching_attribute, attribute_weight, hash_type, weights_method, bands_number=5, signature_size=50):
+        self.matching_attribute = matching_attribute
+        self.attribute_weight = attribute_weight
+        self.hash_type = hash_type#[tokens], [shingles, shingle_size], [exact]
+        self.weights_method = weights_method# 'normal', 'frequency', 'weighted'
         self.bands_number = bands_number
         self.signature_size = signature_size
-"""
-class scenario_params:
-    df_size = 1000
-    time_spent = 1
-    df_matches_output =
-
-    def __init__(self, df_size):
-        pass
-"""
 
 #creating shingles_dict
 def create_hashes(docs, hash_type, weights_method):
@@ -153,26 +150,11 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, weights_method, hash
 #generate df with all potential matches
 def create_df_with_attributes(df_matches, df):
     print("Started adding matches attributes...")
-#    df_matches = pd.DataFrame.from_dict(matches, orient='index')
- #   df_matches['matches_tuple'] = df_matches.index
-#    df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
-#    df_matches = df_matches.drop(['matches_tuple'], axis=1)
-#    df_matches = df_matches.reset_index(drop=True)
     df['index'] = df.index
-#    df_mapped = pd.merge(df, docs_mapping,  how='left', left_on=['index'], right_on=['old_index'])
-    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['old_index_x'], right_on = ['index'])
+    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on = ['index'])
     df_matches_full = df_matches_full.drop(['index'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['old_index_y'], right_on = ['index'])
+    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on = ['index'])
     df_matches_full = df_matches_full.drop(['index'], axis=1)
-
-#    df_matches_full = pd.merge(df_matches, df_mapped,  how='left', left_on=['doc_1'], right_on=['new_index'])
-#    df_matches_full = df_matches_full.drop(['index'], axis=1)
-#    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
-#    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
-#    df_matches_full = pd.merge(df_matches_full, df_mapped,  how='left', left_on=['doc_2'], right_on=['new_index'])
-#    df_matches_full = df_matches_full.drop(['index'], axis=1)
-#    df_matches_full = df_matches_full.drop(['old_index'], axis=1)
-#    df_matches_full = df_matches_full.drop(['new_index'], axis=1)
     return df_matches_full
 
 def minhash(docs, parameters):
@@ -201,65 +183,79 @@ def minhash(docs, parameters):
     matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, parameters.weights_method, hash_weights_list)
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
 
-    df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
+    df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=['match_score_{}'.format(parameters.matching_attribute)]) #oriend='index' for making keys as rows, not columns
     df_matches['matches_tuple'] = df_matches.index
     df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
     df_matches = df_matches.drop(['matches_tuple'], axis=1)
     df_matches = df_matches.reset_index(drop=True)
 
-#    print(df_matches)
     return df_matches
 
 if __name__ == "__main__":
     datasets_size = [100000]
 
-    ps1 = [minhash_params('name_clean', ['tokens'], 'weighted')]
-    ps2 = minhash_params('name_clean', ['tokens'], 'normal')
-    ps3 = minhash_params('name_clean', ['tokens'], 'frequency')
-    ps4 = minhash_params('name_clean', ['shingles', 3], 'normal')
-    ps5 = minhash_params('name_clean', ['shingles', 3], 'frequency')
-    ps6 = [minhash_params('url_clean', ['shingles', 3], 'normal')]
-    ps7 = [minhash_params('name_clean', ['tokens'], 'weighted'), minhash_params('url_clean', ['shingles', 3], 'normal')]
+    ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
+        , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
+        , normal_matching_params('country_clean', 0.3, 'exact')
+        , normal_matching_params('zip', 0.6, 'exact')
+        , normal_matching_params('city_clean', 0.4, 'exact')
+        , normal_matching_params('street_clean', 0.8, 'exact')]
+
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     matches_dfs = []
 
     start_time = time.time()
+    print('Started downloading datasets')
     df = df_imports.df_import()
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     for n in datasets_size:
         start_time_all = time.time()
         print('Started overall matching for the dataset ({} size):'.format(len(df.head(n))))
-        for attribute in ps7:
-            #    docs_with_na = df[parameters.matching_attribute] #which column to use for minhash
+        for attribute in ps1:
             docs = df[attribute.matching_attribute]
             docs = docs.dropna()
 
-            start_time = time.time()
-            print('Started MinHash for the {} attribute:'.format(attribute.matching_attribute))
-            df_matches = minhash(docs.head(n), attribute)
-            print("MinHash algorithm took for the {} attribute with {} size --- {} seconds ---".format(attribute.matching_attribute, len(docs.head(n)), time.time() - start_time))
+            if type(attribute) == minhash_matching_params:
+                docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]), columns=['attribute'])
+                docs_mapping = docs_mapping.dropna()
+                docs_mapping['old_index'] = docs_mapping.index
+                docs_mapping = docs_mapping.reset_index(drop=True)
+                docs_mapping['new_index'] = docs_mapping.index
+                docs_mapping = docs_mapping.drop(['attribute'], axis=1)
 
-            docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]))
-            docs_mapping = docs_mapping.dropna()
-            docs_mapping['old_index'] = docs_mapping.index
-            docs_mapping = docs_mapping.reset_index(drop=True)
-            docs_mapping['new_index'] = docs_mapping.index
+                start_time = time.time()
+                print('Started MinHash for the {} attribute:'.format(attribute.matching_attribute))
+                df_matches = minhash(docs.head(n), attribute)
+                print("MinHash algorithm took for the {} attribute with {} size --- {} seconds ---".format(attribute.matching_attribute, len(docs.head(n)), time.time() - start_time))
 
-            df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
-            df_matches_full = df_matches_full.drop(['new_index'], axis=1)
-            df_matches_full = df_matches_full.drop(['doc_1'], axis=1)
-            df_matches_full = df_matches_full.drop(['0_y'], axis=1)
-            df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
-            df_matches_full = df_matches_full.drop(['new_index'], axis=1)
-            df_matches_full = df_matches_full.drop(['doc_2'], axis=1)
-#            df_matches_full = df_matches_full.drop(['0'], axis=1)
-            matches_dfs.append(df_matches_full)
-        print("The whole matching algorithm took --- %s seconds ---" % (time.time() - start_time_all))
-        df_matches_all = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['old_index_x', 'old_index_y']), matches_dfs)
+                df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
+                df_matches_full = df_matches_full.drop(['new_index', 'doc_1'], axis=1)
+                df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
+                df_matches_full = df_matches_full.drop(['new_index', 'doc_2'], axis=1)
+                df_matches_full = df_matches_full.rename(columns={'old_index_x': 'doc_1', 'old_index_y': 'doc_2'}, inplace=False)
 
-        df_matches_all = create_df_with_attributes(df_matches_all, df)
-#        df_matches_all.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
+                matches_dfs.append(df_matches_full)
+            else:
+                continue
+
+        print("The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(len(df.head(n)), time.time() - start_time_all))
+
+        df_all_matches = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['doc_1', 'doc_2']), matches_dfs)
+
+        df_all_matches['match_score'] = 0
+
+        for attribute in ps1:
+            try:
+                df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)
+                df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*attribute.attribute_weight
+            except:
+                'No matches for the {} attribute'.format(attribute.matching_attribute)
+
+        df_all_matches = create_df_with_attributes(df_all_matches, df)
+        df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
+
+        df_all_matches.to_csv("df_matches_full_{}_{}.csv".format(n, str(datetime.datetime.now())))
 
     print('end')

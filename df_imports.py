@@ -57,7 +57,6 @@ def df_import():
     and merges all dfs together
     :return: merged df with columns name and datasource
     '''
-    print('Started downloading datasets')
 
     # import FR data (adjustments for delimeters and encoding - latin)
     wordbook_name_1 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/processed_files/france_rna_processed.csv"
@@ -71,8 +70,8 @@ def df_import():
 
     wordbook_name_2 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/companies_sorted.csv"
     #test mode:
-    df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False, nrows=10)
-    #df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
+    #df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False, nrows=10)
+    df_2 = pd.read_csv(wordbook_name_2, error_bad_lines=False)
     df_2 = df_2.rename(columns={'CompanyName': 'name', 'domain': 'url'})
     df_2['city'] = np.nan #should be changed to location
     df_2['zip'] = np.nan
@@ -84,8 +83,8 @@ def df_import():
 
     wordbook_name_3 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-austria.csv"
     #test mode:
-    df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False, nrows=10)
     #df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False, nrows=10)
+    df_3 = pd.read_csv(wordbook_name_3, error_bad_lines=False)
     df_3['country'] = 'austria'
     df_3['city'] = np.nan
     df_3['zip'] = np.nan
@@ -98,8 +97,8 @@ def df_import():
 
     wordbook_name_4 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/BasicCompanyDataAsOneFile-2021-02-01.csv"
     #test mode:
-    df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False, nrows=10)
-    #df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False)
+    #df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False, nrows=10)
+    df_4 = pd.read_csv(wordbook_name_4, error_bad_lines=False)
     df_4 = df_4.rename(columns={'CompanyName': 'name', 'RegAddress.AddressLine1': 'street', 'RegAddress.PostCode': 'zip', 'RegAddress.PostTown': 'city', 'CountryOfOrigin': 'country'})
     df_4['url'] = np.nan
     df_4 = df_4[['name', 'country', 'city', 'zip', 'street', 'url']]
@@ -109,8 +108,8 @@ def df_import():
 
     wordbook_name_5 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-belgium.csv"
     #test mode:
-    df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False, nrows=10)
-    #df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
+    #df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False, nrows=10)
+    df_5 = pd.read_csv(wordbook_name_5, error_bad_lines=False)
     df_5 = df_5.rename(columns={"name;;": "name"})
     df_5['country'] = 'belgium'
     df_5['city'] = np.nan
@@ -124,8 +123,8 @@ def df_import():
 
     wordbook_name_6 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-france.csv"
     #test mode:
-    df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False, nrows=10)
-    #df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
+    #df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False, nrows=10)
+    df_6 = pd.read_csv(wordbook_name_6, error_bad_lines=False)
     df_6 = df_6.rename(columns={"name;": "name"})
     df_6['country'] = 'france'
     df_6['city'] = np.nan
@@ -139,8 +138,8 @@ def df_import():
 
     wordbook_name_7 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-germany.csv"
     #test mode:
-    df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False, nrows=10)
-    #df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
+    #df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False, nrows=10)
+    df_7 = pd.read_csv(wordbook_name_7, error_bad_lines=False)
     df_7 = df_7.rename(columns={"name;": "name"})
     df_7['country'] = 'germany'
     df_7['city'] = np.nan
@@ -154,8 +153,8 @@ def df_import():
 
     wordbook_name_8 = "~/Dropbox/Botva/TUM/Master_Thesis/datasets/raw_files/list-of-companies-in-united-kingdom.csv"
     #test mode:
-    df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False, nrows=10)
-    #df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
+    #df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False, nrows=10)
+    df_8 = pd.read_csv(wordbook_name_8, error_bad_lines=False)
     df_8 = df_8.rename(columns={"name;;": "name"})
     df_8['country'] = 'united kingdom'
     df_8['city'] = np.nan
