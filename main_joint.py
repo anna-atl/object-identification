@@ -191,22 +191,27 @@ def minhash(docs, parameters):
 
 if __name__ == "__main__":
     dataset_size = 1000000
-
+    '''
     ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
         , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
         , normal_matching_params('country_clean', 0.3, 'exact')
         , normal_matching_params('zip', 0.6, 'exact')
         , normal_matching_params('city_clean', 0.4, 'exact')
         , normal_matching_params('street_clean', 0.8, 'exact')]
+    '''
+    ps1 = [minhash_matching_params('name_clean', 1, ['shingles', 3], 'normal')]
 
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
     matches_dfs = []
 
     start_time = time.time()
+    print('------------------------------------------------')
     print('Started downloading datasets')
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
+    print('------------------------------------------------')
+    print('')
 
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(len(df)))

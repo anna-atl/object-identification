@@ -20,25 +20,25 @@ def df_prepare(df):
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
     df['name_clean'] = df['name_clean'].str.strip()
     df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
-    df['name_clean'] = df['name_clean'].replace('NAN', np.nan)
+    df['name_clean'] = df['name_clean'].replace('NONE', np.nan)
 
     df['country_clean'] = df['country'].apply(lambda x: x.replace('.', ''))
     df['country_clean'] = df['country_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['country_clean'] = df['country_clean'].str.replace(' +', ' ')
     df['country_clean'] = df['country_clean'].str.strip()
-    df['country_clean'] = df['country_clean'].replace('NAN', np.nan)
+    df['country_clean'] = df['country_clean'].replace('NONE', np.nan)
 
     df['city_clean'] = df['city'].apply(lambda x: x.replace('.', ''))
     df['city_clean'] = df['city_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['city_clean'] = df['city_clean'].str.replace(' +', ' ')
     df['city_clean'] = df['city_clean'].str.strip()
-    df['city_clean'] = df['city_clean'].replace('NAN', np.nan)
+    df['city_clean'] = df['city_clean'].replace('NONE', np.nan)
 
     df['street_clean'] = df['street'].apply(lambda x: x.replace('.', ''))
     df['street_clean'] = df['street_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['street_clean'] = df['street_clean'].str.replace(' +', ' ')
     df['street_clean'] = df['street_clean'].str.strip()
-    df['street_clean'] = df['street_clean'].replace('NAN', np.nan)
+    df['street_clean'] = df['street_clean'].replace('NONE', np.nan)
 
     df['url_clean'] = df['url'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['url_clean'] = df['url_clean'].str.replace(' +', ' ')
@@ -46,8 +46,9 @@ def df_prepare(df):
     df['url_clean'] = df['url_clean'].str.replace('HTTP ', '')
     df['url_clean'] = df['url_clean'].str.replace('HTTPS ', '')
     df['url_clean'] = df['url_clean'].str.strip()
-    df['url_clean'] = df['url_clean'].replace('NAN', np.nan)
+    df['url_clean'] = df['url_clean'].replace('NONE', np.nan)
 
+#    df = df.dropna(how='all')
     df = df.dropna()
     return df
 
@@ -56,7 +57,7 @@ def df_import(dataset_size):
 
     # create a database connection
     conn = sqlite3.connect(database)
-    df = pd.read_sql_query("SELECT * FROM companies LIMIT (?)", conn, params=(dataset_size,))
+    df = pd.read_sql_query("SELECT * FROM companies ORDER BY name DESC LIMIT (?)", conn, params=(dataset_size,))
 
     df = df_prepare(df)
     df = df.reset_index(drop=True)
