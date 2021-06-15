@@ -1,6 +1,52 @@
 #add other attributes here
 import pandas as pd
 import numpy as np
+import sqlite3
+from sqlite3 import Error
+
+def create_connection(db_file):
+    """ create a database connection to the SQLite database
+        specified by the db_file
+    :param db_file: database file
+    :return: Connection object or None
+    """
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+    except Error as e:
+        print(e)
+
+    return conn
+
+def select_all_comps(conn):
+    """
+    Query all rows in the tasks table
+    :param conn: the Connection object
+    :return:
+    """
+#    cur = conn.cursor()
+#    cur.execute("SELECT * FROM companies LIMIT 100")
+#    rows = cur.fetchall()
+
+    df = pd.read_sql_query("SELECT * FROM companies LIMIT 100", conn)
+#    conn.close()
+
+    return df
+#    rows = cur.fetchall()
+
+#    for row in rows:
+#        print(row)
+
+def df_import():
+    database = "/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/datasets/companies.db"
+
+    # create a database connection
+#    conn = create_connection(database)
+    conn = sqlite3.connect(database)
+    with conn:
+        print("Query all tasks")
+        df = select_all_comps(conn)
+    print(df)
 
 def df_prepare(df):
     '''
@@ -44,13 +90,12 @@ def df_prepare(df):
     df['url_clean'] = df['url_clean'].str.replace('HTTPS ', '')
     df['url_clean'] = df['url_clean'].str.strip()
     df['url_clean'] = df['url_clean'].replace('NAN', np.nan)
-    df = df.sort_values(by=['url_clean'])
 
     df = df.dropna()
 #    print(df)
     return df
 
-def df_import():
+def df_import_old():
     '''
     This function imports all dfs, keeps only comp names, created datasource column with datasource file info
     and merges all dfs together
@@ -177,7 +222,6 @@ def df_import():
 
     print('Started cleaning up the input data')
     df = df_prepare(df)
-    df = df.sort_values(by=['name'])
     df = df.reset_index(drop=True)
 #    print(df)
 #    print(df.dtypes)
