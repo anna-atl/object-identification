@@ -189,8 +189,9 @@ def minhash(docs, parameters):
 
     return df_matches
 
-if __name__ == "__main__":
-    dataset_size = 1000000
+#if __name__ == "__main__":
+
+def main(dataset_size, scenario, threshold):
     '''
     ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
         , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
@@ -199,7 +200,6 @@ if __name__ == "__main__":
         , normal_matching_params('city_clean', 0.4, 'exact')
         , normal_matching_params('street_clean', 0.8, 'exact')]
     '''
-    ps1 = [minhash_matching_params('name_clean', 1, ['shingles', 3], 'normal')]
 
 #    print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
 
@@ -215,10 +215,11 @@ if __name__ == "__main__":
 
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(len(df)))
-    for attribute in ps1:
+    for attribute in scenario:
         docs = df[attribute.matching_attribute]
         docs = docs.dropna()
 
+        #should be fixed
         if type(attribute) == minhash_matching_params:
             docs_mapping = pd.DataFrame(np.array(df[attribute.matching_attribute]), columns=['attribute'])
             docs_mapping = docs_mapping.dropna()
@@ -252,7 +253,7 @@ if __name__ == "__main__":
 
     df_all_matches['match_score'] = 0
 
-    for attribute in ps1:
+    for attribute in scenario:
         try:
             df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)
             df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*attribute.attribute_weight
@@ -262,6 +263,8 @@ if __name__ == "__main__":
     df_all_matches = create_df_with_attributes(df_all_matches, df)
     df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
 
-    df_all_matches.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
+    df_all_matches = df_all_matches[df_all_matches.match_score > threshold]
+#    df_all_matches.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
+    return df_all_matches
 
 print('end')

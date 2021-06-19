@@ -28,11 +28,23 @@ def df_prepare(df):
     df['country_clean'] = df['country_clean'].str.strip()
     df['country_clean'] = df['country_clean'].replace('NONE', np.nan)
 
+    df['state_clean'] = df['state'].apply(lambda x: x.replace('.', ''))
+    df['state_clean'] = df['state_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['state_clean'] = df['state_clean'].str.replace(' +', ' ')
+    df['state_clean'] = df['state_clean'].str.strip()
+    df['state_clean'] = df['state_clean'].replace('NONE', np.nan)
+
     df['city_clean'] = df['city'].apply(lambda x: x.replace('.', ''))
     df['city_clean'] = df['city_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['city_clean'] = df['city_clean'].str.replace(' +', ' ')
     df['city_clean'] = df['city_clean'].str.strip()
     df['city_clean'] = df['city_clean'].replace('NONE', np.nan)
+
+    df['zip_clean'] = df['zip'].apply(lambda x: x.replace('.', ''))
+    df['zip_clean'] = df['zip_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['zip_clean'] = df['zip_clean'].str.replace(' +', ' ')
+    df['zip_clean'] = df['zip_clean'].str.strip()
+    df['zip_clean'] = df['zip_clean'].replace('NONE', np.nan)
 
     df['street_clean'] = df['street'].apply(lambda x: x.replace('.', ''))
     df['street_clean'] = df['street_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
@@ -48,8 +60,15 @@ def df_prepare(df):
     df['url_clean'] = df['url_clean'].str.strip()
     df['url_clean'] = df['url_clean'].replace('NONE', np.nan)
 
-#    df = df.dropna(how='all')
-    df = df.dropna()
+    df['industry_clean'] = df['industry'].apply(lambda x: x.replace('.', ''))
+    df['industry_clean'] = df['industry_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
+    df['industry_clean'] = df['industry_clean'].str.replace(' +', ' ')
+    df['industry_clean'] = df['industry_clean'].str.strip()
+    df['industry_clean'] = df['industry_clean'].replace('NONE', np.nan)
+
+    #df = df.dropna(subset=['name_clean', 'url_clean'])
+    df = df.dropna(how='all')
+#    df = df.dropna()
     return df
 
 def df_import(dataset_size):
@@ -57,7 +76,9 @@ def df_import(dataset_size):
 
     # create a database connection
     conn = sqlite3.connect(database)
-    df = pd.read_sql_query("SELECT * FROM companies ORDER BY name DESC LIMIT (?)", conn, params=(dataset_size,))
+    #labeled data mode
+    #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size,))
+    df = pd.read_sql_query("SELECT * FROM companies LIMIT (?)", conn, params=(dataset_size,))
 
     df = df_prepare(df)
     df = df.reset_index(drop=True)

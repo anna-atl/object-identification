@@ -132,7 +132,6 @@ def test_shingles_weights_new():
 	for i in range(len(R)):
 		print(main.create_shingles_weights_new(R[i]))
 
-
 import main
 
 #test_jaccard()
