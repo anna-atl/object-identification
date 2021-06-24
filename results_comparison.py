@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import main_joint
 import time
 import datetime
@@ -67,10 +68,24 @@ if __name__ == "__main__":
                                             minhash_matching_params(matching_attribute, hash_type, hash_weight, shingle_size = k)]
                                         df_all_matches, all_time = main_joint.main(dataset_size, threshold,
                                                                                    matching_method, matching_params)
+                                        '''
                                         df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left',
                                                                    left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
                                         df_matches_estimation = df_matches_estimation.drop(['id_x_x', 'id_x_y', 'id_y_x', 'id_y_y'], axis=1)
+                                        '''
+                                        #test_mode
+                                        df_matches_estimation = df_all_matches
+                                        df_matches_estimation['is_duplicate'] = 0
 
+                                        #labeled_matches_count = df_matches_estimation['is_duplicate'].notna().sum()
+                                        labeled_matches_count = df_matches_estimation['is_duplicate'].count()
+                                        #true_positive = df_matches_estimation['is_duplicate'].sum()
+                                        false_positive = df_matches_estimation['is_duplicate'].sum()
+
+                                        true_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 2].count()
+                                        false_positive = df_matches_estimation['is_duplicate'].loc[(df_matches_estimation['is_duplicate'] == 0) | (df_matches_estimation['is_duplicate'] == 1)].count()
+
+                                        df_matches_estimation
                                         #matches_dfs.append(df_all_matches)
                                         experiment = {'dataset_size': dataset_size,
                                                       'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
