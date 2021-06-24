@@ -26,6 +26,47 @@ def import_labeled_data():
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']]
     return df_labeled_data
 
+def add_results_estimation(df_all_matches, df_labeled_data):
+    labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
+    labeled_negative = df_labeled_data['is_duplicate'].loc[
+        (df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1)].count()
+    labeled_matches_count = df_labeled_data['is_duplicate'].count()
+
+    df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left',
+                                     left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
+    df_matches_estimation = df_matches_estimation.drop(['id_x_x', 'id_x_y', 'id_y_x', 'id_y_y'], axis=1)
+
+    # test_mode
+    # df_matches_estimation = df_all_matches
+    # df_matches_estimation['is_duplicate'] = 0
+
+    matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
+    true_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 2].count()
+    false_positive = df_matches_estimation['is_duplicate'].loc[
+        (df_matches_estimation['is_duplicate'] == 0) | (df_matches_estimation['is_duplicate'] == 1)].count()
+
+    false_negative = labeled_positive - true_positive
+    true_negative = labeled_negative - false_positive
+
+    # matches_dfs.append(df_all_matches)
+    experiment = {'dataset_size': dataset_size,
+                  'matching_attribute': matching_params[0].matching_attribute,  # [0]should be fixed
+                  'threshold': threshold,
+                  'matching_method': matching_method,
+                  'hash_type': matching_params[0].hash_type,
+                  'shingles_size': matching_params[0].shingle_size,
+                  'hash_weight': matching_params[0].hash_weight,
+                  'total_time': all_time,
+                  'number_of_matches': len(df_all_matches),
+                  # 'minhash_time', 'sign_creation_time',
+                  'false_pos_rate': false_positive / (false_positive + true_negative),
+                  'false_neg_rate': false_negative / (false_negative + true_positive),
+                  'true_pos_rate': true_positive / (true_positive + false_negative),
+                  'true_neg_rate': true_negative / (true_negative + false_positive)
+                  }
+    df_results = df_results.append(experiment, ignore_index=True)
+
+
 if __name__ == "__main__":
     #test_mode
     #dataset_sizes = [100]
@@ -46,7 +87,9 @@ if __name__ == "__main__":
     shingle_sizes = [2, 3]
 
     column_names = ['dataset_size', 'matching_attribute', 'threshold', 'matching_method', 'hash_type', 'shingles_size',
-                    'hash_weight', 'total_time', 'number_of_matches', 'minhash_time', 'sign_creation_time', 'false_pos_rate']
+                    'hash_weight', 'total_time', 'number_of_matches', 'minhash_time', 'sign_creation_time', 'false_pos_rate',
+                    'false_neg_rate', 'true_pos_rate', 'true_neg_rate'
+                    ]
     df_results = pd.DataFrame(columns=column_names)
 
     #ps1 = [minhash_matching_params('name_clean', 1, ['shingles', 3], 'normal')]
@@ -68,24 +111,22 @@ if __name__ == "__main__":
                                             minhash_matching_params(matching_attribute, hash_type, hash_weight, shingle_size = k)]
                                         df_all_matches, all_time = main_joint.main(dataset_size, threshold,
                                                                                    matching_method, matching_params)
-                                        '''
+
                                         df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left',
                                                                    left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
                                         df_matches_estimation = df_matches_estimation.drop(['id_x_x', 'id_x_y', 'id_y_x', 'id_y_y'], axis=1)
-                                        '''
+
                                         #test_mode
-                                        df_matches_estimation = df_all_matches
-                                        df_matches_estimation['is_duplicate'] = 0
+                                        #df_matches_estimation = df_all_matches
+                                        #df_matches_estimation['is_duplicate'] = 0
 
-                                        #labeled_matches_count = df_matches_estimation['is_duplicate'].notna().sum()
-                                        labeled_matches_count = df_matches_estimation['is_duplicate'].count()
-                                        #true_positive = df_matches_estimation['is_duplicate'].sum()
-                                        false_positive = df_matches_estimation['is_duplicate'].sum()
-
+                                        matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
                                         true_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 2].count()
                                         false_positive = df_matches_estimation['is_duplicate'].loc[(df_matches_estimation['is_duplicate'] == 0) | (df_matches_estimation['is_duplicate'] == 1)].count()
 
-                                        df_matches_estimation
+                                        false_negative = labeled_positive - true_positive
+                                        true_negative = labeled_negative - false_positive
+
                                         #matches_dfs.append(df_all_matches)
                                         experiment = {'dataset_size': dataset_size,
                                                       'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
@@ -95,26 +136,57 @@ if __name__ == "__main__":
                                                       'shingles_size': matching_params[0].shingle_size,
                                                       'hash_weight': matching_params[0].hash_weight,
                                                       'total_time': all_time,
-                                                      'number_of_matches': len(df_all_matches)
-                                                      # 'minhash_time', 'sign_creation_time', 'false_pos_rate'
+                                                      'number_of_matches': len(df_all_matches),
+                                                      # 'minhash_time', 'sign_creation_time',
+                                                      'false_pos_rate': false_positive/(false_positive + true_negative),
+                                                      'false_neg_rate': false_negative/(false_negative + true_positive),
+                                                      'true_pos_rate': true_positive/(true_positive + false_negative),
+                                                      'true_neg_rate': true_negative/(true_negative + false_positive)
                                                       }
                                         df_results = df_results.append(experiment, ignore_index=True)
                                 elif hash_type == 'token':
                                     matching_params = [minhash_matching_params(matching_attribute, hash_type, hash_weight)]
                                     df_all_matches, all_time = main_joint.main(dataset_size, threshold, matching_method, matching_params)
-                                    #matches_dfs.append(df_all_matches)
+
+                                    df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left',
+                                                                     left_on=['doc_1', 'doc_2'],
+                                                                     right_on=['id_x', 'id_y'])
+                                    df_matches_estimation = df_matches_estimation.drop(
+                                        ['id_x_x', 'id_x_y', 'id_y_x', 'id_y_y'], axis=1)
+
+                                    # test_mode
+                                    # df_matches_estimation = df_all_matches
+                                    # df_matches_estimation['is_duplicate'] = 0
+
+                                    matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
+                                    true_positive = df_matches_estimation['is_duplicate'].loc[
+                                        df_matches_estimation['is_duplicate'] == 2].count()
+                                    false_positive = df_matches_estimation['is_duplicate'].loc[
+                                        (df_matches_estimation['is_duplicate'] == 0) | (
+                                                    df_matches_estimation['is_duplicate'] == 1)].count()
+
+                                    false_negative = labeled_positive - true_positive
+                                    true_negative = labeled_negative - false_positive
+
+                                    # matches_dfs.append(df_all_matches)
                                     experiment = {'dataset_size': dataset_size,
-                                                  'matching_attribute': matching_params[0].matching_attribute,#[0]should be fixed
+                                                  'matching_attribute': matching_params[0].matching_attribute,
+                                                  # [0]should be fixed
                                                   'threshold': threshold,
                                                   'matching_method': matching_method,
                                                   'hash_type': matching_params[0].hash_type,
                                                   'shingles_size': matching_params[0].shingle_size,
                                                   'hash_weight': matching_params[0].hash_weight,
                                                   'total_time': all_time,
-                                                  'number_of_matches': len(df_all_matches)
-                                                  # 'minhash_time', 'sign_creation_time', 'false_pos_rate'
+                                                  'number_of_matches': len(df_all_matches),
+                                                  # 'minhash_time', 'sign_creation_time',
+                                                  'false_pos_rate': false_positive / (false_positive + true_negative),
+                                                  'false_neg_rate': false_negative / (false_negative + true_positive),
+                                                  'true_pos_rate': true_positive / (true_positive + false_negative),
+                                                  'true_neg_rate': true_negative / (true_negative + false_positive)
                                                   }
                                     df_results = df_results.append(experiment, ignore_index=True)
+
                             else: continue
     df_results.to_csv("df_results_{}.csv".format(str(datetime.datetime.now())))
 
