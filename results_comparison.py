@@ -5,19 +5,21 @@ import time
 import datetime
 
 class normal_matching_params:
-    def __init__(self, matching_attribute, matching_method, attribute_weight=1):
+    def __init__(self, matching_attribute, matching_method, attribute_threshold, attribute_weight=1):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method#jaccard etc?
+        self.attribute_threshold = attribute_threshold
         self.attribute_weight = attribute_weight
 
-class minhash_matching_params:
-    def __init__(self, matching_attribute, hash_type, hash_weight, matching_method='minhash', attribute_weight=1, shingle_size=2, bands_number=5, signature_size=50):
+class matching_params:
+    def __init__(self, matching_attribute, attribute_threshold, matching_method='minhash', hash_type = 'none', hash_weight = '', attribute_weight=1, shingle_size=2, bands_number=5, signature_size=50):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
         self.attribute_weight = attribute_weight
         self.hash_type = hash_type# token, shingle
         self.shingle_size = shingle_size# 1,2
         self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
+        self.attribute_threshold = attribute_threshold
         self.bands_number = bands_number
         self.signature_size = signature_size
 
@@ -57,32 +59,41 @@ def finding_best_methods_for_atts():
     iterating through all matching methods for attributes for finding the best methods for each attribute
     '''
     #test_mode
-    #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
+    #dataset_sizes = [100, 1000, 10000]
+
     #matching_attributes = ['name_clean']
     matching_attributes = ['name_clean', 'url_clean']
+
     attribute_weights = [1]
-    thresholds = [0.5]
-    #thresholds = [0.5, 0.7, 0.9]
+
+    attribute_thresholds = [0.5]
+
     #matching_methods = ['minhash', 'fuzzy', 'exact']
     matching_methods = ['minhash']
-    #hash_types = ['token', 'shingle']
+
     hash_types = ['token']
+    #hash_types = ['token', 'shingle']
+
     hash_weights = ['weighted']
     #hash_weights = ['normal', 'frequency', 'weighted']
-    #shingle_sizes = [2, 3, 4]
-    shingle_sizes = [2, 3]
 
-    column_names = ['dataset_size', 'matching_attribute', 'attribute_weights', 'threshold', 'matching_method', 'hash_type', 'shingles_size',
+    #shingle_sizes = [2, 3, 4]
+    shingle_sizes = [2, 3, 4]
+
+    column_names = ['dataset_size', 'matching_attribute', 'attribute_weights', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
                     'hash_weight', 'signature_size', 'bands_number',
                     'total_time', 'number_of_matches', 'minhash_time', 'sign_creation_time', 'false_pos_rate',
-                    'false_neg_rate', 'true_pos_rate', 'true_neg_rate'
-                    ]
+                    'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
+
     df_results = pd.DataFrame(columns=column_names)
+
+    df_labeled_data = import_labeled_data()
+
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for attribute_weight in attribute_weights:
-                for threshold in thresholds:
+                for attribute_threshold in attribute_thresholds:
                     for matching_method in matching_methods:
                         if matching_params[0].matching_method == 'minhash':
                             for hash_type in hash_types:
@@ -90,11 +101,11 @@ def finding_best_methods_for_atts():
                                     if hash_type == 'shingle':
                                         for k in shingle_sizes:
                                             matching_params = [minhash_matching_params(matching_attribute, hash_type, hash_weight, shingle_size=k)]
-                                            df_all_matches, all_time = main_joint.main(dataset_size, threshold, matching_method, matching_params)
+                                            df_all_matches, all_time = main_joint.main(dataset_size, attribute_threshold, matching_method, matching_params)
                                             false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_all_matches, df_labeled_data)
                                             experiment = {'dataset_size': dataset_size,
                                                           'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
-                                                          'threshold': threshold,
+                                                          'attribute_threshold': matching_params[0].attribute_threshold,
                                                           'matching_method': matching_params[0].matching_method,
                                                           'hash_type': matching_params[0].hash_type,
                                                           'shingles_size': matching_params[0].shingle_size,
@@ -113,13 +124,13 @@ def finding_best_methods_for_atts():
                                             df_results = df_results.append(experiment, ignore_index=True)
                                     elif hash_type == 'token':
                                         matching_params = [minhash_matching_params(matching_attribute, hash_type, hash_weight)]
-                                        df_all_matches, all_time = main_joint.main(dataset_size, threshold, matching_method, matching_params)
+                                        df_all_matches, all_time = main_joint.main(dataset_size, attribute_threshold, matching_method, matching_params)
 
                                         false_positive, false_negative, true_positive, true_negative = add_results_estimation(
                                             df_all_matches, df_labeled_data)
                                         experiment = {'dataset_size': dataset_size,
                                                       'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
-                                                      'threshold': threshold,
+                                                      'attribute_threshold': matching_params[0].attribute_threshold,
                                                       'matching_method': matching_params[0].matching_method,
                                                       'hash_type': matching_params[0].hash_type,
                                                       'shingles_size': matching_params[0].shingle_size,
@@ -181,8 +192,7 @@ if __name__ == "__main__":
 
     matches_dfs = []
 
-    df_labeled_data = import_labeled_data()
-
+    finding_best_methods_for_atts()
 
 
 print('end')
