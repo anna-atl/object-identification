@@ -9,9 +9,10 @@ import random
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, matching_method, attribute_weight=1, hash_type='none', hash_weight='none', shingle_size=2, bands_number=5, signature_size=50):
+    def __init__(self, matching_attribute, matching_method, hash_type='none', hash_weight='none', shingle_size=2, bands_number=5, signature_size=50, attribute_threshold=0, attribute_weight=1):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
+        self.attribute_threshold = attribute_threshold
         self.attribute_weight = attribute_weight
         self.hash_type = hash_type# token, shingle
         self.shingle_size = shingle_size# 1,2
@@ -59,7 +60,6 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
 
     return hash_weights_dict, hashes_set, hashes_dict
 
-
 #converting docs to shingles
 def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_dict, hashes_dict):
     '''
@@ -103,7 +103,10 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict):
         random.shuffle(hashes_shuffled)
         for doc_index, doc_hashed in enumerate(docs_hashed): #for iterating over indexes in list as well
             doc_a = [hashes_shuffled[i] for i in doc_hashed] # --check this-- recreating shingles list of a doc with randomization
-            signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
+            try:
+                signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
+            except:
+                print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
     return signatures
 
 def create_buckets(signatures, bands_number):
@@ -129,7 +132,10 @@ def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not coun
     if hash_weight == 'normal':
         return len(intersection)/len(union)
     else:
-        return sum([hash_weights_list[i] for i in intersection])/sum([hash_weights_list[i] for i in union])
+        try:
+            return sum([hash_weights_list[i] for i in intersection])/sum([hash_weights_list[i] for i in union])
+        except:
+            print('didnt work for list1 {}, list2 {}, hash_weight {}, hash_weights_list {}'.format(list1, list2, hash_weight, hash_weights_list))
 
 def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_weights_list):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
@@ -241,7 +247,7 @@ def main(df, dataset_size, matching_attributes):
             df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)
             df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*attribute.attribute_weight
         except:
-            'No matches for the {} attribute'.format(attribute.matching_attribute)
+            print('No matches for the {} attribute'.format(attribute.matching_attribute))
 
     df_all_matches = create_df_with_attributes(df_all_matches, df)
     df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
