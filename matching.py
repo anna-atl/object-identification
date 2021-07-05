@@ -197,6 +197,11 @@ def main(df, dataset_size, matching_attributes):
 
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(len(df)))
+
+    #fix this!!!!
+    #df = df.dropna(subset=[matching_attributes[0].matching_attribute])
+    df = df.head(dataset_size)
+
     for attribute in matching_attributes:
         docs = df[attribute.matching_attribute]
         docs = docs.dropna()

@@ -13,10 +13,10 @@ def df_prepare(df):
     '''
     #df = df.apply(lambda x: x.astype(str).str.upper())
     str_columns = ['name', 'country', 'state', 'city', 'zip', 'street', 'url', 'industry']
-    df[str_columns] = df[str_columns].astype(str)
+    df[str_columns] = df[str_columns].apply(lambda x: x.astype(str).str.upper())
     #should fix it - to apply above function only to _clean columns
     df['name_clean'] = df['name'].apply(lambda x: x.replace(';', ''))
-    #df['name_clean'] = df['name_clean'].apply(lambda x: x.astype(str).str.upper())
+    #df['name_clean'] = df['name_clean'].apply(lambda x: x.upper())
     df = df.drop(df[df['name_clean'] == '#NAME?'].index, inplace=False)
     df['name_clean'] = df['name_clean'].apply(lambda x: x.replace('.', ''))
     df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
@@ -76,7 +76,7 @@ def df_prepare(df):
     df['industry_clean'] = df['industry_clean'].str.strip()
     df['industry_clean'] = df['industry_clean'].replace('NONE', np.nan)
 
-    #df = df.dropna(subset=['name_clean', 'url_clean'])
+    #df = df.dropna(subset=['url_clean'])
     df = df.dropna(how='all')
 #    df = df.dropna()
     return df

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import main_joint
+import matching
 import df_imports
 import time
 import datetime
@@ -42,7 +42,7 @@ def finding_best_methods_for_atts(df):
     iterating through all matching methods for attributes for finding the best methods for each attribute
     '''
     #test_mode
-    dataset_sizes = [1000]
+    dataset_sizes = [100000]
     #dataset_sizes = [100, 1000, 10000]
 
     #matching_attributes = ['name_clean']
@@ -99,7 +99,7 @@ def finding_best_methods_for_atts(df):
                                     for signature_size in signature_sizes:
                                         matching_params = [attribute_matching_params(matching_attribute, matching_method, attribute_weight, hash_type, hash_weight, shingle_size, bands_number, signature_size)]
 
-                                        df_all_matches, all_time = main_joint.main(df, dataset_size, matching_params)
+                                        df_all_matches, all_time = matching.main(df, dataset_size, matching_params)
 
                                         df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
 
@@ -109,7 +109,7 @@ def finding_best_methods_for_atts(df):
 
                                             experiment = {'dataset_size': dataset_size,
                                                               'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
-                                                              'attribute_threshold': matching_params[0].attribute_threshold,
+                                                              'attribute_threshold': attribute_threshold,
                                                               'matching_method': matching_params[0].matching_method,
                                                               'hash_type': matching_params[0].hash_type,
                                                               'shingles_size': matching_params[0].shingle_size,
@@ -166,7 +166,7 @@ def finding_best_combinations():
 '''
 
 if __name__ == "__main__":
-    dataset_size = 100000
+    dataset_size = 1000000
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
