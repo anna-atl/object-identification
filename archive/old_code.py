@@ -1,3 +1,14 @@
+docs = df[attribute.matching_attribute]
+docs = docs.dropna()
+
+docs_mapping = df[['id', attribute.matching_attribute]]
+docs_mapping = docs_mapping.dropna()
+docs_mapping['old_index'] = docs_mapping['id']
+docs_mapping = docs_mapping.dropna(subset=[attribute.matching_attribute])
+docs_mapping = docs_mapping.reset_index(drop=True)
+docs_mapping['new_index'] = docs_mapping.index
+docs_mapping = docs_mapping.drop(['url_clean'], axis=1)
+
 
 def df_import_old():
     '''
