@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import main_joint
+import df_imports
 import time
 import datetime
 
@@ -36,7 +37,7 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
 def experiments_performance():
     return 0
 
-def finding_best_methods_for_atts():
+def finding_best_methods_for_atts(df):
     '''
     iterating through all matching methods for attributes for finding the best methods for each attribute
     '''
@@ -98,7 +99,7 @@ def finding_best_methods_for_atts():
                                     for signature_size in signature_sizes:
                                         matching_params = [attribute_matching_params(matching_attribute, matching_method, attribute_weight, hash_type, hash_weight, shingle_size, bands_number, signature_size)]
 
-                                        df_all_matches, all_time = main_joint.main(dataset_size, matching_params)
+                                        df_all_matches, all_time = main_joint.main(df, dataset_size, matching_params)
 
                                         df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
 
@@ -165,10 +166,18 @@ def finding_best_combinations():
 '''
 
 if __name__ == "__main__":
+    dataset_size = 100000
+    start_time = time.time()
+    print('------------------------------------------------')
+    print('Started downloading datasets')
+    df = df_imports.df_import(dataset_size)
+    print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
+    print('------------------------------------------------')
+    print('')
 
     matches_dfs = []
 
-    finding_best_methods_for_atts()
+    finding_best_methods_for_atts(df)
 
 
 print('end')

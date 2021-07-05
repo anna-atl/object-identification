@@ -4,19 +4,12 @@ import numpy as np
 import string
 import collections
 import datetime
-import df_imports
 from functools import reduce
 import random
 pd.set_option('display.max_columns', None)
 
-class normal_matching_params:
-    def __init__(self, matching_attribute, attribute_weight, matching_method):
-        self.matching_attribute = matching_attribute
-        self.matching_method = matching_method#jaccard etc?
-        self.attribute_weight = attribute_weight
-
-class minhash_matching_params:
-    def __init__(self, matching_attribute, hash_type, hash_weight, matching_method='minhash', attribute_weight=1, shingle_size=0, bands_number=5, signature_size=50):
+class attribute_matching_params:
+    def __init__(self, matching_attribute, matching_method, attribute_weight=1, hash_type='none', hash_weight='none', shingle_size=2, bands_number=5, signature_size=50):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
         self.attribute_weight = attribute_weight
@@ -199,31 +192,12 @@ def minhash(docs, parameters):
 
 #if __name__ == "__main__":
 
-def main(dataset_size, threshold, matching_method, scenario):
-    '''
-    ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
-        , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
-        , normal_matching_params('country_clean', 0.3, 'exact')
-        , normal_matching_params('zip', 0.6, 'exact')
-        , normal_matching_params('city_clean', 0.4, 'exact')
-        , normal_matching_params('street_clean', 0.8, 'exact')]
-    '''
-
-    #print(ps1.matching_attribute, ps1.split_method, ps1.weights_method, ps1.shingle_size, ps1.signature_size)
-
+def main(df, dataset_size, matching_attributes):
     matches_dfs = []
-
-    start_time = time.time()
-    print('------------------------------------------------')
-    print('Started downloading datasets')
-    df = df_imports.df_import(dataset_size)
-    print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
-    print('------------------------------------------------')
-    print('')
 
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(len(df)))
-    for attribute in scenario:
+    for attribute in matching_attributes:
         docs = df[attribute.matching_attribute]
         docs = docs.dropna()
 
@@ -236,6 +210,7 @@ def main(dataset_size, threshold, matching_method, scenario):
 
         start_time = time.time()
         print('------------------------------------------------')
+
         if attribute.matching_method == 'minhash':
             print('Started MinHash for the {} attribute:'.format(attribute.matching_attribute))
             df_matches = minhash(docs, attribute)
@@ -249,14 +224,14 @@ def main(dataset_size, threshold, matching_method, scenario):
             matches_dfs.append(df_matches_full)
         else:
             continue
-        print("Matching algorithm took for the {} attribute with {} size --- {} seconds ---".format(attribute.matching_attribute, len(docs), time.time() - start_time))
+        print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))
         print('------------------------------------------------')
 
     df_all_matches = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['doc_1', 'doc_2']), matches_dfs)
 
     df_all_matches['match_score'] = 0
 
-    for attribute in scenario:
+    for attribute in matching_attributes:
         try:
             df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)
             df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*attribute.attribute_weight
@@ -266,7 +241,6 @@ def main(dataset_size, threshold, matching_method, scenario):
     df_all_matches = create_df_with_attributes(df_all_matches, df)
     df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
 
-    df_all_matches = df_all_matches[df_all_matches.match_score > threshold]
     print('')
     print('------------------------------------------------')
     all_time = time.time() - start_time_all
