@@ -52,16 +52,15 @@ def add_results_estimation(df_all_matches, df_labeled_data):
 
     return false_positive, false_negative, true_positive, true_negative
 
-def all_options:
+def finding_best_methods_for_atts():
     '''
-    ALL OPTIONS MODE
-
+    iterating through all matching methods for attributes for finding the best methods for each attribute
     '''
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
-    matching_attributes = ['name_clean']
-    #matching_attributes = ['name_clean', 'url_clean']
+    #matching_attributes = ['name_clean']
+    matching_attributes = ['name_clean', 'url_clean']
     attribute_weights = [1]
     thresholds = [0.5]
     #thresholds = [0.5, 0.7, 0.9]
@@ -81,7 +80,7 @@ def all_options:
                     ]
     df_results = pd.DataFrame(columns=column_names)
     for dataset_size in dataset_sizes:
-        for matching_attributes in multiple_matching_attributes:
+        for matching_attribute in matching_attributes:
             for attribute_weight in attribute_weights:
                 for threshold in thresholds:
                     for matching_method in matching_methods:
@@ -90,7 +89,7 @@ def all_options:
                                 for hash_weight in hash_weights:
                                     if hash_type == 'shingle':
                                         for k in shingle_sizes:
-                                            matching_params = [minhash_matching_params(matching_attributes, hash_type, hash_weight, shingle_size=k)]
+                                            matching_params = [minhash_matching_params(matching_attribute, hash_type, hash_weight, shingle_size=k)]
                                             df_all_matches, all_time = main_joint.main(dataset_size, threshold, matching_method, matching_params)
                                             false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_all_matches, df_labeled_data)
                                             experiment = {'dataset_size': dataset_size,
@@ -141,26 +140,42 @@ def all_options:
     df_results.to_csv("df_results_{}.csv".format(str(datetime.datetime.now())))
     return df_results
 
-def results():
-    ps1 = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
-        , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')
-        , normal_matching_params('country_clean', 0.3, 'exact')
-        , normal_matching_params('zip', 0.6, 'exact')
-        , normal_matching_params('city_clean', 0.4, 'exact')
-        , normal_matching_params('street_clean', 0.8, 'exact')]
+def finding_best_combinations():
+    '''
+    here we should use the top matching combindations from the finding_best_methods_for_atts function
+    :return:
+    '''
+    dataset_size = [100000]
+    thresholds = [0.5, 0.6]
+    matching_params = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
+        , minhash_matching_params('url_clean', 3, ['shingles', 3], 'normal')]
 
-    dataset_sizes = [100000]
-    multiple_matching_attributes = [['name_clean'], ['name_clean', 'url_clean']]
-    attribute_weights = [1, 2, 3]
-    thresholds = [0.5, 0.7, 0.9]
-    matching_methods = ['minhash', 'fuzzy', 'exact']
-    #matching_methods = ['minhash']
-    #hash_types = ['token', 'shingle']
-    hash_types = ['token', 'shingle']
-    hash_weights = ['weighted', 'normal']
-    #hash_weights = ['normal', 'frequency', 'weighted']
-    #shingle_sizes = [2, 3, 4]
-    shingle_sizes = [2, 3]
+    df_all_matches, all_time = main_joint.main(dataset_size, threshold, matching_params)
+
+    false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_all_matches, df_labeled_data)
+
+    experiment = {'dataset_size': dataset_size,
+                  'matching_attribute': matching_params[0].matching_attribute,  # [0]should be fixed
+                  'threshold': threshold,
+                  'matching_method': matching_params[0].matching_method,
+                  'hash_type': matching_params[0].hash_type,
+                  'shingles_size': matching_params[0].shingle_size,
+                  'hash_weight': matching_params[0].hash_weight,
+                  'signature_size': matching_params[0].signature_size,
+                  'bands_number': matching_params[0].bands_number,
+                  'total_time': all_time,
+                  'number_of_matches': len(df_all_matches),  # 'minhash_time', 'sign_creation_time',
+                  'false_pos_rate': false_positive / (
+                          false_positive + true_negative),
+                  'false_neg_rate': false_negative / (
+                          false_negative + true_positive),
+                  'true_pos_rate': true_positive / (true_positive + false_negative),
+                  'true_neg_rate': true_negative / (true_negative + false_positive)
+                  }
+
+    df_results = df_results.append(experiment, ignore_index=True)
+
+
 
 if __name__ == "__main__":
 

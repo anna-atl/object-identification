@@ -13,6 +13,7 @@ class normal_matching_params:
     def __init__(self, matching_attribute, attribute_weight, matching_method):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method#jaccard etc?
+        self.attribute_weight = attribute_weight
 
 class minhash_matching_params:
     def __init__(self, matching_attribute, hash_type, hash_weight, matching_method='minhash', attribute_weight=1, shingle_size=0, bands_number=5, signature_size=50):
