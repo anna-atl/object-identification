@@ -34,7 +34,7 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
     return false_positive, false_negative, true_positive, true_negative
 
 def experiments_performance():
-    continue
+    return 0
 
 def finding_best_methods_for_atts():
     '''
@@ -80,35 +80,33 @@ def finding_best_methods_for_atts():
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for attribute_weight in attribute_weights:
-#                for attribute_threshold in attribute_thresholds:
-                    for matching_method in matching_methods:
-                        if matching_method != 'minhash':
-                            hash_types = [0]
-                            hash_weights = [0]
-                            shingle_sizes = [0]
-                            bands_numbers = [0]
-                            signature_sizes = [0]
-                        else:
-                            for hash_type in hash_types:
-                                if hash_type == 'token':
-                                    shingle_sizes = [0]
-
+                for matching_method in matching_methods:
+                    if matching_method != 'minhash':
+                        hash_types = [0]
+                        hash_weights = [0]
+                        shingle_sizes = [0]
+                        bands_numbers = [0]
+                        signature_sizes = [0]
+                    else:
                         for hash_type in hash_types:
-                            for hash_weight in hash_weights:
-                                for k in shingle_sizes:
-                                    for bands_number in bands_numbers:
-                                        for signature_size in signature_sizes:
-                                            matching_params = [attribute_matching_params(matching_attribute, matching_method, attribute_weight, hash_type, hash_weight, shingle_size=k, bands_number, signature_size)]
+                            if hash_type == 'token':
+                                shingle_sizes = [0]
+                    for hash_type in hash_types:
+                        for hash_weight in hash_weights:
+                            for shingle_size in shingle_sizes:
+                                for bands_number in bands_numbers:
+                                    for signature_size in signature_sizes:
+                                        matching_params = [attribute_matching_params(matching_attribute, matching_method, attribute_weight, hash_type, hash_weight, shingle_size, bands_number, signature_size)]
 
-                                            df_all_matches, all_time = main_joint.main(dataset_size, matching_params)
+                                        df_all_matches, all_time = main_joint.main(dataset_size, matching_params)
 
-                                            df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
+                                        df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
 
-                                            for attribute_threshold in attribute_thresholds:
-                                                false_positive, false_negative, true_positive, true_negative = add_results_estimation(
+                                        for attribute_threshold in attribute_thresholds:
+                                            false_positive, false_negative, true_positive, true_negative = add_results_estimation(
                                                     df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative, attribute_threshold)
 
-                                                experiment = {'dataset_size': dataset_size,
+                                            experiment = {'dataset_size': dataset_size,
                                                               'matching_attribute': matching_params[0].matching_attribute,# [0]should be fixed
                                                               'attribute_threshold': matching_params[0].attribute_threshold,
                                                               'matching_method': matching_params[0].matching_method,
@@ -127,16 +125,13 @@ def finding_best_methods_for_atts():
                                                               'true_neg_rate': true_negative / (true_negative + false_positive)
                                                               }
 
-                                            df_results = df_results.append(experiment, ignore_index=True)
+                                        df_results = df_results.append(experiment, ignore_index=True)
                                 #else: continue
     df_results.to_csv("df_results_{}.csv".format(str(datetime.datetime.now())))
     return df_results
-
+'''
 def finding_best_combinations():
-    '''
-    here we should use the top matching combindations from the finding_best_methods_for_atts function
-    :return:
-    '''
+    #here we should use the top matching combindations from the finding_best_methods_for_atts function
     dataset_size = [100000]
     thresholds = [0.5, 0.6]
     matching_params = [minhash_matching_params('name_clean', 1, ['tokens'], 'weighted')
@@ -167,7 +162,7 @@ def finding_best_combinations():
 
     df_results = df_results.append(experiment, ignore_index=True)
 
-
+'''
 
 if __name__ == "__main__":
 
