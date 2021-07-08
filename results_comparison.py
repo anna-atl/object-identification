@@ -5,17 +5,7 @@ import df_imports
 import time
 import datetime
 from functools import reduce
-
-class attribute_matching_params:
-    def __init__(self, matching_attribute, matching_method, hash_type='none', hash_weight='none', shingle_size=0, bands_number=5, signature_size=50, attribute_threshold=0, attribute_weight=1):
-        self.matching_attribute = matching_attribute
-        self.matching_method = matching_method
-        self.attribute_threshold = attribute_threshold
-        self.hash_type = hash_type# token, shingle
-        self.shingle_size = shingle_size# 1,2
-        self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
-        self.bands_number = bands_number
-        self.signature_size = signature_size
+from matching import attribute_matching_params
 
 def import_labeled_data():
     labeled_data = "~/Dropbox/Botva/TUM/Master_Thesis/object-identification/labeled_data_2.csv"
@@ -43,7 +33,7 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
 def add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, attribute_threshold, false_positive, true_negative, true_positive, false_negative):
     experiment = {'dataset_size': dataset_size,
                   'matching_attribute': matching_params.matching_attribute,  # [0]should be fixed
-                  'attribute_weight': matching_params.attribute_weight,
+                  'attribute_weight': 1,
                   'attribute_threshold': attribute_threshold,
                   'matching_method': matching_params.matching_method,
                   'hash_type': matching_params.hash_type,
@@ -62,16 +52,13 @@ def add_experiments_params(matching_params, dataset_size, df_all_matches, all_ti
                   }
     return experiment
 
-def experiments_performance():
-    return 0
-
 def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative):
     '''
     iterating through all matching methods for attributes for finding the best methods for each attribute
     '''
     #test_mode
-    dataset_sizes = [1000000]
     #dataset_sizes = [100, 1000, 10000]
+    dataset_sizes = [1000000]
     #matching_attributes = ['name_clean']
     matching_attributes = ['url_clean', 'name_clean']
     attribute_thresholds = [0.5, 0.6, 0.7]
@@ -104,16 +91,29 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                         for shingle_size in shingle_sizes:
                             for bands_number in bands_numbers:
                                 for signature_size in signature_sizes:
-                                    matching_params = attribute_matching_params(matching_attribute, matching_method, hash_type, hash_weight, shingle_size, bands_number, signature_size)
+                                    attribute = attribute_matching_params(matching_attribute, matching_method, hash_type, hash_weight, shingle_size, bands_number, signature_size)
 
-                                    df_all_matches, all_time = matching.main(df, dataset_size, matching_params)
+                                    start_time_all = time.time()
+                                    print('Started overall matching for the dataset ({} size):'.format(dataset_size))
+                                    df_all_matches = matching.main(df, dataset_size, attribute)
+                                    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)]
+
+                                    all_time = round(time.time() - start_time_all, 6)
+                                    print('------------------------------------------------')
+                                    print('')
+                                    print(
+                                        "The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(
+                                            dataset_size, all_time))
+                                    print('------------------------------------------------')
+
+                                    print("Started adding matches attributes...")
+                                    df_all_matches = create_df_with_attributes(df_all_matches, df)
 
                                     df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
                                     for attribute_threshold in attribute_thresholds:
-                                        false_positive, false_negative, true_positive, true_negative = add_results_estimation(
-                                                    df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative)
+                                        false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative)
 
-                                        experiment = add_experiments_params(matching_params, dataset_size, df_all_matches,
+                                        experiment = add_experiments_params(attribute, dataset_size, df_all_matches,
                                                                        all_time, attribute_threshold, false_positive,
                                                                        true_negative, true_positive, false_negative)
 
@@ -123,7 +123,6 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
 #generate df with all potential matches
 def create_df_with_attributes(df_matches, df):
-    print("Started adding matches attributes...")
     #df['index'] = df.index
     df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on=['id'])
     df_matches_full = df_matches_full.drop(['id'], axis=1)
@@ -144,19 +143,27 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                                   hash_weight='frequency', shingle_size=3, attribute_threshold=0.5)]
     matches_dfs = []
 
+    start_time_all = time.time()
+    print('Started overall matching for the dataset ({} size):'.format(dataset_size))
     for attribute in matching_params:
-        df_matches_full, all_time = matching.main(df, dataset_size, attribute)
+        df_matches_full = matching.main(df, dataset_size, attribute)
         matches_dfs.append(df_matches_full)
+    print('')
+    print('------------------------------------------------')
+    all_time = round(time.time() - start_time_all, 6)
+    print("The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(dataset_size, all_time))
+    print('------------------------------------------------')
 
     df_all_matches = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['doc_1', 'doc_2']), matches_dfs)
 
+    print("Started adding matches attributes...")
     df_all_matches = create_df_with_attributes(df_all_matches, df)
     df_all_matches['match_score'] = 0
 
-    for attribute in matching_params:
-        for att1_weight in attribute_weights:
-            for att2_weight in attribute_weights:
-                if (att1_weight != att2_weight) or (att1_weight == 1 and att2_weight == 1):
+    for att1_weight in attribute_weights:
+        for att2_weight in attribute_weights:
+            if (att1_weight != att2_weight) or (att1_weight == 1 and att2_weight == 1):
+                for attribute in matching_params:
                     try:
                         df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)*att1_weight
                         df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*att2_weight
@@ -168,8 +175,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                 df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'],
                                                  right_on=['id_x', 'id_y'])
 
-                false_positive, false_negative, true_positive, true_negative = add_results_estimation(
-                    df_matches_estimation[df_matches_estimation.match_score > threshold], labeled_positive, labeled_negative)
+                false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > threshold], labeled_positive, labeled_negative)
 
                 # experiment = add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, 0.5, false_positive, true_negative, true_positive, false_negative)
 
@@ -206,7 +212,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     return df_results
 
 if __name__ == "__main__":
-    dataset_size = 1000000
+    dataset_size = 100000
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
@@ -222,8 +228,8 @@ if __name__ == "__main__":
 
     df_labeled_data, labeled_positive, labeled_negative = import_labeled_data()
 
-    df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
-    #df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+    #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+    df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
     df_results.to_csv("df_results_{}.csv".format(str(datetime.datetime.now())))
 
 print('end')

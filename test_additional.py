@@ -10,7 +10,7 @@ def test_nan():
 
 def test_set():
 	shingles_list = set()
-	shingles = ['de','de']
+	shingles = ['de', 'de']
 	for shingle in shingles:
 		shingles_list.add(shingle)
 	print(shingles_list)
