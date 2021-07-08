@@ -89,7 +89,8 @@ def df_import(dataset_size):
     #labeled data mode
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL LIMIT (?)", conn, params=(dataset_size,))
-    df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' LIMIT (?)", conn, params=(dataset_size,))
+    df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' and url IS NOT NULL LIMIT (?)", conn, params=(dataset_size,))
+    #df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' LIMIT (?)", conn, params=(dataset_size,))
 
     df = df_prepare(df)
     df = df.reset_index(drop=True)

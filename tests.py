@@ -132,13 +132,23 @@ def test_shingles_weights_new():
 	for i in range(len(R)):
 		print(main.create_shingles_weights_new(R[i]))
 
-import main
+def test_empty_dict():
+	a = {}
+	c = 3+1
+	print(c)
+	for k, v in a.items():
+		print(k, v)
+		print(a)
+		c = c+1
+		print(c)
+	return c
 
+test_empty_dict()
 #test_jaccard()
 #test_jaccard_sum()
 #test_jaccard_sum_test()
 #test_shingles_weights()
 #test_shingles_weights_new()
 #test_shingles_dict()
-test_shingles_doc()
+#test_shingles_doc()
 #test_df_prepare()
