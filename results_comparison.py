@@ -58,12 +58,12 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     '''
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
-    dataset_sizes = [1000000]
+    dataset_sizes = [100, 1000, 5000, 10000, 100000, 1000000]
     #matching_attributes = ['name_clean']
     matching_attributes = ['url_clean', 'name_clean']
     attribute_thresholds = [0.5, 0.6, 0.7]
     #matching_methods = ['minhash', 'fuzzy', 'exact']
-    matching_methods = ['minhash']
+    matching_methods = ['fuzzywuzzy']
     #hash_types = ['token']
     hash_types = ['token', 'shingle']
     #hash_weights = ['weighted']
@@ -95,6 +95,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
                                     start_time_all = time.time()
                                     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
+                                    print(attribute)
                                     df_all_matches = matching.main(df, dataset_size, attribute)
                                     df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)]
 
@@ -108,6 +109,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
                                     print("Started adding matches attributes...")
                                     df_all_matches = create_df_with_attributes(df_all_matches, df)
+                                    print("Added matches attributes...")
 
                                     df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
                                     for attribute_threshold in attribute_thresholds:
@@ -118,6 +120,11 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                                                        true_negative, true_positive, false_negative)
 
                                         df_results = df_results.append(experiment, ignore_index=True)
+                                        print('------------------------------------------------')
+                                        print('------------------------------------------------')
+
+    print('------------------------------------------------')
+    print('------------------------------------------------')
 
     return df_results
 
@@ -148,7 +155,6 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     for attribute in matching_params:
         df_matches_full = matching.main(df, dataset_size, attribute)
         matches_dfs.append(df_matches_full)
-    print('')
     print('------------------------------------------------')
     all_time = round(time.time() - start_time_all, 6)
     print("The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(dataset_size, all_time))
@@ -208,18 +214,21 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                               }
 
                 df_results = df_results.append(experiment, ignore_index=True)
+                print('------------------------------------------------')
+                print('------------------------------------------------')
+
+    print('------------------------------------------------')
+    print('------------------------------------------------')
 
     return df_results
 
 if __name__ == "__main__":
-    dataset_size = 100000
+    dataset_size = 10000
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
-    print('------------------------------------------------')
-    print('')
 
     column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'number_of_matches', 'minhash_time', 'sign_creation_time', 'false_pos_rate',

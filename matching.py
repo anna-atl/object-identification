@@ -7,6 +7,8 @@ import datetime
 from functools import reduce
 import random
 import Levenshtein
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 pd.set_option('display.max_columns', None)
 
@@ -20,6 +22,8 @@ class attribute_matching_params:
         self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
         self.bands_number = bands_number
         self.signature_size = signature_size
+    def __str__(self):
+        return "<Test a:%s b:%s, :%s, :%s, :%s, :%s, :%s, :%s>" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
 def create_shingles(doc, k):
     if len(doc) >= k:
@@ -164,13 +168,16 @@ def minhash(docs, attribute):
 
     return matched_pairs
 
-def levenstein(docs):
+def other_matching_methods(docs, matching_method):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
 
     for doc_index_1, doc1 in enumerate(docs):
         for doc_index_2, doc2 in enumerate(docs):
             if doc_index_2 > doc_index_1:
-                matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(Levenshtein.ratio(doc1, doc2))
+                if matching_method == 'levenstein':
+                    matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(Levenshtein.ratio(doc1, doc2))
+                if matching_method == 'fuzzywuzzy':
+                    matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(fuzz.ratio(doc1, doc2))
 
     return matched_pairs
 
@@ -196,8 +203,8 @@ def main(df, dataset_size, attribute):
                                                                           attribute.hash_type))
         matched_pairs = minhash(docs, attribute)
 
-    elif attribute.matching_method == 'levenstein':
-        matched_pairs = levenstein(docs)
+    else:
+        matched_pairs = other_matching_methods(docs, attribute.matching_method)
 
     if len(matched_pairs) != 0:
         df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=['match_score_{}'.format(attribute.matching_attribute)])  # oriend='index' for making keys as rows, not columns
