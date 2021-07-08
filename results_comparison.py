@@ -74,13 +74,13 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #dataset_sizes = [100, 1000, 10000]
     #matching_attributes = ['name_clean']
     matching_attributes = ['url_clean', 'name_clean']
-    attribute_thresholds = [0.5]
+    attribute_thresholds = [0.5, 0.6, 0.7]
     #matching_methods = ['minhash', 'fuzzy', 'exact']
     matching_methods = ['minhash']
     #hash_types = ['token']
     hash_types = ['token', 'shingle']
-    hash_weights = ['weighted']
-    #hash_weights = ['normal', 'frequency', 'weighted']
+    #hash_weights = ['weighted']
+    hash_weights = ['normal', 'frequency', 'weighted']
     #shingle_sizes = [2, 3, 4]
     shingle_sizes = [2, 3, 4]
     bands_numbers = [5]
@@ -104,7 +104,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                         for shingle_size in shingle_sizes:
                             for bands_number in bands_numbers:
                                 for signature_size in signature_sizes:
-                                    matching_params = [attribute_matching_params(matching_attribute, matching_method, hash_type, hash_weight, shingle_size, bands_number, signature_size)]
+                                    matching_params = attribute_matching_params(matching_attribute, matching_method, hash_type, hash_weight, shingle_size, bands_number, signature_size)
 
                                     df_all_matches, all_time = matching.main(df, dataset_size, matching_params)
 
@@ -113,7 +113,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                         false_positive, false_negative, true_positive, true_negative = add_results_estimation(
                                                     df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative)
 
-                                        experiment = add_experiments_params(matching_params[0], dataset_size, df_all_matches,
+                                        experiment = add_experiments_params(matching_params, dataset_size, df_all_matches,
                                                                        all_time, attribute_threshold, false_positive,
                                                                        true_negative, true_positive, false_negative)
 
@@ -141,7 +141,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
         attribute_matching_params(matching_attribute='name_clean', matching_method='minhash', hash_type='token',
                                   hash_weight='weighted', attribute_threshold=0.5),
         attribute_matching_params(matching_attribute='url_clean', matching_method='minhash', hash_type='shingle',
-                                  hash_weight='weighted', shingle_size=3, attribute_threshold=0.5)]
+                                  hash_weight='frequency', shingle_size=3, attribute_threshold=0.5)]
     matches_dfs = []
 
     for attribute in matching_params:

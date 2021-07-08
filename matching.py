@@ -49,12 +49,14 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
                 shingles = [doc[i:i + k] for i in range(len(doc) - k + 1)]
             else:
                 shingles = [doc + '_' * (k - len(doc))]
-            for shingle in shingles:
+            for shingle_index, shingle in enumerate(reversed(shingles)):
                 hashes_set.add(shingle)
                 if hash_weight == 'weighted':
-                    continue
-                    #hash_weights_dict.setdefault(shingle, []).append(word_index + 1)
-    #how the row above???
+                    hash_weights_dict.setdefault(shingle, []).append(shingle_index + 1)
+        if hash_weight == 'weighted':
+            avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
+            hash_weights_dict.update(avg)
+
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
     return hash_weights_dict, hashes_set, hashes_dict
@@ -85,7 +87,9 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
                 shingles = [doc + '_' * (k - len(doc))]
             for shingle in shingles:
                 doc_hashed.append(hashes_dict[shingle])
-                if hash_weight == 'frequency':
+                if hash_weight == 'weighted':
+                    hash_weights_list[hashes_dict[shingle]] = hash_weights_dict[shingle]
+                elif hash_weight == 'frequency':
                     hash_weights_list[hashes_dict[shingle]] += 1
 
     if hash_weight == 'frequency':
