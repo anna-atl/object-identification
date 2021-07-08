@@ -6,6 +6,8 @@ import collections
 import datetime
 from functools import reduce
 import random
+import Levenshtein
+
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
@@ -48,9 +50,9 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
             hashes_set.add(word)
             if hash_weight == 'weighted':
                 hash_weights_dict.setdefault(word, []).append(word_index + 1)
-        if hash_weight == 'weighted':
-            avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
-            hash_weights_dict.update(avg)
+    if hash_weight == 'weighted':
+        avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
+        hash_weights_dict.update(avg)
 
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
@@ -134,53 +136,43 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_we
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], hash_weight, hash_weights_list))
     return matched_pairs
 
-
-def minhash(docs, parameters):
+def minhash(docs, attribute):
     start_time = time.time()
     print("Started creating hashes...")
-    hash_weights_dict, hashes_dict = create_hashes(docs, parameters.hash_type, parameters.shingle_size, parameters.hash_weight)
+    hash_weights_dict, hashes_dict = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
     print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started converting docs to hashes...")
-    docs_hashed, hash_weights_list = convert_docs_to_hashes(docs, parameters.hash_type, parameters.shingle_size, parameters.hash_weight, hash_weights_dict, hashes_dict)
+    docs_hashed, hash_weights_list = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_dict, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
-
-    for doc_index, doc_hashed in enumerate(docs_hashed):
-        if len(doc_hashed) == 0:
-            print(doc_hashed)
-            print(docs[doc_index])
-            print(doc_index)
 
     start_time = time.time()
     print("Started creating signatures...")
-    signatures = create_signatures_array(docs_hashed, parameters.signature_size, hashes_dict)
+    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict)
     print("Creating signatures took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started creating buckets of potential matches...")
-    buckets_of_bands = create_buckets(signatures, parameters.bands_number)
+    buckets_of_bands = create_buckets(signatures, attribute.bands_number)
     print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
-    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, parameters.hash_weight, hash_weights_list)
+    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, attribute.hash_weight, hash_weights_list)
     print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
 
-    if len(matched_pairs) != 0:
-        df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=['match_score_{}'.format(parameters.matching_attribute)]) #oriend='index' for making keys as rows, not columns
-        df_matches['matches_tuple'] = df_matches.index
-        a = df_matches['matches_tuple'].tolist()
-        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
-        df_matches = df_matches.drop(['matches_tuple'], axis=1)
-        df_matches = df_matches.reset_index(drop=True)
-    else:
-        column_names = ['match_score_{}'.format(parameters.matching_attribute), 'doc_1', 'doc_2']
-        df_matches = pd.DataFrame(columns=column_names)
+    return matched_pairs
 
-    return df_matches
+def levenstein(docs):
+    matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
 
-#if __name__ == "__main__":
+    for doc_index_1, doc1 in enumerate(docs):
+        for doc_index_2, doc2 in enumerate(docs):
+            if doc_index_2 > doc_index_1:
+                matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(Levenshtein.ratio(doc1, doc2))
+
+    return matched_pairs
 
 def main(df, dataset_size, attribute):
     docs = df[attribute.matching_attribute]
@@ -199,14 +191,30 @@ def main(df, dataset_size, attribute):
 
     start_time = time.time()
     if attribute.matching_method == 'minhash':
-        print('Started MinHash for the {} attribute:'.format(attribute.matching_attribute))
-        df_matches = minhash(docs, attribute)
+        print('Started {} for the {} attribute with {} hash type:'.format(attribute.matching_method,
+                                                                          attribute.matching_attribute,
+                                                                          attribute.hash_type))
+        matched_pairs = minhash(docs, attribute)
 
-        df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
-        df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-        df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
-        df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-        df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
+    elif attribute.matching_method == 'levenstein':
+        matched_pairs = levenstein(docs)
+
+    if len(matched_pairs) != 0:
+        df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=['match_score_{}'.format(attribute.matching_attribute)])  # oriend='index' for making keys as rows, not columns
+        df_matches['matches_tuple'] = df_matches.index
+        a = df_matches['matches_tuple'].tolist()
+        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+        df_matches = df_matches.drop(['matches_tuple'], axis=1)
+        df_matches = df_matches.reset_index(drop=True)
+    else:
+        column_names = ['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']
+        df_matches = pd.DataFrame(columns=column_names)
+
+    df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
+    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
+    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
+    df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))

@@ -67,7 +67,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #hash_types = ['token']
     hash_types = ['token', 'shingle']
     #hash_weights = ['weighted']
-    hash_weights = ['normal', 'frequency', 'weighted']
+    hash_weights = ['weighted', 'normal', 'frequency']
     #shingle_sizes = [2, 3, 4]
     shingle_sizes = [2, 3, 4]
     bands_numbers = [5]
