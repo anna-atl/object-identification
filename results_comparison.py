@@ -11,7 +11,6 @@ class attribute_matching_params:
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
         self.attribute_threshold = attribute_threshold
-        self.attribute_weight = attribute_weight
         self.hash_type = hash_type# token, shingle
         self.shingle_size = shingle_size# 1,2
         self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
@@ -122,35 +121,76 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
     return df_results
 
+#generate df with all potential matches
+def create_df_with_attributes(df_matches, df):
+    print("Started adding matches attributes...")
+    #df['index'] = df.index
+    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on=['id'])
+    df_matches_full = df_matches_full.drop(['id'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on=['id'])
+    df_matches_full = df_matches_full.drop(['id'], axis=1)
+    return df_matches_full
+
 def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative):
     #here we should use the top matching combindations from the finding_best_methods_for_atts function
     dataset_size = 1000000
     threshold = 0
     attribute_weights = [1, 2, 3]
 
-    for att1_weight in attribute_weights:
-        for att2_weight in attribute_weights:
-            if (att1_weight != att2_weight) or (att1_weight == 1 and att2_weight == 1):
-                matching_params = [attribute_matching_params(matching_attribute='name_clean', matching_method='minhash', hash_type='token', hash_weight='weighted', attribute_threshold=0.5, attribute_weight=att1_weight),
-                    attribute_matching_params(matching_attribute='url_clean', matching_method='minhash', hash_type='shingle', hash_weight='weighted', shingle_size=3, attribute_threshold=0.5, attribute_weight=att2_weight)]
+    matching_params = [
+        attribute_matching_params(matching_attribute='name_clean', matching_method='minhash', hash_type='token',
+                                  hash_weight='weighted', attribute_threshold=0.5),
+        attribute_matching_params(matching_attribute='url_clean', matching_method='minhash', hash_type='shingle',
+                                  hash_weight='weighted', shingle_size=3, attribute_threshold=0.5)]
+    matches_dfs = []
 
-                df_all_matches, all_time = matching.main(df, dataset_size, matching_params)
+    for attribute in matching_params:
+        df_matches_full, all_time = matching.main(df, dataset_size, attribute)
+        matches_dfs.append(df_matches_full)
+
+    df_all_matches = reduce(lambda df1, df2: pd.merge(df1, df2, how='outer', on=['doc_1', 'doc_2']), matches_dfs)
+
+    df_all_matches = create_df_with_attributes(df_all_matches, df)
+    df_all_matches['match_score'] = 0
+
+    for attribute in matching_params:
+        for att1_weight in attribute_weights:
+            for att2_weight in attribute_weights:
+                if (att1_weight != att2_weight) or (att1_weight == 1 and att2_weight == 1):
+                    try:
+                        df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0)*att1_weight
+                        df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches['match_score_{}'.format(attribute.matching_attribute)]*att2_weight
+                    except:
+                        print('No matches for the {} attribute'.format(attribute.matching_attribute))
+
+                df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
+
                 df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'],
                                                  right_on=['id_x', 'id_y'])
-                false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > threshold], labeled_positive, labeled_negative)
 
-                #experiment = add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, 0.5, false_positive, true_negative, true_positive, false_negative)
+                false_positive, false_negative, true_positive, true_negative = add_results_estimation(
+                    df_matches_estimation[df_matches_estimation.match_score > threshold], labeled_positive, labeled_negative)
+
+                # experiment = add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, 0.5, false_positive, true_negative, true_positive, false_negative)
 
                 experiment = {'dataset_size': dataset_size,
-                              'matching_attribute': str(reduce(lambda x, y: x.matching_attribute+"-"+y.matching_attribute, matching_params)),
-                              'attribute_weight': str(reduce(lambda x, y: str(x.attribute_weight)+"-"+str(y.attribute_weight), matching_params)),
-                              'attribute_threshold': str(reduce(lambda x, y: str(x.attribute_threshold)+"-"+str(y.attribute_threshold), matching_params)),
-                              'matching_method': str(reduce(lambda x, y: x.matching_method+"-"+y.matching_method, matching_params)),
-                              'hash_type': str(reduce(lambda x, y: x.hash_type+"-"+y.hash_type, matching_params)),
-                              'shingles_size': str(reduce(lambda x, y: str(x.shingle_size)+"-"+str(y.shingle_size), matching_params)),
-                              'hash_weight': str(reduce(lambda x, y: str(x.hash_weight)+"-"+str(y.hash_weight), matching_params)),
-                              'signature_size': str(reduce(lambda x, y: str(x.signature_size)+"-"+str(y.signature_size), matching_params)),
-                              'bands_number': str(reduce(lambda x, y: str(x.bands_number)+"-"+str(y.bands_number), matching_params)),
+                              'matching_attribute': str(
+                                  reduce(lambda x, y: x.matching_attribute + "-" + y.matching_attribute, matching_params)),
+                              'attribute_weight': str(att1_weight) + "-" + str(att2_weight),
+                              'attribute_threshold': str(
+                                  reduce(lambda x, y: str(x.attribute_threshold) + "-" + str(y.attribute_threshold),
+                                         matching_params)),
+                              'matching_method': str(
+                                  reduce(lambda x, y: x.matching_method + "-" + y.matching_method, matching_params)),
+                              'hash_type': str(reduce(lambda x, y: x.hash_type + "-" + y.hash_type, matching_params)),
+                              'shingles_size': str(
+                                  reduce(lambda x, y: str(x.shingle_size) + "-" + str(y.shingle_size), matching_params)),
+                              'hash_weight': str(
+                                  reduce(lambda x, y: str(x.hash_weight) + "-" + str(y.hash_weight), matching_params)),
+                              'signature_size': str(
+                                  reduce(lambda x, y: str(x.signature_size) + "-" + str(y.signature_size), matching_params)),
+                              'bands_number': str(
+                                  reduce(lambda x, y: str(x.bands_number) + "-" + str(y.bands_number), matching_params)),
                               'total_time': all_time,
                               'number_of_matches': len(df_all_matches),
                               'false_pos_rate': false_positive / (
@@ -162,6 +202,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                               }
 
                 df_results = df_results.append(experiment, ignore_index=True)
+
     return df_results
 
 if __name__ == "__main__":
