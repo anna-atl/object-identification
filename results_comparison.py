@@ -31,11 +31,11 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
 
     return false_positive, false_negative, true_positive, true_negative
 
-def add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weight, false_positive, true_negative, true_positive, false_negative):
+def add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weights, false_positive, true_negative, true_positive, false_negative):
     experiment = {'dataset_size': dataset_size,
                   'matching_attribute': str(
                       reduce(lambda x, y: x.matching_attribute + "-" + y.matching_attribute, matching_params)),
-                  'attribute_weight': str(att1_weight) + "-" + str(att2_weight),
+                  'attribute_weight': '-'.join(map(str, attribute_weights))
                   'attribute_threshold': str(
                       reduce(lambda x, y: str(x.attribute_threshold) + "-" + str(y.attribute_threshold),
                              matching_params)),
@@ -77,7 +77,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     attribute_thresholds = [0.5]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
-    attribute_weight = 1
+    attribute_weights = [1]
 
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
@@ -105,7 +105,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                         for shingle_size in shingle_sizes:
                             for bands_number in bands_numbers:
                                 for signature_size in signature_sizes:
-                                    attribute = attribute_matching_params(matching_attribute, matching_method, attribute_thresholds, attribute_weight, hash_type, shingle_size, hash_weight, bands_number, signature_size)
+                                    attribute = attribute_matching_params(matching_attribute, matching_method, attribute_thresholds, hash_type, shingle_size, hash_weight, bands_number, signature_size)
 
                                     start_time_all = time.time()
                                     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
@@ -128,7 +128,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                         false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative)
 
                                         experiment = add_experiments_params(attribute, dataset_size, df_all_matches,
-                                                                       all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weight, false_positive,
+                                                                       all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weights, false_positive,
                                                                        true_negative, true_positive, false_negative)
 
                                         df_results = df_results.append(experiment, ignore_index=True)
@@ -156,17 +156,17 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     attribute_weights = [1, 2, 3]
 
     matching_params = [
-        attribute_matching_params(matching_attribute='name_clean', matching_method='minhash', hash_type='token',
-                                  hash_weight='weighted', attribute_threshold=0.5),
-        attribute_matching_params(matching_attribute='url_clean', matching_method='minhash', hash_type='shingle',
-                                  hash_weight='frequency', shingle_size=3, attribute_threshold=0.5)]
+        attribute_matching_params(matching_attribute='name_clean', matching_method='minhash', attribute_threshold=0.5, hash_type='token',
+                                  hash_weight='weighted'),
+        attribute_matching_params(matching_attribute='url_clean', matching_method='minhash', attribute_threshold=0.5, hash_type='shingle', shingle_size=3,
+                                  hash_weight='frequency')]
     matches_dfs = []
 
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
     for attribute in matching_params:
         df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time = matching.main(df, dataset_size, attribute)
-        matches_dfs.append(df_matches_full)
+        matches_dfs.append(df_matches_full[df_matches_full['match_score_{}'.format(attribute.matching_attribute)] > attribute.attribute_threshold])
     print('------------------------------------------------')
     all_time = round(time.time() - start_time_all, 6)
     print("The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(dataset_size, all_time))
