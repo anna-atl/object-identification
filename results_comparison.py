@@ -13,7 +13,8 @@ def import_labeled_data():
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']]
 
-    labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
+    labeled_positive = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1) | (df_labeled_data['is_duplicate'] == 2)].count()
+    #labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
     labeled_negative = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1)].count()
     labeled_matches_count = df_labeled_data['is_duplicate'].count()
 
@@ -42,11 +43,12 @@ def add_experiments_params(matching_params, dataset_size, df_all_matches, all_ti
                   'signature_size': matching_params.signature_size,
                   'bands_number': matching_params.bands_number,
                   'total_time': all_time,
-                  'number_of_matches': len(df_all_matches),  # 'minhash_time', 'sign_creation_time',
-                  'false_pos_rate': false_positive / (
-                          false_positive + true_negative),
-                  'false_neg_rate': false_negative / (
-                          false_negative + true_positive),
+                  'number_of_matches': len(df_all_matches),
+                  'signatures_creation_time': signatures_creation_time,
+                  'buckets_creation_time': buckets_creation_time,
+                  'finding_matches_time': finding_matches_time,
+                  'false_pos_rate': false_positive / (false_positive + true_negative),
+                  'false_neg_rate': false_negative / (false_negative + true_positive),
                   'true_pos_rate': true_positive / (true_positive + false_negative),
                   'true_neg_rate': true_negative / (true_negative + false_positive)
                   }
@@ -58,35 +60,36 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     '''
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
-    dataset_sizes = [100, 1000, 5000, 10000, 100000, 1000000]
-    #matching_attributes = ['name_clean']
-    matching_attributes = ['url_clean', 'name_clean']
-    attribute_thresholds = [0.5, 0.6, 0.7]
-    #matching_methods = ['minhash', 'fuzzy', 'exact']
-    matching_methods = ['fuzzywuzzy']
-    #hash_types = ['token']
-    hash_types = ['token', 'shingle']
-    #hash_weights = ['weighted']
-    hash_weights = ['weighted', 'normal', 'frequency']
-    #shingle_sizes = [2, 3, 4]
-    shingle_sizes = [2, 3, 4]
-    bands_numbers = [5]
-    signature_sizes = [50]
+    dataset_sizes = [1000000]
+    matching_attributes = ['name_clean']
+    #matching_attributes = ['url_clean', 'name_clean']
+    #attribute_thresholds = [0.5, 0.6, 0.7]
+    attribute_thresholds = [0.5]
+    #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
+    matching_methods = ['minhash']
 
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
+                hash_types = ['token']
+                #hash_types = ['token', 'shingle']
+                bands_numbers = [5]
+                signature_sizes = [50]
+                hash_weights = ['weighted']
+                #hash_weights = ['weighted', 'normal', 'frequency']
+
                 if matching_method != 'minhash':
                     hash_types = [0]
                     hash_weights = [0]
                     shingle_sizes = [0]
                     bands_numbers = [0]
                     signature_sizes = [0]
-                else:
-                    for hash_type in hash_types:
-                        if hash_type == 'token':
-                            shingle_sizes = [0]
                 for hash_type in hash_types:
+                    # shingle_sizes = [2, 3, 4]
+                    shingle_sizes = [2, 3, 4]
+
+                    if hash_type == 'token':
+                        shingle_sizes = [0]
                     for hash_weight in hash_weights:
                         for shingle_size in shingle_sizes:
                             for bands_number in bands_numbers:
@@ -96,15 +99,13 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                     start_time_all = time.time()
                                     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
                                     print(attribute)
-                                    df_all_matches = matching.main(df, dataset_size, attribute)
+                                    df_all_matches, signatures_creation_time, buckets_creation_time, finding_matches_time = matching.main(df, dataset_size, attribute)
                                     df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)]
 
                                     all_time = round(time.time() - start_time_all, 6)
                                     print('------------------------------------------------')
                                     print('')
-                                    print(
-                                        "The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(
-                                            dataset_size, all_time))
+                                    print("The whole matching algorithm took (for the {} dataset size) --- {} seconds ---".format(dataset_size, all_time))
                                     print('------------------------------------------------')
 
                                     print("Started adding matches attributes...")
@@ -153,7 +154,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
     for attribute in matching_params:
-        df_matches_full = matching.main(df, dataset_size, attribute)
+        df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time = matching.main(df, dataset_size, attribute)
         matches_dfs.append(df_matches_full)
     print('------------------------------------------------')
     all_time = round(time.time() - start_time_all, 6)
@@ -205,10 +206,11 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                                   reduce(lambda x, y: str(x.bands_number) + "-" + str(y.bands_number), matching_params)),
                               'total_time': all_time,
                               'number_of_matches': len(df_all_matches),
-                              'false_pos_rate': false_positive / (
-                                      false_positive + true_negative),
-                              'false_neg_rate': false_negative / (
-                                      false_negative + true_positive),
+                              'signatures_creation_time': signatures_creation_time,
+                              'buckets_creation_time': buckets_creation_time,
+                              'finding_matches_time': finding_matches_time,
+                              'false_pos_rate': false_positive / (false_positive + true_negative),
+                              'false_neg_rate': false_negative / (false_negative + true_positive),
                               'true_pos_rate': true_positive / (true_positive + false_negative),
                               'true_neg_rate': true_negative / (true_negative + false_positive)
                               }
@@ -223,7 +225,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     return df_results
 
 if __name__ == "__main__":
-    dataset_size = 10000
+    dataset_size = 1000000
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
@@ -231,14 +233,15 @@ if __name__ == "__main__":
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
-                    'hash_weight', 'signature_size', 'bands_number', 'total_time', 'number_of_matches', 'minhash_time', 'sign_creation_time', 'false_pos_rate',
+                    'hash_weight', 'signature_size', 'bands_number', 'total_time', 'number_of_matches', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time', 'false_pos_rate',
                     'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
     df_results = pd.DataFrame(columns=column_names)
 
     df_labeled_data, labeled_positive, labeled_negative = import_labeled_data()
 
-    #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
     df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+
+    #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
     df_results.to_csv("df_results_{}.csv".format(str(datetime.datetime.now())))
 
 print('end')

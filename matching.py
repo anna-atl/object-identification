@@ -13,7 +13,7 @@ from fuzzywuzzy import process
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, matching_method, hash_type='none', hash_weight='none', shingle_size=2, bands_number=5, signature_size=50, attribute_threshold=0, attribute_weight=1):
+    def __init__(self, matching_attribute, matching_method, hash_type='none', hash_weight='none', shingle_size=0, bands_number=5, signature_size=50, attribute_threshold=0, attribute_weight=1):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
         self.attribute_threshold = attribute_threshold
@@ -23,7 +23,7 @@ class attribute_matching_params:
         self.bands_number = bands_number
         self.signature_size = signature_size
     def __str__(self):
-        return "<Test a:%s b:%s, :%s, :%s, :%s, :%s, :%s, :%s>" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
+        return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
 def create_shingles(doc, k):
     if len(doc) >= k:
@@ -154,19 +154,22 @@ def minhash(docs, attribute):
     start_time = time.time()
     print("Started creating signatures...")
     signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict)
-    print("Creating signatures took --- %s seconds ---" % (time.time() - start_time))
+    signatures_creation_time = round(time.time() - start_time, 6)
+    print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 
     start_time = time.time()
     print("Started creating buckets of potential matches...")
     buckets_of_bands = create_buckets(signatures, attribute.bands_number)
-    print("Creating buckets took --- %s seconds ---" % (time.time() - start_time))
+    buckets_creation_time = round(time.time() - start_time, 6)
+    print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
 
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
     matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, attribute.hash_weight, hash_weights_list)
-    print("Creating matches (jaccard) took --- %s seconds ---" % (time.time() - start_time))
+    finding_matches_time = round(time.time() - start_time, 6)
+    print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
-    return matched_pairs
+    return matched_pairs, signatures_creation_time, buckets_creation_time, finding_matches_time
 
 def other_matching_methods(docs, matching_method):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
@@ -176,12 +179,22 @@ def other_matching_methods(docs, matching_method):
             if doc_index_2 > doc_index_1:
                 if matching_method == 'levenstein':
                     matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(Levenshtein.ratio(doc1, doc2))
-                if matching_method == 'fuzzywuzzy':
+                elif matching_method == 'fuzzywuzzy':
                     matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(fuzz.ratio(doc1, doc2))
-
+                elif matching_method == 'jaccard':
+                    intersection = set(doc1).intersection(doc2)
+                    union = set(doc1 + doc2)
+                    matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(len(intersection) / len(union))
+                elif matching_method == 'exact':
+                    if doc1 == doc2:
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
 def main(df, dataset_size, attribute):
+    signatures_creation_time = 0
+    buckets_creation_time = 0
+    finding_matches_time = 0
+
     docs = df[attribute.matching_attribute]
 
     docs = docs.dropna()
@@ -201,7 +214,7 @@ def main(df, dataset_size, attribute):
         print('Started {} for the {} attribute with {} hash type:'.format(attribute.matching_method,
                                                                           attribute.matching_attribute,
                                                                           attribute.hash_type))
-        matched_pairs = minhash(docs, attribute)
+        matched_pairs, signatures_creation_time, buckets_creation_time, finding_matches_time = minhash(docs, attribute)
 
     else:
         matched_pairs = other_matching_methods(docs, attribute.matching_method)
@@ -227,5 +240,5 @@ def main(df, dataset_size, attribute):
     print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))
 
     #df_all_matches.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
-    return df_matches_full
+    return df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time
 
