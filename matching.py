@@ -13,10 +13,11 @@ from fuzzywuzzy import process
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, matching_method, hash_type='none', hash_weight='none', shingle_size=0, bands_number=5, signature_size=50, attribute_threshold=0, attribute_weight=1):
+    def __init__(self, matching_attribute, matching_method, attribute_threshold=0, attribute_weight=1, hash_type='none', shingle_size=0, hash_weight='none', bands_number=5, signature_size=50):
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
         self.attribute_threshold = attribute_threshold
+        self.attribute_weight = attribute_weight
         self.hash_type = hash_type# token, shingle
         self.shingle_size = shingle_size# 1,2
         self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'

@@ -31,17 +31,25 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
 
     return false_positive, false_negative, true_positive, true_negative
 
-def add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, attribute_threshold, false_positive, true_negative, true_positive, false_negative):
+def add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weight, false_positive, true_negative, true_positive, false_negative):
     experiment = {'dataset_size': dataset_size,
-                  'matching_attribute': matching_params.matching_attribute,  # [0]should be fixed
-                  'attribute_weight': 1,
-                  'attribute_threshold': attribute_threshold,
-                  'matching_method': matching_params.matching_method,
-                  'hash_type': matching_params.hash_type,
-                  'shingles_size': matching_params.shingle_size,
-                  'hash_weight': matching_params.hash_weight,
-                  'signature_size': matching_params.signature_size,
-                  'bands_number': matching_params.bands_number,
+                  'matching_attribute': str(
+                      reduce(lambda x, y: x.matching_attribute + "-" + y.matching_attribute, matching_params)),
+                  'attribute_weight': str(att1_weight) + "-" + str(att2_weight),
+                  'attribute_threshold': str(
+                      reduce(lambda x, y: str(x.attribute_threshold) + "-" + str(y.attribute_threshold),
+                             matching_params)),
+                  'matching_method': str(
+                      reduce(lambda x, y: x.matching_method + "-" + y.matching_method, matching_params)),
+                  'hash_type': str(reduce(lambda x, y: x.hash_type + "-" + y.hash_type, matching_params)),
+                  'shingles_size': str(
+                      reduce(lambda x, y: str(x.shingle_size) + "-" + str(y.shingle_size), matching_params)),
+                  'hash_weight': str(
+                      reduce(lambda x, y: str(x.hash_weight) + "-" + str(y.hash_weight), matching_params)),
+                  'signature_size': str(
+                      reduce(lambda x, y: str(x.signature_size) + "-" + str(y.signature_size), matching_params)),
+                  'bands_number': str(
+                      reduce(lambda x, y: str(x.bands_number) + "-" + str(y.bands_number), matching_params)),
                   'total_time': all_time,
                   'number_of_matches': len(df_all_matches),
                   'signatures_creation_time': signatures_creation_time,
@@ -52,6 +60,8 @@ def add_experiments_params(matching_params, dataset_size, df_all_matches, all_ti
                   'true_pos_rate': true_positive / (true_positive + false_negative),
                   'true_neg_rate': true_negative / (true_negative + false_positive)
                   }
+
+
     return experiment
 
 def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative):
@@ -67,6 +77,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     attribute_thresholds = [0.5]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
+    attribute_weight = 1
 
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
@@ -94,7 +105,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                         for shingle_size in shingle_sizes:
                             for bands_number in bands_numbers:
                                 for signature_size in signature_sizes:
-                                    attribute = attribute_matching_params(matching_attribute, matching_method, hash_type, hash_weight, shingle_size, bands_number, signature_size)
+                                    attribute = attribute_matching_params(matching_attribute, matching_method, attribute_thresholds, attribute_weight, hash_type, shingle_size, hash_weight, bands_number, signature_size)
 
                                     start_time_all = time.time()
                                     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
@@ -113,11 +124,11 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                     print("Added matches attributes...")
 
                                     df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
-                                    for attribute_threshold in attribute_thresholds:
+                                    for attribute_threshold in attribute.attribute_thresholds:
                                         false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > attribute_threshold], labeled_positive, labeled_negative)
 
                                         experiment = add_experiments_params(attribute, dataset_size, df_all_matches,
-                                                                       all_time, attribute_threshold, false_positive,
+                                                                       all_time, signatures_creation_time, buckets_creation_time, finding_matches_time, attribute_threshold, attribute_weight, false_positive,
                                                                        true_negative, true_positive, false_negative)
 
                                         df_results = df_results.append(experiment, ignore_index=True)
@@ -184,36 +195,11 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
 
                 false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation[df_matches_estimation.match_score > threshold], labeled_positive, labeled_negative)
 
-                # experiment = add_experiments_params(matching_params, dataset_size, df_all_matches, all_time, 0.5, false_positive, true_negative, true_positive, false_negative)
-
-                experiment = {'dataset_size': dataset_size,
-                              'matching_attribute': str(
-                                  reduce(lambda x, y: x.matching_attribute + "-" + y.matching_attribute, matching_params)),
-                              'attribute_weight': str(att1_weight) + "-" + str(att2_weight),
-                              'attribute_threshold': str(
-                                  reduce(lambda x, y: str(x.attribute_threshold) + "-" + str(y.attribute_threshold),
-                                         matching_params)),
-                              'matching_method': str(
-                                  reduce(lambda x, y: x.matching_method + "-" + y.matching_method, matching_params)),
-                              'hash_type': str(reduce(lambda x, y: x.hash_type + "-" + y.hash_type, matching_params)),
-                              'shingles_size': str(
-                                  reduce(lambda x, y: str(x.shingle_size) + "-" + str(y.shingle_size), matching_params)),
-                              'hash_weight': str(
-                                  reduce(lambda x, y: str(x.hash_weight) + "-" + str(y.hash_weight), matching_params)),
-                              'signature_size': str(
-                                  reduce(lambda x, y: str(x.signature_size) + "-" + str(y.signature_size), matching_params)),
-                              'bands_number': str(
-                                  reduce(lambda x, y: str(x.bands_number) + "-" + str(y.bands_number), matching_params)),
-                              'total_time': all_time,
-                              'number_of_matches': len(df_all_matches),
-                              'signatures_creation_time': signatures_creation_time,
-                              'buckets_creation_time': buckets_creation_time,
-                              'finding_matches_time': finding_matches_time,
-                              'false_pos_rate': false_positive / (false_positive + true_negative),
-                              'false_neg_rate': false_negative / (false_negative + true_positive),
-                              'true_pos_rate': true_positive / (true_positive + false_negative),
-                              'true_neg_rate': true_negative / (true_negative + false_positive)
-                              }
+                experiment = add_experiments_params(attribute, dataset_size, df_all_matches,
+                                                    all_time, signatures_creation_time, buckets_creation_time,
+                                                    finding_matches_time, attribute_threshold, [att1_weight, att2_weight],
+                                                    false_positive,
+                                                    true_negative, true_positive, false_negative)
 
                 df_results = df_results.append(experiment, ignore_index=True)
                 print('------------------------------------------------')
