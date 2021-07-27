@@ -13,15 +13,19 @@ from fuzzywuzzy import process
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, matching_method, attribute_threshold=0, hash_type='none', shingle_size=0, hash_weight='none', bands_number=5, signature_size=50):
+    def __init__(self, matching_attribute, matching_method, hash_type='none', shingle_size=0, hash_weight='none', bands_number=5, signature_size=50, attribute_threshold=0):
+        '''
+        important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
+        '''
         self.matching_attribute = matching_attribute
         self.matching_method = matching_method
-        self.attribute_threshold = attribute_threshold
         self.hash_type = hash_type# token, shingle
         self.shingle_size = shingle_size# 1,2
         self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
         self.bands_number = bands_number
         self.signature_size = signature_size
+        self.attribute_threshold = attribute_threshold
+
     def __str__(self):
         return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
@@ -119,8 +123,12 @@ def create_buckets(signatures, bands_number):
     return buckets_of_bands
 
 def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
+    #intersection = multiset(list1).intersection(list2)
+    #union = multiset(list1 + list2)
+
     intersection = set(list1).intersection(list2)
     union = set(list1 + list2)
+
     #    union = set(list1).union(list2) #for multisets
     if hash_weight == 'normal':
         return len(intersection)/len(union)
@@ -195,14 +203,20 @@ def main(df, dataset_size, attribute):
     buckets_creation_time = 0
     finding_matches_time = 0
 
-    docs = df[attribute.matching_attribute]
+    #docs = df[attribute.matching_attribute]
+    docs = df[['id', attribute.matching_attribute]]
+    docs = docs.dropna(subset=[attribute.matching_attribute])
+    #docs = docs.dropna()
+    #docs = docs.head(dataset_size)
+    docs = docs.sample(n=dataset_size)
+    docs_mapping = docs
+    docs = docs[attribute.matching_attribute]
+    print(docs)
 
-    docs = docs.dropna()
-    docs = docs.head(dataset_size)
     print('------------------------------------------------')
     print('The attribute {} has {} records'.format(attribute.matching_attribute, len(docs)))
 
-    docs_mapping = df[['id', attribute.matching_attribute]]
+    #docs_mapping = df[['id', attribute.matching_attribute]]
     docs_mapping = docs_mapping.dropna(subset=[attribute.matching_attribute])
     docs_mapping['old_index'] = docs_mapping.index
     docs_mapping = docs_mapping.reset_index(drop=True)
@@ -219,6 +233,8 @@ def main(df, dataset_size, attribute):
     else:
         matched_pairs = other_matching_methods(docs, attribute.matching_method)
 
+    print("Started creating one match score column from tuples...")
+
     if len(matched_pairs) != 0:
         df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=['match_score_{}'.format(attribute.matching_attribute)])  # oriend='index' for making keys as rows, not columns
         df_matches['matches_tuple'] = df_matches.index
@@ -230,6 +246,7 @@ def main(df, dataset_size, attribute):
         column_names = ['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
 
+    print("Started joining the result with the mapping table...")
     df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
     df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
     df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
@@ -239,6 +256,5 @@ def main(df, dataset_size, attribute):
     print('------------------------------------------------')
     print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))
 
-    #df_all_matches.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
     return df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time
 
