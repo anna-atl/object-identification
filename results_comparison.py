@@ -43,11 +43,12 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
-    matching_attributes = ['name_clean']
+    matching_attributes = ['url_clean']
     #matching_attributes = ['name_clean', 'url_clean']
     #matching_attributes = ['url_clean', 'name_clean']
     #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
-    attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
+    #attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
+    attribute_thresholds = [0]
     #attribute_thresholds = [0.99, 0.5, 1.0]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
@@ -145,7 +146,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
 def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative):
     #here we should use the top matching combindations from the finding_best_methods_for_atts function
-    dataset_size = 1000000
+    dataset_size = 100000
     threshold = 0
     attribute_weights = [1, 2, 3]
 
@@ -234,9 +235,14 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     return df_results
 
 if __name__ == "__main__":
-    dataset_size = 1200000
+    dataset_size = 200000
 
     df_labeled_data = import_labeled_data()
+    b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
+    c = df_labeled_data.loc[df_labeled_data['id_x'] > df_labeled_data['id_y']]
+    c = c.rename(columns={'id_x': 'id_y', 'id_y': 'id_x'}, inplace=False)
+    c = c[['id_x', 'id_y', 'is_duplicate']]
+    df_labeled_data = b.append(c)
 
     start_time = time.time()
     print('------------------------------------------------')
@@ -244,13 +250,16 @@ if __name__ == "__main__":
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    number_of_tries = 1 #how many random datasets should be created
+    number_of_tries = 3 #how many random datasets should be created
 
-    dataset_size = 1000000
+    dataset_size = 100000
     df = df.dropna(subset=['url_clean', 'name_clean'])
 
     for a in range(number_of_tries):
-        df = df.sample(n=dataset_size)
+        try:
+            df = df.sample(n=dataset_size)
+        except:
+            continue
 
         df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
         df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
