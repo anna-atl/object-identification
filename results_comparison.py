@@ -11,15 +11,12 @@ def import_labeled_data():
     labeled_data = "~/Dropbox/Botva/TUM/Master_Thesis/object-identification/labeled_data_final_2.csv"
     df_labeled_data = pd.read_csv(labeled_data, sep=';', error_bad_lines=False)
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
-    df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (indexes)
+    df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (id_x, not doc_1 indexes)
 
-    labeled_positive = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 1) | (df_labeled_data['is_duplicate'] == 2)].count()
-    #labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
-    labeled_negative = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 0].count()
-    #labeled_negative = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1)].count()
-    labeled_matches_count = df_labeled_data['is_duplicate'].count()
+    labeled_ids = df_labeled_data[['id_x', 'is_duplicate']].append(df_labeled_data[['id_y', 'is_duplicate']])
+    labeled_ids = labeled_ids.drop_duplicates(subset=['id_x'])
 
-    return df_labeled_data, labeled_positive, labeled_negative
+    return df_labeled_data, labeled_ids
 
 def add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative):
     matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
@@ -59,9 +56,6 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     matching_methods = ['minhash']
 
     for dataset_size in dataset_sizes:
-        df = df.dropna(subset=['url_clean', 'name_clean'])
-        df = df.sample(n=dataset_size)
-
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
                 hash_types = ['shingle']
@@ -165,9 +159,6 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                                   hash_weight='frequency', attribute_threshold=0.5)]
     matches_dfs = []
 
-    df = df.dropna(subset=['url_clean', 'name_clean'])
-    df = df.sample(n=dataset_size)
-
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
     for attribute in matching_params:
@@ -248,7 +239,7 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
 if __name__ == "__main__":
     dataset_size = 1500000
 
-    df_labeled_data, labeled_positive, labeled_negative = import_labeled_data()
+    df_labeled_data, labeled_ids = import_labeled_data()
 
     start_time = time.time()
     print('------------------------------------------------')
@@ -256,13 +247,29 @@ if __name__ == "__main__":
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
-                    'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg', 'true_pos', 'true_neg', 'false_pos_rate','false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    df_results = pd.DataFrame(columns=column_names)
+    number_of_tries = 1 #how many random datasets should be created
 
-    df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
-    df_results.to_csv("df_results_final_{}.csv".format(str(datetime.datetime.now())))
+    dataset_size = 1000000
+    df = df.dropna(subset=['url_clean', 'name_clean'])
 
-    #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+    for a in number_of_tries:
+        df = df.sample(n=dataset_size)
+
+        labeled_ids_in_df = pd.merge(labeled_ids, df,  how='outer', left_on=['id_x'], right_on=['id'])
+
+        labeled_positive = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 1) | (df_labeled_data['is_duplicate'] == 2)].count()
+        #labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
+        labeled_negative = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 0].count()
+        #labeled_negative = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1)].count()
+        labeled_matches_count = df_labeled_data['is_duplicate'].count()
+
+        column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
+                        'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg', 'true_pos', 'true_neg', 'false_pos_rate','false_neg_rate', 'true_pos_rate', 'true_neg_rate']
+        df_results = pd.DataFrame(columns=column_names)
+
+        df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+        df_results.to_csv("df_results_final_{}.csv".format(str(datetime.datetime.now())))
+
+        #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
 
 print('end')
