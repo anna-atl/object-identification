@@ -50,13 +50,18 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
     matching_attributes = ['name_clean']
+    #matching_attributes = ['name_clean', 'url_clean']
     #matching_attributes = ['url_clean', 'name_clean']
-    #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
-    attribute_thresholds = [0.99, 0.5, 1.0]
+    #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
+    attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
+    #attribute_thresholds = [0.99, 0.5, 1.0]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
 
     for dataset_size in dataset_sizes:
+        df = df.dropna(subset=['url_clean', 'name_clean'])
+        df = df.sample(n=dataset_size)
+
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
                 hash_types = ['shingle']
@@ -75,7 +80,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                     signature_sizes = [0]
                 for hash_type in hash_types:
                     #shingle_sizes = [2, 3, 4]
-                    shingle_sizes = [2]
+                    shingle_sizes = [3]
 
                     if hash_type == 'token':
                         shingle_sizes = [0]
@@ -103,7 +108,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
                                     print("Started joining the result with the labeled data...")
                                     df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
-                                    #df_matches_estimation.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
+                                    df_matches_estimation.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
                                     print("...Joint the result with the labeled data")
 
                                     for attribute_threshold in attribute_thresholds:
@@ -160,11 +165,13 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                                   hash_weight='frequency', attribute_threshold=0.5)]
     matches_dfs = []
 
+    df = df.dropna(subset=['url_clean', 'name_clean'])
+    df = df.sample(n=dataset_size)
+
     start_time_all = time.time()
     print('Started overall matching for the dataset ({} size):'.format(dataset_size))
-
     for attribute in matching_params:
-        df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time = matching.main(df, dataset_size, attribute)
+        df_matches_full, signatures_creation_time, buckets_creation_time, finding_matches_time = matching.main(df, attribute)
         matches_dfs.append(df_matches_full)
     print('------------------------------------------------')
     all_time = round(time.time() - start_time_all, 6)
@@ -240,6 +247,9 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
 
 if __name__ == "__main__":
     dataset_size = 1500000
+
+    df_labeled_data, labeled_positive, labeled_negative = import_labeled_data()
+
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
@@ -249,8 +259,6 @@ if __name__ == "__main__":
     column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg', 'true_pos', 'true_neg', 'false_pos_rate','false_neg_rate', 'true_pos_rate', 'true_neg_rate']
     df_results = pd.DataFrame(columns=column_names)
-
-    df_labeled_data, labeled_positive, labeled_negative = import_labeled_data()
 
     df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
     df_results.to_csv("df_results_final_{}.csv".format(str(datetime.datetime.now())))

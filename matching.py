@@ -208,7 +208,7 @@ def main(df, dataset_size, attribute):
     docs = docs.dropna(subset=[attribute.matching_attribute])
     #docs = docs.dropna()
     #docs = docs.head(dataset_size)
-    docs = docs.sample(n=dataset_size)
+    #docs = docs.sample(n=dataset_size)
     docs_mapping = docs
     docs = docs[attribute.matching_attribute]
     print(docs)
