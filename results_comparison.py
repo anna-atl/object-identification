@@ -13,10 +13,7 @@ def import_labeled_data():
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (id_x, not doc_1 indexes)
 
-    labeled_ids = df_labeled_data[['id_x', 'is_duplicate']].append(df_labeled_data[['id_y', 'is_duplicate']])
-    labeled_ids = labeled_ids.drop_duplicates(subset=['id_x'])
-
-    return df_labeled_data, labeled_ids
+    return df_labeled_data
 
 def add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative):
     matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
@@ -237,9 +234,9 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
     return df_results
 
 if __name__ == "__main__":
-    dataset_size = 1500000
+    dataset_size = 1200000
 
-    df_labeled_data, labeled_ids = import_labeled_data()
+    df_labeled_data = import_labeled_data()
 
     start_time = time.time()
     print('------------------------------------------------')
@@ -252,22 +249,27 @@ if __name__ == "__main__":
     dataset_size = 1000000
     df = df.dropna(subset=['url_clean', 'name_clean'])
 
-    for a in number_of_tries:
+    for a in range(number_of_tries):
         df = df.sample(n=dataset_size)
 
-        labeled_ids_in_df = pd.merge(labeled_ids, df,  how='outer', left_on=['id_x'], right_on=['id'])
+        df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
+        df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
+        df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
+        df_labeled_data_in_df = pd.merge(df_labeled_data_in_df, df,  how='left', left_on=['id_y'], right_on=['id'])
+        df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
+        df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
 
-        labeled_positive = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 1) | (df_labeled_data['is_duplicate'] == 2)].count()
-        #labeled_positive = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 2].count()
-        labeled_negative = df_labeled_data['is_duplicate'].loc[df_labeled_data['is_duplicate'] == 0].count()
-        #labeled_negative = df_labeled_data['is_duplicate'].loc[(df_labeled_data['is_duplicate'] == 0) | (df_labeled_data['is_duplicate'] == 1)].count()
-        labeled_matches_count = df_labeled_data['is_duplicate'].count()
+        labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 1) | (df_labeled_data_in_df['is_duplicate'] == 2)].count()
+        #labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 2].count()
+        labeled_negative = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 0].count()
+        #labeled_negative = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 0) | (df_labeled_data_in_df['is_duplicate'] == 1)].count()
+        labeled_matches_count = df_labeled_data_in_df['is_duplicate'].count()
 
         column_names = ['dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method', 'hash_type', 'shingles_size',
                         'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg', 'true_pos', 'true_neg', 'false_pos_rate','false_neg_rate', 'true_pos_rate', 'true_neg_rate']
         df_results = pd.DataFrame(columns=column_names)
 
-        df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
+        df_results = finding_best_methods_for_atts(df, df_results, df_labeled_data_in_df, labeled_positive, labeled_negative)
         df_results.to_csv("df_results_final_{}.csv".format(str(datetime.datetime.now())))
 
         #df_results = finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative)
