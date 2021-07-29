@@ -18,8 +18,8 @@ def import_labeled_data():
 def add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative):
     matches_with_labels_count = df_matches_estimation['is_duplicate'].count()
 
-    true_positive = df_matches_estimation['is_duplicate'].loc[(df_matches_estimation['is_duplicate'] == 1) | (df_matches_estimation['is_duplicate'] == 2)].count()
-    #true_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 2].count()
+    #true_positive = df_matches_estimation['is_duplicate'].loc[(df_matches_estimation['is_duplicate'] == 1) | (df_matches_estimation['is_duplicate'] == 2)].count()
+    true_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 2].count()
     false_positive = df_matches_estimation['is_duplicate'].loc[df_matches_estimation['is_duplicate'] == 0].count()
     #false_positive = df_matches_estimation['is_duplicate'].loc[(df_matches_estimation['is_duplicate'] == 0) | (df_matches_estimation['is_duplicate'] == 1)].count()
 
@@ -43,7 +43,8 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
-    matching_attributes = ['url_clean']
+    matching_attributes = ['name_clean']
+    #matching_attributes = ['url_clean']
     #matching_attributes = ['name_clean', 'url_clean']
     #matching_attributes = ['url_clean', 'name_clean']
     #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
@@ -61,7 +62,8 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                 #hash_types = ['token', 'shingle']
                 bands_numbers = [5]
                 signature_sizes = [50]
-                hash_weights = ['weighted']
+                #hash_weights = ['weighted']
+                hash_weights = ['normal']
                 #hash_weights = ['weighted', 'normal', 'frequency']
 
                 if matching_method != 'minhash':
@@ -72,7 +74,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                     signature_sizes = [0]
                 for hash_type in hash_types:
                     #shingle_sizes = [2, 3, 4]
-                    shingle_sizes = [3]
+                    shingle_sizes = [2]
 
                     if hash_type == 'token':
                         shingle_sizes = [0]
@@ -100,8 +102,13 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
                                     print("Started joining the result with the labeled data...")
                                     df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left', left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
-                                    df_matches_estimation.to_csv("df_matches_full_{}_{}.csv".format(len(df), str(datetime.datetime.now())))
+                                    df_matches_estimation.to_csv("df_matches_full_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
                                     print("...Joint the result with the labeled data")
+
+                                    df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_all_matches, how='left', left_on=['id_x', 'id_y'], right_on=['doc_1', 'doc_2'])
+                                    df_labeled_data_not_in_df = df_labeled_data_not_in_df.dropna(subset=['doc_1'])
+                                    data = data[data['opinion'].isnull()]
+                                    df_labeled_data_not_in_df.to_csv("df_labeled_data_not_in_df_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
 
                                     for attribute_threshold in attribute_thresholds:
                                         start_time = time.time()
@@ -250,7 +257,7 @@ if __name__ == "__main__":
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    number_of_tries = 3 #how many random datasets should be created
+    number_of_tries = 1 #how many random datasets should be created
 
     dataset_size = 100000
     df = df.dropna(subset=['url_clean', 'name_clean'])
@@ -268,8 +275,8 @@ if __name__ == "__main__":
         df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
         df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
 
-        labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 1) | (df_labeled_data_in_df['is_duplicate'] == 2)].count()
-        #labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 2].count()
+        #labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 1) | (df_labeled_data_in_df['is_duplicate'] == 2)].count()
+        labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 2].count()
         labeled_negative = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 0].count()
         #labeled_negative = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 0) | (df_labeled_data_in_df['is_duplicate'] == 1)].count()
         labeled_matches_count = df_labeled_data_in_df['is_duplicate'].count()
