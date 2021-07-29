@@ -89,6 +89,10 @@ def df_import(dataset_size):
     conn = sqlite3.connect(database)
     #labeled data mode
     df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size,))
+    #false negative test mode
+    #df = pd.read_sql_query("SELECT * FROM companies WHERE id in (3634547, 4683636, 3534274, 6098760, 2576196, 3631244, 3162806, 2321150, 2966000, 3433400, 4252993, 3467333, 5841853, 1600967, 4090083, 3584041, 6275641, 944930, 2490742, 1441239, 5134056, 2284293, 3569513, 4560648, 5517236, 4014709, 6670834, 2949531, 4995743, 3256254, 3031527, 2967535, 4369795, 4513271, 3722584, 5919321, 1782709, 5589303, 3767241, 7009927, 1025232, 3121092, 6531373, 6292733, 3528199, 3948894)", conn, params=())
+    #df = pd.read_sql_query("SELECT * FROM companies WHERE id in (3634547, 4560648)",conn, params=())
+
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL LIMIT (?)", conn, params=(dataset_size,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL LIMIT (?)", conn, params=(dataset_size,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' and url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size,))

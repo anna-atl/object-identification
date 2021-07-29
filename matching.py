@@ -86,9 +86,6 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
 
-    if hash_weight == 'frequency':
-        hash_weights_list = [1 / hash_weight for hash_weight in hash_weights_list]
-
     return docs_hashed, hash_weights_list
 
 #creating signatures array
@@ -104,6 +101,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict):
                 signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
             except:
                 print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+
     return signatures
 
 def create_buckets(signatures, bands_number):
@@ -117,9 +115,17 @@ def create_buckets(signatures, bands_number):
             #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
             #if the signatures of this bucket are same then key is the signature and values: doc index
             #if unique signature then only one doc_index will be as a value
+            if (doc_index == 20236) | (doc_index == 23657):
+                print(signatures[band * r:band * r + r, doc_index])
+                print(doc_index)
+
         filtered = {key: item for key, item in buckets_of_band.items() if len(item) > 1} #filter out where one value (one doc with this signature)
         buckets_of_band.clear()
         buckets_of_band.update(filtered)
+
+        #a = {key: item for key, item in buckets_of_band.items() if len(set(item).intersection([20236, 23657])) >= 2} #filter out where one value (one doc with this signature)
+        #print(a)
+
     return buckets_of_bands
 
 def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
@@ -146,6 +152,11 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_we
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], hash_weight, hash_weights_list))
+    a = {key: item for key, item in matched_pairs.items() if 20236 in key}
+    print(a)
+    #if (doc_index_2 == 20236) | (doc_index_1 == 23657):
+    #print(matched_pairs)
+
     return matched_pairs
 
 def minhash(docs, attribute):
@@ -223,6 +234,9 @@ def main(df, dataset_size, attribute):
     docs_mapping['new_index'] = docs_mapping.index
     docs_mapping = docs_mapping.drop([attribute.matching_attribute], axis=1)
 
+    b = docs_mapping.loc[(docs_mapping['id'] == 2490742) | (docs_mapping['id'] == 3121092)]
+    print(b)
+
     start_time = time.time()
     if attribute.matching_method == 'minhash':
         print('Started {} for the {} attribute with {} hash type:'.format(attribute.matching_method,
@@ -240,6 +254,8 @@ def main(df, dataset_size, attribute):
         df_matches['matches_tuple'] = df_matches.index
         a = df_matches['matches_tuple'].tolist()
         df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+        b = df_matches[(df_matches['doc_1'] == 20236) | (df_matches['doc_2'] == 23657)]
+        print(b)
         df_matches = df_matches.drop(['matches_tuple'], axis=1)
         df_matches = df_matches.reset_index(drop=True)
     else:
@@ -248,10 +264,21 @@ def main(df, dataset_size, attribute):
 
     print("Started joining the result with the mapping table...")
     df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
+    b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
+    print(b)
+
     df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
     df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
     df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
     df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
+    b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
+    print(b)
+
+    b = df_matches_full.loc[df_matches_full['doc_1'] < df_matches_full['doc_2']]
+    c = df_matches_full.loc[df_matches_full['doc_1'] > df_matches_full['doc_2']]
+    c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
+    c = c[['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']]
+    df_matches_full = b.append(c)
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))
