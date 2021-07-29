@@ -142,10 +142,10 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                                       'false_neg': false_negative,
                                                       'true_pos': true_positive,
                                                       'true_neg': true_negative,
-                                                      'false_pos_rate': false_positive / (false_positive + true_negative),
-                                                      'false_neg_rate': false_negative / (false_negative + true_positive),
-                                                      'true_pos_rate': true_positive / (true_positive + false_negative),
-                                                      'true_neg_rate': true_negative / (true_negative + false_positive)
+                                                      'false_pos_rate': round(false_positive / (false_positive + true_negative), 8),
+                                                      'false_neg_rate': round(false_negative / (false_negative + true_positive), 8),
+                                                      'true_pos_rate': round(true_positive / (true_positive + false_negative), 8),
+                                                      'true_neg_rate': round(true_negative / (true_negative + false_positive, 8))
                                                       }
 
                                         df_results = df_results.append(experiment, ignore_index=True)
@@ -235,10 +235,10 @@ def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive,
                               'false_neg': false_negative,
                               'true_pos': true_positive,
                               'true_neg': true_negative,
-                              'false_pos_rate': false_positive / (false_positive + true_negative),
-                              'false_neg_rate': false_negative / (false_negative + true_positive),
-                              'true_pos_rate': true_positive / (true_positive + false_negative),
-                              'true_neg_rate': true_negative / (true_negative + false_positive)
+                              'false_pos_rate': round(false_positive / (false_positive + true_negative), 8),
+                              'false_neg_rate': round(false_negative / (false_negative + true_positive), 8),
+                              'true_pos_rate': round(true_positive / (true_positive + false_negative), 8),
+                              'true_neg_rate': round(true_negative / (true_negative + false_positive), 8)
                               }
 
                 df_results = df_results.append(experiment, ignore_index=True)
