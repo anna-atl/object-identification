@@ -106,9 +106,13 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                     print("...Joint the result with the labeled data")
 
                                     df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_all_matches, how='left', left_on=['id_x', 'id_y'], right_on=['doc_1', 'doc_2'])
-                                    df_labeled_data_not_in_df = df_labeled_data_not_in_df.dropna(subset=['doc_1'])
-                                    data = data[data['opinion'].isnull()]
+                                    df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['doc_1'].isnull()]
+                                    df_labeled_data_not_in_df = df_labeled_data_not_in_df[['id_x', 'id_y', 'is_duplicate']]
                                     df_labeled_data_not_in_df.to_csv("df_labeled_data_not_in_df_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
+
+                                    df_not_labeled = pd.merge(df_labeled_data_not_in_df, df, how='left', left_on=['id_x'], right_on=['id'])
+                                    df_not_labeled = pd.merge(df_not_labeled, df, how='left', left_on=['id_y'], right_on=['id'])
+                                    df_not_labeled.to_csv("df_not_labeled_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
 
                                     for attribute_threshold in attribute_thresholds:
                                         start_time = time.time()
