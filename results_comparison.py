@@ -44,13 +44,13 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #dataset_sizes = [100, 1000, 10000]
     dataset_sizes = [1000000]
     #matching_attributes = ['name_clean']
-    #matching_attributes = ['url_clean']
-    matching_attributes = ['name_clean', 'url_clean']
+    matching_attributes = ['url_clean']
+    #matching_attributes = ['name_clean', 'url_clean']
     #matching_attributes = ['url_clean', 'name_clean']
     #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
     #attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
-    attribute_thresholds = [0]
-    #attribute_thresholds = [0.99, 0.5, 1.0]
+    #attribute_thresholds = [0]
+    attribute_thresholds = [0, 0.5, 0.9, 0.99, 1.0]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
 
@@ -63,8 +63,8 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                 bands_numbers = [5]
                 signature_sizes = [50]
                 #hash_weights = ['weighted']
-                hash_weights = ['normal']
-                #hash_weights = ['weighted', 'normal', 'frequency']
+                #hash_weights = ['normal']
+                hash_weights = ['weighted', 'normal', 'frequency']
 
                 if matching_method != 'minhash':
                     hash_types = [0]
@@ -108,8 +108,6 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                     df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_all_matches, how='left', left_on=['id_x', 'id_y'], right_on=['doc_1', 'doc_2'])
                                     df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['doc_1'].isnull()]
                                     df_labeled_data_not_in_df = df_labeled_data_not_in_df[['id_x', 'id_y', 'is_duplicate']]
-                                    df_labeled_data_not_in_df.to_csv("df_labeled_data_not_in_df_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
-
                                     df_not_labeled = pd.merge(df_labeled_data_not_in_df, df, how='left', left_on=['id_x'], right_on=['id'])
                                     df_not_labeled = pd.merge(df_not_labeled, df, how='left', left_on=['id_y'], right_on=['id'])
                                     df_not_labeled.to_csv("df_not_labeled_{}_{}.csv".format(attribute.matching_attribute, str(datetime.datetime.now())))
@@ -145,7 +143,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                                                       'false_pos_rate': round(false_positive / (false_positive + true_negative), 8),
                                                       'false_neg_rate': round(false_negative / (false_negative + true_positive), 8),
                                                       'true_pos_rate': round(true_positive / (true_positive + false_negative), 8),
-                                                      'true_neg_rate': round(true_negative / (true_negative + false_positive, 8))
+                                                      'true_neg_rate': round(true_negative / (true_negative + false_positive), 8)
                                                       }
 
                                         df_results = df_results.append(experiment, ignore_index=True)
@@ -253,7 +251,7 @@ if __name__ == "__main__":
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
                     'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
                     'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    dataset_size = 10000
+    dataset_size = 2000000
 
     df_labeled_data = import_labeled_data()
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -268,14 +266,14 @@ if __name__ == "__main__":
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    number_of_tries = 3 #how many random datasets should be created
+    number_of_tries = 5 #how many random datasets should be created
 
-    #dataset_size = 100000
-    #df = df.dropna(subset=['url_clean', 'name_clean'])
-    #try:
-    #    df = df.sample(n=dataset_size)
-    #except:
-    #    print('dataset size is larger than...')
+    dataset_size = 1000000
+    df = df.dropna(subset=['url_clean', 'name_clean'])
+    try:
+        df = df.sample(n=dataset_size)
+    except:
+        print('dataset size is larger than...')
 
     df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
