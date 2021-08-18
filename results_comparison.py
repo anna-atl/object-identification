@@ -42,29 +42,29 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     '''
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
-    dataset_sizes = [1000000]
-    #matching_attributes = ['name_clean']
-    matching_attributes = ['url_clean']
+    dataset_sizes = [10000]
+    matching_attributes = ['name_clean']
+    #matching_attributes = ['url_clean']
     #matching_attributes = ['name_clean', 'url_clean']
     #matching_attributes = ['url_clean', 'name_clean']
     #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
     #attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
-    #attribute_thresholds = [0]
-    attribute_thresholds = [0, 0.5, 0.9, 0.99, 1.0]
+    attribute_thresholds = [0.5]
+    #attribute_thresholds = [0, 0.5, 0.9, 0.99, 1.0]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
 
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
-                #hash_types = ['shingle']
+                hash_types = ['shingle']
                 #hash_types = ['token']
-                hash_types = ['token', 'shingle']
+                #hash_types = ['token', 'shingle']
                 bands_numbers = [5]
                 signature_sizes = [50]
-                #hash_weights = ['weighted']
+                hash_weights = ['weighted minhash']
                 #hash_weights = ['normal']
-                hash_weights = ['weighted', 'normal', 'frequency']
+                #hash_weights = ['weighted', 'normal', 'frequency']
 
                 if matching_method != 'minhash':
                     hash_types = [0]
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
                     'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
                     'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    dataset_size = 2000000
+    dataset_size = 10000
 
     df_labeled_data = import_labeled_data()
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -266,9 +266,9 @@ if __name__ == "__main__":
     df = df_imports.df_import(dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    number_of_tries = 5 #how many random datasets should be created
+    number_of_tries = 1 #how many random datasets should be created
 
-    dataset_size = 1000000
+    dataset_size = 10000
     df = df.dropna(subset=['url_clean', 'name_clean'])
     try:
         df = df.sample(n=dataset_size)

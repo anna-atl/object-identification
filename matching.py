@@ -56,10 +56,13 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
             hashes = create_shingles(doc, k)
         for word_index, word in enumerate(reversed(hashes)):
             hashes_set.add(word)
-            if hash_weight == 'weighted':
+            if hash_weight == 'weighted' or hash_weight == 'weighted minhash':
                 hash_weights_dict.setdefault(word, []).append(word_index + 1)
-    if hash_weight == 'weighted':
+    if hash_weight == 'weighted hash':
         avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
+        hash_weights_dict.update(avg)
+    if hash_weight == 'weighted minhash':
+        avg = {key: int(round(1/len(value)*1000, 0)) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
 
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
@@ -81,7 +84,7 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             hashes = create_shingles(doc, k)
         for word in hashes:
             doc_hashed.append(hashes_dict[word])
-            if hash_weight == 'weighted':
+            if hash_weight == 'weighted' or hash_weight == 'weighted minhash':
                 hash_weights_list[hashes_dict[word]] = hash_weights_dict[word]
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
@@ -89,18 +92,36 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
     return docs_hashed, hash_weights_list
 
 #creating signatures array
-def create_signatures_array(docs_hashed, signature_size, hashes_dict):
+def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weight, hash_weights_list):
     signatures = np.zeros((signature_size, len(docs_hashed))) #create a df with # rows = signature_size and #columns = docs
     hashes_shuffled = [i for i in range(len(hashes_dict))]  #create list of hashes indexes for further randomizing
 
+    hashes_randomized = [[] for i in range(len(hash_weights_list))]
+
     for signature in signatures:   #iterating through rows of the signatures df
-        random.shuffle(hashes_shuffled)
-        for doc_index, doc_hashed in enumerate(docs_hashed): #for iterating over indexes in list as well
-            doc_a = [hashes_shuffled[i] for i in doc_hashed] # --check this-- recreating shingles list of a doc with randomization
-            try:
-                signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
-            except:
-                print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+        if hash_weight == 'weighted minhash':
+            print(max(hash_weights_list)) #T%O FIX IT (larger dataset -> higher weights)
+            for hash_index, hash_randomized in enumerate(hashes_randomized):
+                randomhash = random.sample(range(0, 100000), hash_weights_list[hash_index])
+                hashes_randomized[hash_index] = randomhash
+            for doc_index, doc_hashed in enumerate(docs_hashed):
+                doc_b = []
+                for hash_position, word in enumerate(reversed(doc_hashed)):
+                    doc_a = hashes_randomized[word]
+                    doc_a = doc_a[:hash_position]
+                    doc_b.append(min(doc_a))
+                try:
+                    signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
+                except:
+                    print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+        else:
+            random.shuffle(hashes_shuffled)
+            for doc_index, doc_hashed in enumerate(docs_hashed): #for iterating over indexes in list as well
+                doc_a = [hashes_shuffled[i] for i in doc_hashed] # --check this-- recreating shingles list of a doc with randomization
+                try:
+                    signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
+                except:
+                    print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
 
     return signatures
 
@@ -172,7 +193,7 @@ def minhash(docs, attribute):
 
     start_time = time.time()
     print("Started creating signatures...")
-    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict)
+    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict, attribute.hash_weight, hash_weights_list)
     signatures_creation_time = round(time.time() - start_time, 6)
     print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 
