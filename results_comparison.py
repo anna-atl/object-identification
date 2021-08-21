@@ -42,7 +42,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     '''
     #test_mode
     #dataset_sizes = [100, 1000, 10000]
-    dataset_sizes = [10000]
+    dataset_sizes = [1000000]
     matching_attributes = ['name_clean']
     #matching_attributes = ['url_clean']
     #matching_attributes = ['name_clean', 'url_clean']
@@ -73,7 +73,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
                     bands_numbers = [0]
                     signature_sizes = [0]
                 for hash_type in hash_types:
-                    shingle_sizes = [2, 3, 4]
+                    shingle_sizes = [3]
                     #shingle_sizes = [2]
 
                     if hash_type == 'token':
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
                     'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
                     'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    dataset_size = 10000
+    dataset_size = 1000000
 
     df_labeled_data = import_labeled_data()
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     number_of_tries = 1 #how many random datasets should be created
 
-    dataset_size = 10000
+    dataset_size = 1000000
     df = df.dropna(subset=['url_clean', 'name_clean'])
     try:
         df = df.sample(n=dataset_size)

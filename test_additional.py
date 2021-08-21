@@ -8,6 +8,11 @@ def test_nan():
 	df_8['city'] = np.nan
 	print(df_8.dtypes)
 
+def test_list():
+	a = [0,1,2]
+	print(a[:5])
+
+
 def test_set():
 	shingles_list = set()
 	shingles = ['de', 'de']
@@ -60,4 +65,5 @@ def test_df():
 #    df_2['zip'] = np.nan
 
 #test_lists_append()
-test_nan()
+#test_nan()
+test_list()

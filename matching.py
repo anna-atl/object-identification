@@ -10,6 +10,9 @@ import Levenshtein
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
+from sklearn import preprocessing
+
+
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
@@ -62,7 +65,7 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
         avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
     if hash_weight == 'weighted minhash':
-        avg = {key: int(round(1/len(value)*1000, 0)) for key, value in hash_weights_dict.items()}
+        avg = {key: 1/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
 
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
@@ -89,7 +92,13 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
 
-    return docs_hashed, hash_weights_list
+    hash_weights_list_normalized = preprocessing.normalize([hash_weights_list])
+    hash_weights_list_normalized = np.round(hash_weights_list_normalized * 1000, 0)
+    hash_weights_list_normalized = hash_weights_list_normalized.astype(int)
+    hash_weights_list_normalized = hash_weights_list_normalized[0].tolist()
+    hash_weights_list_normalized = [i + 1 for i in hash_weights_list_normalized] #fix it, this is for not creating 0 random values
+
+    return docs_hashed, hash_weights_list_normalized
 
 #creating signatures array
 def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weight, hash_weights_list):
@@ -102,13 +111,13 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
         if hash_weight == 'weighted minhash':
             print(max(hash_weights_list)) #T%O FIX IT (larger dataset -> higher weights)
             for hash_index, hash_randomized in enumerate(hashes_randomized):
-                randomhash = random.sample(range(0, 100000), hash_weights_list[hash_index])
+                randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index])
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 doc_b = []
                 for hash_position, word in enumerate(reversed(doc_hashed)):
                     doc_a = hashes_randomized[word]
-                    doc_a = doc_a[:hash_position]
+                    doc_a = doc_a[:hash_position+1]
                     doc_b.append(min(doc_a))
                 try:
                     signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
