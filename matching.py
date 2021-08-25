@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import math
 import numpy as np
 import string
 import collections
@@ -106,6 +107,8 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
     hashes_shuffled = [i for i in range(len(hashes_dict))]  #create list of hashes indexes for further randomizing
 
     hashes_randomized = [[] for i in range(len(hash_weights_list))]
+    hash_weights_random = [i for i in range(len(hash_weights_list))]
+    hash_weights_list_distr = [i for i in range(len(hash_weights_list))]
 
     for signature in signatures:   #iterating through rows of the signatures df
         if hash_weight == 'weighted minhash':
@@ -123,6 +126,36 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                     signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
                 except:
                     print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+        elif hash_weight == 'weighted minhash 2':
+            for hash_index, hash_weight in enumerate(hash_weights_list):
+                r1 = random.gammavariate(2, 1)
+                r2 = r1
+                b1 = random.uniform(0, 1)
+                b2 = b1
+                c = random.gammavariate(2, 1)
+                hash_weights_random[hash_index] = r1, r2, b1, b2, c
+            for hash_index, hash_weight in enumerate(hash_weights_list):
+                lny2 = r2*(math.floor(math.log(hash_weight)/hash_weights_random[hash_index]r2 + b2) - b2)
+                #z2 = math.exp(lny2) * math.exp(r2)
+                z2 = math.exp(lny2) * random.exponential(r2)
+                a = c / z2
+                hash_weights_list_distr[hash_index] = a
+            for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
+                doc_distrs = [hash_weights_list_distr[i] for i in doc_hashed]  # --check this-- recreating shingles list of a doc with randomization
+                k = np.argmin(hash_weight_distr[hash_index]) #?????it returns k???
+                signature[doc_index] = k
+                t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k]r1 + hash_weights_random[k]b1)
+                try:
+                        signature[doc_index] = min(doc_a)  # saving the smallest number for this randomization for this signature
+                    except:
+                        print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+            for hash_index, hash_weight_distr in enumerate(hash_weights_list_distr):
+
+
+
+
+
+
         else:
             random.shuffle(hashes_shuffled)
             for doc_index, doc_hashed in enumerate(docs_hashed): #for iterating over indexes in list as well
