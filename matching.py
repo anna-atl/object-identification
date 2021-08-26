@@ -33,6 +33,14 @@ class attribute_matching_params:
     def __str__(self):
         return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
+class hashes_parameters:
+    def __init__(self, r1, r2, b1, b2, c):
+        self.r1 = r1
+        self.r2 = r2
+        self.b1 = b1
+        self.b2 = b2
+        self.c = c
+
 def create_shingles(doc, k):
     if len(doc) >= k:
         shingles = [doc[i:i + k] for i in range(len(doc) - k + 1)]
@@ -133,28 +141,18 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 b1 = random.uniform(0, 1)
                 b2 = b1
                 c = random.gammavariate(2, 1)
-                hash_weights_random[hash_index] = r1, r2, b1, b2, c
+                hash_weights_random[hash_index] = hashes_parameters(r1, r2, b1, b2, c)
             for hash_index, hash_weight in enumerate(hash_weights_list):
-                lny2 = r2*(math.floor(math.log(hash_weight)/hash_weights_random[hash_index]r2 + b2) - b2)
+                lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                 #z2 = math.exp(lny2) * math.exp(r2)
-                z2 = math.exp(lny2) * random.exponential(r2)
-                a = c / z2
+                z2 = math.exp(lny2) * random.exponential(hash_weights_random[hash_index].r2)
+                a = hash_weights_random[hash_index].c / z2
                 hash_weights_list_distr[hash_index] = a
             for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
                 doc_distrs = [hash_weights_list_distr[i] for i in doc_hashed]  # --check this-- recreating shingles list of a doc with randomization
-                k = np.argmin(hash_weight_distr[hash_index]) #?????it returns k???
+                k = np.argmin(hash_weights_list_distr[hash_index]) #?????it returns k???
                 signature[doc_index] = k
-                t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k]r1 + hash_weights_random[k]b1)
-                try:
-                        signature[doc_index] = min(doc_a)  # saving the smallest number for this randomization for this signature
-                    except:
-                        print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
-            for hash_index, hash_weight_distr in enumerate(hash_weights_list_distr):
-
-
-
-
-
+                t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k].r1 + hash_weights_random[k].b1) #??? should the k change the index like in the normal minhash??
 
         else:
             random.shuffle(hashes_shuffled)
