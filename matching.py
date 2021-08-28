@@ -146,20 +146,19 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
             for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
                 minvalue = 1000000
                 minindex = 0
-                for hash_index, hash_weight in enumerate(hash_weights_list):
-                    #change Sk to hash_position WHYYY
-                    lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
+                for hash_position, hash_index in enumerate(reversed(doc_hashed)):
+                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index]
+                    lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
                     if a < minvalue:
-                        minvalue = a
+                        minvalue = a #is a a weight?
                         minindex = hash_index
-                    hash_weights_list_distr[hash_index] = a
-                    doc_distrs = [hash_weights_list_distr[i] for i in doc_hashed]  # --check this-- recreating shingles list of a doc with randomization
-                    k = minindex
-                    #hash_position just for k #what is it??
-                    t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
-                    signature[doc_index] = (k, t1)
+                        minposition = hash_in_doc_weight
+                k = minindex
+                hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k]
+                t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
+                signature[doc_index] = (k, t1)
 
         else:
             random.shuffle(hashes_shuffled)
