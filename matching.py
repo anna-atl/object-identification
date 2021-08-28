@@ -131,10 +131,10 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                     doc_a = hashes_randomized[hash_index]
                     doc_a = doc_a[:hash_in_doc_weight]
                     doc_b.append(min(doc_a))
-                try:
-                    signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
-                except:
-                    print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+            try:
+                signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
+            except:
+                print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
         elif hash_weight == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
                 r1 = random.gammavariate(2, 1)
