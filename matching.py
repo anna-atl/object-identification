@@ -126,9 +126,10 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 doc_b = []
-                for hash_position, word in enumerate(reversed(doc_hashed)): #hash_position/len(doc) * weight
-                    doc_a = hashes_randomized[word]
-                    doc_a = doc_a[:hash_position+1]
+                for hash_position, hash_index in enumerate(reversed(doc_hashed)):
+                    hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
+                    doc_a = hashes_randomized[hash_index]
+                    doc_a = doc_a[:hash_in_doc_weight]
                     doc_b.append(min(doc_a))
                 try:
                     signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
@@ -143,24 +144,22 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 c = random.gammavariate(2, 1)
                 hash_weights_random[hash_index] = hashes_parameters(r1, r2, b1, b2, c) #class here is ok
             for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
-                minvalue = very high number
-                minindex =
+                minvalue = 1000000
+                minindex = 0
                 for hash_index, hash_weight in enumerate(hash_weights_list):
-                    #change Sk to hash_position
+                    #change Sk to hash_position WHYYY
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
-                    z2 = math.exp(lny2) * math.exp(r2)
-                    z2 = math.exp(lny2) * random.exponential(hash_weights_random[hash_index].r2) #exp distrubition from this argument
+                    z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
-                    if a is smaller than minvalue
-                        update minindex as well
+                    if a < minvalue:
+                        minvalue = a
+                        minindex = hash_index
                     hash_weights_list_distr[hash_index] = a
-#                for hash_position, word in enumerate(reversed(doc_hashed)): #hash_position/len(doc) * weight
                     doc_distrs = [hash_weights_list_distr[i] for i in doc_hashed]  # --check this-- recreating shingles list of a doc with randomization
-                    k = np.argmin(hash_weights_list_distr[hash_index]) #?????it returns k???
-                    k = minindex (which is the actual hash index)
-                    hash_position just for k
-                    t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k].r1 + hash_weights_random[k].b1) #??? should the k change the index like in the normal minhash??
-                    signature[doc_index] = (k, t1) # not a class, a tuple
+                    k = minindex
+                    #hash_position just for k #what is it??
+                    t1 = math.floor(math.log(hash_weights_list[k]) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
+                    signature[doc_index] = (k, t1)
 
         else:
             random.shuffle(hashes_shuffled)

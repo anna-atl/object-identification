@@ -156,7 +156,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
 def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative, try_number):
     #here we should use the top matching combindations from the finding_best_methods_for_atts function
-    dataset_size = 100000
+    dataset_size = 1000
     threshold = 0
     attribute_weights = [1, 2, 3]
 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
                     'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
                     'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    dataset_size = 1000000
+    dataset_size = 1000
 
     df_labeled_data = import_labeled_data()
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     number_of_tries = 1 #how many random datasets should be created
 
-    dataset_size = 1000000
+    dataset_size = 1000
     df = df.dropna(subset=['url_clean', 'name_clean'])
     try:
         df = df.sample(n=dataset_size)
