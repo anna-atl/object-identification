@@ -57,12 +57,12 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
-                hash_types = ['shingle']
+                hash_types = ['shingle words']
                 #hash_types = ['token']
                 #hash_types = ['token', 'shingle']
                 bands_numbers = [5]
                 signature_sizes = [50]
-                hash_weights = ['weighted minhash 2']
+                hash_weights = ['weighted minhash']
                 #hash_weights = ['normal']
                 #hash_weights = ['weighted', 'normal', 'frequency']
 

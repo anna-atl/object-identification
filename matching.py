@@ -66,9 +66,15 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
             hashes = [word for word in doc.split()]
         elif hash_type == 'shingle':
             hashes = create_shingles(doc, k)
+        elif hash_type == 'shingle words':
+            words = [word for word in doc.split()]
+            hashes = []
+            for word in words:
+                hashes1 = create_shingles(word, k)
+                hashes.extend(hashes1)
         for word_index, word in enumerate(reversed(hashes)):
             hashes_set.add(word)
-            if hash_weight == 'weighted' or hash_weight == 'weighted minhash':
+            if hash_weight == 'weighted' or hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
                 hash_weights_dict.setdefault(word, []).append(word_index + 1)
     if hash_weight == 'weighted hash':
         avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
@@ -94,9 +100,15 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             hashes = [word for word in doc.split()]
         elif hash_type == 'shingle':
             hashes = create_shingles(doc, k)
+        elif hash_type == 'shingle words':
+            words = [word for word in doc.split()]
+            hashes = []
+            for word in words:
+                hashes1 = create_shingles(word, k)
+                hashes.extend(hashes1)
         for word in hashes:
             doc_hashed.append(hashes_dict[word])
-            if hash_weight == 'weighted' or hash_weight == 'weighted minhash':
+            if hash_weight == 'weighted' or hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
                 hash_weights_list[hashes_dict[word]] = hash_weights_dict[word]
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
@@ -128,7 +140,9 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 doc_b = []
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
-                    doc_a = hashes_randomized[hash_index]
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0)
+                    hash_in_doc_weight = int(hash_in_doc_weight)
+                    doc_a = hashes_randomized[hash_index] #why its an empty list???
                     doc_a = doc_a[:hash_in_doc_weight]
                     doc_b.append(min(doc_a))
                 try:
@@ -147,7 +161,10 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 minvalue = 1000000
                 minindex = 0
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
-                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index]
+                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0)
+                    hash_in_doc_weight = int(hash_in_doc_weight)
+                    #hash_in_doc_weight??? why in weighted minhash 1 hash_in_doc_weight is a position and here a weight?
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
@@ -157,6 +174,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                         minposition = hash_in_doc_weight
                 k = minindex
                 hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k]
+                hash_in_doc_weight = round(hash_in_doc_weight, 0)
                 t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
                 signature[doc_index] = (k, t1)
 
