@@ -10,6 +10,7 @@ import random
 import Levenshtein
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
+import multiset
 
 from sklearn import preprocessing
 
@@ -214,11 +215,11 @@ def create_buckets(signatures, bands_number):
     return buckets_of_bands
 
 def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
-    #intersection = multiset(list1).intersection(list2)
-    #union = multiset(list1 + list2)
+    intersection = multiset(list1).intersection(list2)
+    union = multiset(list1).union(list2)
 
-    intersection = set(list1).intersection(list2)
-    union = set(list1 + list2)
+    #intersection = set(list1).intersection(list2)
+    #union = set(list1 + list2)
 
     #    union = set(list1).union(list2) #for multisets
     if hash_weight == 'normal':

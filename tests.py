@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import string
 import multiset
+import matching
 
 class TestDfPreparation:
 	df_input = pd.DataFrame(columns=['name'])
@@ -145,8 +146,12 @@ def test_empty_dict():
 	return c
 
 def test_multisets():
-	set1 = Multiset('aab')
-
+	list1 = [0, 1, 1]
+	list2 = [0, 0, 2]
+	hash_weight = 'normal'
+	hash_weights_list = []
+	a = matching.jaccard_weighted(list1, list2, hash_weight, hash_weights_list)
+	print(a)
 
 import multiprocessing
 import time
@@ -157,8 +162,7 @@ def bar():
         print("Tick")
         time.sleep(1)
 
-if __name__ == '__main__':
-    # Start bar as a process
+def multiprocc():    # Start bar as a process
     p = multiprocessing.Process(target=bar)
     p.start()
 
@@ -185,4 +189,4 @@ if __name__ == '__main__':
 #test_shingles_dict()
 #test_shingles_doc()
 #test_df_prepare()
-#test_multisets()
+test_multisets()
