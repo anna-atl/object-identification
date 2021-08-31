@@ -129,11 +129,10 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
 
     hashes_randomized = [[] for i in range(len(hash_weights_list))]
     hash_weights_random = [i for i in range(len(hash_weights_list))]
-    hash_weights_list_distr = [i for i in range(len(hash_weights_list))]
 
     for signature in signatures:   #iterating through rows of the signatures df
         if hash_weight == 'weighted minhash':
-            print(max(hash_weights_list)) #T%O FIX IT (larger dataset -> higher weights)
+            print(max(hash_weights_list))
             for hash_index, hash_randomized in enumerate(hashes_randomized):
                 randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]) #this is [vk(x), vk(x)...], k the same, x changes
                 hashes_randomized[hash_index] = randomhash
@@ -143,8 +142,8 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                     hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
                     hash_in_doc_weight = round(hash_in_doc_weight, 0)
                     hash_in_doc_weight = int(hash_in_doc_weight)
-                    doc_a = hashes_randomized[hash_index] #why its an empty list???
-                    doc_a = doc_a[:hash_in_doc_weight]
+                    doc_a = hashes_randomized[hash_index]
+                    doc_a = doc_a[:hash_in_doc_weight + 1]
                     doc_b.append(min(doc_a))
                 try:
                     signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
@@ -215,11 +214,11 @@ def create_buckets(signatures, bands_number):
     return buckets_of_bands
 
 def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
-    intersection = multiset(list1).intersection(list2)
-    union = multiset(list1).union(list2)
+    #intersection = multiset(list1).intersection(list2)
+    #union = multiset(list1).union(list2)
 
-    #intersection = set(list1).intersection(list2)
-    #union = set(list1 + list2)
+    intersection = set(list1).intersection(list2)
+    union = set(list1 + list2)
 
     #    union = set(list1).union(list2) #for multisets
     if hash_weight == 'normal':

@@ -49,15 +49,15 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
     #matching_attributes = ['url_clean', 'name_clean']
     #attribute_thresholds = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98, 0.99]
     #attribute_thresholds = [0.5, 0.8, 0.9, 0.95, 0.98, 0.99]
-    attribute_thresholds = [0.5]
-    #attribute_thresholds = [0, 0.5, 0.9, 0.99, 1.0]
+    #attribute_thresholds = [0.5]
+    attribute_thresholds = [0, 0.5, 0.9, 0.99, 1.0]
     #matching_methods = ['minhash', 'fuzzywuzzy', 'exact']
     matching_methods = ['minhash']
 
     for dataset_size in dataset_sizes:
         for matching_attribute in matching_attributes:
             for matching_method in matching_methods:
-                hash_types = ['shingle words']
+                hash_types = ['shingle']
                 #hash_types = ['token']
                 #hash_types = ['token', 'shingle']
                 bands_numbers = [5]
@@ -156,7 +156,7 @@ def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_posit
 
 def finding_best_combinations(df, df_results, df_labeled_data, labeled_positive, labeled_negative, try_number):
     #here we should use the top matching combindations from the finding_best_methods_for_atts function
-    dataset_size = 1000
+    dataset_size = 1000000
     threshold = 0
     attribute_weights = [1, 2, 3]
 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                     'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
                     'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
                     'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
-    dataset_size = 1000
+    dataset_size = 1000000
 
     df_labeled_data = import_labeled_data()
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     number_of_tries = 1 #how many random datasets should be created
 
-    dataset_size = 1000
+    dataset_size = 1000000
     df = df.dropna(subset=['url_clean', 'name_clean'])
     try:
         df = df.sample(n=dataset_size)
