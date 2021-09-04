@@ -10,10 +10,8 @@ import random
 import Levenshtein
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
-import multiset
-
+from multiset import Multiset
 from sklearn import preprocessing
-
 
 pd.set_option('display.max_columns', None)
 
@@ -147,6 +145,9 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                     doc_b.append(min(doc_a))
                 try:
                     signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
+                    index of the shingle within the create_shingle
+                    I asl need to save the hash as a signature
+
                 except:
                     print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
         elif hash_weight == 'weighted minhash 2':
@@ -162,21 +163,27 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 minindex = 0
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0)
-                    hash_in_doc_weight = int(hash_in_doc_weight)
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
+                    hash_in_doc_weight = int(hash_in_doc_weight) #no int
                     #hash_in_doc_weight??? why in weighted minhash 1 hash_in_doc_weight is a position and here a weight?
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
                     if a < minvalue:
                         minvalue = a #is a a weight?
+                        #a - min random number for this shingle
+                        #y2 - the position of this min random number
+
                         minindex = hash_index
-                        minposition = hash_in_doc_weight
+                        minposition = hash_position
+                        #y2 = math.exp(lny2) #ICWS
                 k = minindex
+                #for the I2CWS:
                 hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k]
-                hash_in_doc_weight = round(hash_in_doc_weight, 0)
+                hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
                 t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
                 signature[doc_index] = (k, t1)
+                t1 is integer, easier to compare (represents y1)
 
         else:
             random.shuffle(hashes_shuffled)
@@ -214,11 +221,11 @@ def create_buckets(signatures, bands_number):
     return buckets_of_bands
 
 def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
-    #intersection = multiset(list1).intersection(list2)
-    #union = multiset(list1).union(list2)
+    intersection = Multiset(list1).intersection(list2)
+    union = Multiset(list1).union(list2)
 
-    intersection = set(list1).intersection(list2)
-    union = set(list1 + list2)
+    #intersection = set(list1).intersection(list2)
+    #union = set(list1 + list2)
 
     #    union = set(list1).union(list2) #for multisets
     if hash_weight == 'normal':
