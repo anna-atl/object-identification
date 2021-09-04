@@ -135,22 +135,43 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]) #this is [vk(x), vk(x)...], k the same, x changes
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
-                doc_b = []
+                minvalue = 1000000
+
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
                     hash_in_doc_weight = round(hash_in_doc_weight, 0)
                     hash_in_doc_weight = int(hash_in_doc_weight)
                     doc_a = hashes_randomized[hash_index]
                     doc_a = doc_a[:hash_in_doc_weight + 1]
-                    doc_b.append(min(doc_a))
-                try:
-                    signature[doc_index] = min(doc_b)  # saving the smallest number for this randomization for this signature
-                    index of the shingle within the create_shingle
-                    I asl need to save the hash as a signature
-
-                except:
-                    print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+                    if min(doc_a) < minvalue:
+                        minvalue = min(doc_a)
+                        minindex = hash_index
+                        minweight = hash_in_doc_weight
+                signature[doc_index] = (minindex, minweight)
         elif hash_weight == 'weighted minhash 2':
+            for hash_index, hash_weight in enumerate(hash_weights_list):
+                r1 = random.gammavariate(2, 1)
+                b1 = random.uniform(0, 1)
+                c = random.gammavariate(2, 1)
+                hash_weights_random[hash_index] = hashes_parameters(r1, b1, c)  # class here is ok
+            for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
+                minvalue = 1000000
+                for hash_position, hash_index in enumerate(reversed(doc_hashed)):
+                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[
+                            hash_index]  # +1 check, maybe /len not correct
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0)  # no rounding
+                    hash_in_doc_weight = int(hash_in_doc_weight)  # no int
+                    lny1 = hash_weights_random[hash_index].r1 * (math.floor(
+                            math.log(hash_in_doc_weight) / hash_weights_random[hash_index].r2 + hash_weights_random[
+                                hash_index].b1) - hash_weights_random[hash_index].b1)
+                    z1 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r1)
+                    a = hash_weights_random[hash_index].c / z1
+                    if a < minvalue:
+                        minvalue = a  # a - min random number for this shingle
+                        minindex = hash_index
+                        minweight = math.exp(lny1) #y2 - the position of this min random number
+                signature[doc_index] = (minindex, minweight)
+        elif hash_weight == 'weighted minhash 3':
             for hash_index, hash_weight in enumerate(hash_weights_list):
                 r1 = random.gammavariate(2, 1)
                 r2 = random.gammavariate(2, 1)
@@ -160,30 +181,23 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 hash_weights_random[hash_index] = hashes_parameters(r1, r2, b1, b2, c) #class here is ok
             for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
                 minvalue = 1000000
-                minindex = 0
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
                     hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
                     hash_in_doc_weight = int(hash_in_doc_weight) #no int
-                    #hash_in_doc_weight??? why in weighted minhash 1 hash_in_doc_weight is a position and here a weight?
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
                     if a < minvalue:
-                        minvalue = a #is a a weight?
-                        #a - min random number for this shingle
-                        #y2 - the position of this min random number
-
+                        minvalue = a #a - min random number for this shingle
                         minindex = hash_index
                         minposition = hash_position
-                        #y2 = math.exp(lny2) #ICWS
                 k = minindex
                 #for the I2CWS:
                 hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k]
                 hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
                 t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
                 signature[doc_index] = (k, t1)
-                t1 is integer, easier to compare (represents y1)
 
         else:
             random.shuffle(hashes_shuffled)
