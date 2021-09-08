@@ -128,10 +128,10 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
     hash_weights_list_normalized = hash_weights_list_normalized[0].tolist()
     hash_weights_list_normalized = [i + 1 for i in hash_weights_list_normalized] #fix it, this is for not creating 0 random values
 
-    return docs_hashed, hash_weights_list_normalized
+    return docs_hashed, hash_weights_list_normalized, shingles_weights_in_docs
 
 #creating signatures array
-def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weight, hash_weights_list):
+def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weight, hash_weights_list, shingles_weights_in_docs):
     signatures = np.zeros((signature_size, len(docs_hashed))) #create a df with # rows = signature_size and #columns = docs
     hashes_shuffled = [i for i in range(len(hashes_dict))]  #create list of hashes indexes for further randomizing
 
@@ -147,6 +147,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 minvalue = 1000000
                     doc_a = hashes_randomized[hash_index]
+                    hash_in_doc_weight = shingles_weights_in_docs[hash_index]
                     doc_a = doc_a[:hash_in_doc_weight + 1]
                     if min(doc_a) < minvalue:
                         minvalue = min(doc_a)
@@ -163,7 +164,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
             for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
                 minvalue = 1000000
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
-                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
+                    hash_in_doc_weight = shingles_weights_in_docs[hash_index]
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
@@ -214,7 +215,7 @@ def create_buckets(signatures, bands_number):
 
     return buckets_of_bands
 
-def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not counting duplicate hashes
+def jaccard_weighted(list1, list2, hash_weight, hash_weights_list, shingles_weights_in_docs): #is not counting duplicate hashes
     intersection = Multiset(list1).intersection(list2)
     union = Multiset(list1).union(list2)
 
@@ -224,21 +225,26 @@ def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not coun
     #    union = set(list1).union(list2) #for multisets
     if hash_weight == 'normal':
         return len(intersection)/len(union)
+    elif hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
+        try:
+            return sum([shingles_weights_in_docs[i] for i in intersection]) / sum([shingles_weights_in_docs[i] for i in union])
+        except:
+            print('didnt work for list1 {}, list2 {}, hash_weight {}'.format(list1, list2, hash_weight))
     else:
         try:
             return sum([hash_weights_list[i] for i in intersection])/sum([hash_weights_list[i] for i in union])
         except:
-            print('didnt work for list1 {}, list2 {}, hash_weight {}, hash_weights_list {}'.format(list1, list2, hash_weight, hash_weights_list))
+            print('didnt work for list1 {}, list2 {}, hash_weight {}'.format(list1, list2, hash_weight))
 
     #weighted minhash - weight in the doc
-def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_weights_list):
+def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_weights_list, shingles_weights_in_docs):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
         for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
             for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
-                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], hash_weight, hash_weights_list))
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], hash_weight, hash_weights_list, shingles_weights_in_docs))
                         #to change here to weights........
     a = {key: item for key, item in matched_pairs.items() if 20236 in key}
     print(a)
@@ -255,18 +261,18 @@ def minhash(docs, attribute):
 
     start_time = time.time()
     print("Started converting docs to hashes...")
-    docs_hashed, hash_weights_list = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_dict, hashes_dict)
+    docs_hashed, hash_weights_list, shingles_weights_in_docs = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_dict, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started creating signatures...")
-    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict, attribute.hash_weight, hash_weights_list)
+    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict, attribute.hash_weight, hash_weights_list, shingles_weights_in_docs)
     signatures_creation_time = round(time.time() - start_time, 6)
     print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 
     start_time = time.time()
     print("Started creating buckets of potential matches...")
-    buckets_of_bands = create_buckets(signatures, attribute.bands_number)
+    buckets_of_bands = create_buckets(signatures, attribute.bands_number, shingles_weights_in_docs)
     buckets_creation_time = round(time.time() - start_time, 6)
     print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
 
