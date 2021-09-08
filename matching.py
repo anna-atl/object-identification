@@ -78,7 +78,7 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
     if hash_weight == 'weighted hash':
         avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
-    if hash_weight == 'weighted minhash':
+    elif hash_weight == 'weighted minhash':
         avg = {key: 1/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
 
