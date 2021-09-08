@@ -94,10 +94,10 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
     hash_weights_list_normalized = hash_weights_list_normalized[0].tolist()
     hash_weights_list_normalized = [i + 1 for i in hash_weights_list_normalized] #fix it, this is for not creating 0 random values
 
-    return hash_weights_dict, hashes_dict, hash_weights_list_normalized
+    return hash_weights_list_normalized, hashes_dict
 
 #converting docs to shingles
-def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_dict, hashes_dict):
+def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_list, hashes_dict):
     '''
     '''
     docs_hashed = [[] for i in range(len(docs))]
@@ -127,7 +127,7 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
                 shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
             shingles_weights_in_doc = {k:sum(v) for k,v in shingles_weights_in_doc.items()}
 
-    return docs_hashed, hash_weights_list_normalized, shingles_weights_in_docs
+    return docs_hashed, shingles_weights_in_docs
 
 #creating signatures array
 def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weight, hash_weights_list, shingles_weights_in_docs):
@@ -255,12 +255,12 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_we
 def minhash(docs, attribute):
     start_time = time.time()
     print("Started creating hashes...")
-    hash_weights_dict, hashes_dict, hash_weights_list = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
+    hash_weights_list, hashes_dict = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
     print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started converting docs to hashes...")
-    docs_hashed, hash_weights_list, shingles_weights_in_docs = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_dict, hashes_dict)
+    docs_hashed, shingles_weights_in_docs = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_list, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
