@@ -138,7 +138,6 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 minvalue = 1000000
-
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
                     #create a dict with weights of each shingle in a doc
@@ -150,8 +149,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                     if min(doc_a) < minvalue:
                         minvalue = min(doc_a)
                         minindex = hash_index
-                        minweight = hash_in_doc_weight
-                signature[doc_index] = (minindex, minweight)
+                signature[doc_index] = (minindex, minvalue)
         elif hash_weight == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
                 r1 = random.gammavariate(2, 1)
@@ -164,8 +162,6 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 minvalue = 1000000
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding, here is not needed
-                    hash_in_doc_weight = int(hash_in_doc_weight) #no int
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
                     a = hash_weights_random[hash_index].c / z2
