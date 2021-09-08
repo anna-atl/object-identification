@@ -152,30 +152,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                         minindex = hash_index
                         minweight = hash_in_doc_weight
                 signature[doc_index] = (minindex, minweight)
-        elif hash_weight == 'weighted minhash 2': #not implement this
-            for hash_index, hash_weight in enumerate(hash_weights_list):
-                r1 = random.gammavariate(2, 1)
-                b1 = random.uniform(0, 1)
-                c = random.gammavariate(2, 1)
-                hash_weights_random[hash_index] = hashes_parameters(r1, b1, c)  # class here is ok
-            for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
-                minvalue = 1000000
-                for hash_position, hash_index in enumerate(reversed(doc_hashed)):
-                    hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[
-                            hash_index]  # +1 check, maybe /len not correct
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0)  # no rounding
-                    hash_in_doc_weight = int(hash_in_doc_weight)  # no int
-                    lny1 = hash_weights_random[hash_index].r1 * (math.floor(
-                            math.log(hash_in_doc_weight) / hash_weights_random[hash_index].r2 + hash_weights_random[
-                                hash_index].b1) - hash_weights_random[hash_index].b1)
-                    z1 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r1)
-                    a = hash_weights_random[hash_index].c / z1
-                    if a < minvalue:
-                        minvalue = a  # a - min random number for this shingle
-                        minindex = hash_index
-                        minweight = math.exp(lny1) #y2 - the position of this min random number
-                signature[doc_index] = (minindex, minweight)
-        elif hash_weight == 'weighted minhash 3':
+        elif hash_weight == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
                 r1 = random.gammavariate(2, 1)
                 r2 = random.gammavariate(2, 1)
