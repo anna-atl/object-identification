@@ -118,8 +118,6 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
                 hashes.extend(hashes1)
         for word in hashes:
             doc_hashed.append(hashes_dict[word])
-            if hash_weight == 'weighted' or hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
-                hash_weights_list[hashes_dict[word]] = hash_weights_dict[word]
 
         #how to normalize here???
         # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
