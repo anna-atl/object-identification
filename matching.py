@@ -112,6 +112,8 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
 
+    #and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
+    #put it in diff function
     hash_weights_list_normalized = preprocessing.normalize([hash_weights_list])
     hash_weights_list_normalized = np.round(hash_weights_list_normalized * 1000, 0)
     hash_weights_list_normalized = hash_weights_list_normalized.astype(int)
@@ -139,7 +141,9 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
 
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0)
+                    #create a dict with weights of each shingle in a doc
+                    #before in dict of shingles
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #here we still need it but in weighted minhash 2/3 no
                     hash_in_doc_weight = int(hash_in_doc_weight)
                     doc_a = hashes_randomized[hash_index]
                     doc_a = doc_a[:hash_in_doc_weight + 1]
@@ -148,7 +152,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                         minindex = hash_index
                         minweight = hash_in_doc_weight
                 signature[doc_index] = (minindex, minweight)
-        elif hash_weight == 'weighted minhash 2':
+        elif hash_weight == 'weighted minhash 2': #not implement this
             for hash_index, hash_weight in enumerate(hash_weights_list):
                 r1 = random.gammavariate(2, 1)
                 b1 = random.uniform(0, 1)
@@ -183,7 +187,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 minvalue = 1000000
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = (hash_position + 1) / len(doc_hashed) * hash_weights_list[hash_index] #+1 check, maybe /len not correct
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
+                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding, here is not needed
                     hash_in_doc_weight = int(hash_in_doc_weight) #no int
                     lny2 = hash_weights_random[hash_index].r2*(math.floor(math.log(hash_in_doc_weight)/hash_weights_random[hash_index].r2 + hash_weights_random[hash_index].b2) - hash_weights_random[hash_index].b2)
                     z2 = math.exp(lny2) * math.exp(hash_weights_random[hash_index].r2)
@@ -194,7 +198,7 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                         minposition = hash_position
                 k = minindex
                 #for the I2CWS:
-                hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k]
+                hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k] #this won't be needed
                 hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
                 t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
                 signature[doc_index] = (k, t1)
@@ -217,12 +221,14 @@ def create_buckets(signatures, bands_number):
 
     for band, buckets_of_band in zip(range(bands_number), buckets_of_bands): #buckets - dict:1,2,3,4,5. key - one bucket
         for doc_index in range(len(signatures[0])): #iterating through docs
-            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(doc_index)
+            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index][0]), []).append(doc_index)
+            #!!!use the whole signature, remove [0]
             #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
             #if the signatures of this bucket are same then key is the signature and values: doc index
             #if unique signature then only one doc_index will be as a value
             if (doc_index == 20236) | (doc_index == 23657):
-                print(signatures[band * r:band * r + r, doc_index])
+                print(signatures[band * r:band * r + r, doc_index][0]) #compare signature tuples. 2 element - is the number of an integer bw 0 and the weight
+                #index of the min generated random number
                 print(doc_index)
 
         filtered = {key: item for key, item in buckets_of_band.items() if len(item) > 1} #filter out where one value (one doc with this signature)
@@ -250,6 +256,7 @@ def jaccard_weighted(list1, list2, hash_weight, hash_weights_list): #is not coun
         except:
             print('didnt work for list1 {}, list2 {}, hash_weight {}, hash_weights_list {}'.format(list1, list2, hash_weight, hash_weights_list))
 
+    #weighted minhash - weight in the doc
 def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_weights_list):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
@@ -258,6 +265,7 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_we
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], hash_weight, hash_weights_list))
+                        #to change here to weights........
     a = {key: item for key, item in matched_pairs.items() if 20236 in key}
     print(a)
     #if (doc_index_2 == 20236) | (doc_index_1 == 23657):
