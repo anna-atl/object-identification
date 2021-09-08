@@ -196,13 +196,12 @@ def create_buckets(signatures, bands_number):
 
     for band, buckets_of_band in zip(range(bands_number), buckets_of_bands): #buckets - dict:1,2,3,4,5. key - one bucket
         for doc_index in range(len(signatures[0])): #iterating through docs
-            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index][0]), []).append(doc_index)
-            #!!!use the whole signature, remove [0]
+            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(doc_index)
             #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
             #if the signatures of this bucket are same then key is the signature and values: doc index
             #if unique signature then only one doc_index will be as a value
             if (doc_index == 20236) | (doc_index == 23657):
-                print(signatures[band * r:band * r + r, doc_index][0]) #compare signature tuples. 2 element - is the number of an integer bw 0 and the weight
+                print(signatures[band * r:band * r + r, doc_index]) #compare signature tuples. 2 element - is the number of an integer bw 0 and the weight
                 #index of the min generated random number
                 print(doc_index)
 
