@@ -91,10 +91,11 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
     '''
     '''
     docs_hashed = [[] for i in range(len(docs))]
+    shingles_weights_in_docs = [{} for i in range(len(docs))]
     hash_weights_list = [0] * len(hashes_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
     k = shingle_size
 
-    for doc_hashed, doc in zip(docs_hashed, docs):
+    for doc_hashed, doc, shingles_weights_in_doc in zip(docs_hashed, docs, shingles_weights_in_docs):
         if hash_type == 'token':
             hashes = [word for word in doc.split()]
         elif hash_type == 'shingle':
@@ -112,7 +113,14 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             elif hash_weight == 'frequency':
                 hash_weights_list[hashes_dict[word]] += 1
 
-    #and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
+        #how to normalize here???
+        # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
+        if hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
+            for hash_position, hash_index in enumerate(reversed(doc_hashed)):
+                hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index] #check if list is already created
+                shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
+            shingles_weights_in_doc = {k:sum(v) for k,v in shingles_weights_in_doc.items()}
+
     #put it in diff function
     hash_weights_list_normalized = preprocessing.normalize([hash_weights_list])
     hash_weights_list_normalized = np.round(hash_weights_list_normalized * 1000, 0)
@@ -138,12 +146,6 @@ def create_signatures_array(docs_hashed, signature_size, hashes_dict, hash_weigh
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 minvalue = 1000000
-                for hash_position, hash_index in enumerate(reversed(doc_hashed)):
-                    hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index]
-                    #create a dict with weights of each shingle in a doc
-                    #before in dict of shingles
-                    hash_in_doc_weight = round(hash_in_doc_weight, 0) #here we still need it but in weighted minhash 2/3 no
-                    hash_in_doc_weight = int(hash_in_doc_weight)
                     doc_a = hashes_randomized[hash_index]
                     doc_a = doc_a[:hash_in_doc_weight + 1]
                     if min(doc_a) < minvalue:
