@@ -84,7 +84,17 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
 
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
-    return hash_weights_dict, hashes_dict
+    hash_weights_dict = {y: x for x, y in hash_weights_dict.iteritems()} #to switch shingles and their indexes
+    hash_weights_list = [hash_weights_dict[key] if key in hash_weights_dict.keys() else 0 for key in range(len(hashes_set))]
+
+    #put it in diff function
+    hash_weights_list_normalized = preprocessing.normalize([hash_weights_list])
+    hash_weights_list_normalized = np.round(hash_weights_list_normalized * 1000, 0)
+    hash_weights_list_normalized = hash_weights_list_normalized.astype(int)
+    hash_weights_list_normalized = hash_weights_list_normalized[0].tolist()
+    hash_weights_list_normalized = [i + 1 for i in hash_weights_list_normalized] #fix it, this is for not creating 0 random values
+
+    return hash_weights_dict, hashes_dict, hash_weights_list_normalized
 
 #converting docs to shingles
 def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_dict, hashes_dict):
@@ -120,13 +130,6 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
                 hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index] #check if list is already created
                 shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
             shingles_weights_in_doc = {k:sum(v) for k,v in shingles_weights_in_doc.items()}
-
-    #put it in diff function
-    hash_weights_list_normalized = preprocessing.normalize([hash_weights_list])
-    hash_weights_list_normalized = np.round(hash_weights_list_normalized * 1000, 0)
-    hash_weights_list_normalized = hash_weights_list_normalized.astype(int)
-    hash_weights_list_normalized = hash_weights_list_normalized[0].tolist()
-    hash_weights_list_normalized = [i + 1 for i in hash_weights_list_normalized] #fix it, this is for not creating 0 random values
 
     return docs_hashed, hash_weights_list_normalized, shingles_weights_in_docs
 
@@ -256,7 +259,7 @@ def calculate_matches_ratios(buckets_of_bands, docs_hashed, hash_weight, hash_we
 def minhash(docs, attribute):
     start_time = time.time()
     print("Started creating hashes...")
-    hash_weights_dict, hashes_dict = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
+    hash_weights_dict, hashes_dict, hash_weights_list = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
     print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
