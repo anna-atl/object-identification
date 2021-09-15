@@ -18,6 +18,9 @@ from fuzzywuzzy import process
 from multiset import Multiset
 from sklearn import preprocessing
 
+import creating_signatures
+import comparison
+import shingling
 
 pd.set_option('display.max_columns', None)
 
