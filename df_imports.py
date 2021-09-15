@@ -4,7 +4,6 @@ import numpy as np
 import sqlite3
 from sqlite3 import Error
 
-
 def df_prepare(df):
     '''
     This def cleans names from non text-number characters
