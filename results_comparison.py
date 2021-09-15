@@ -8,13 +8,6 @@ from functools import reduce
 from matching import attribute_matching_params
 
 
-#populate the attributes to the dfs
-def create_df_with_attributes(df_matches, df):
-    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    return df_matches_full
 
 def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative, try_number):
     '''

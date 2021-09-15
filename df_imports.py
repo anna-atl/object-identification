@@ -78,7 +78,8 @@ def df_prepare(df):
     df = df.replace(r'^\s*$', np.NaN, regex=True)
     #df = df.dropna(subset=['url_clean'])
     df = df.dropna(how='all')
-#    df = df.dropna()
+    df = df.reset_index(drop=True)
+
     return df
 
 def df_import(dataset_size):
@@ -91,10 +92,6 @@ def df_import(dataset_size):
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL LIMIT (?)", conn, params=(dataset_size,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' and url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size,))
 
-    df = df_prepare(df)
-    df = df.reset_index(drop=True)
-#    print(df)
-    print(df.dtypes)
     return df
 
 def mapping_creation():
@@ -118,10 +115,7 @@ def mapping_creation():
     docs_mapping['new_index'] = docs_mapping.index
     docs_mapping = docs_mapping.drop([attribute.matching_attribute], axis=1)
 
+def main(dataset_size_to_import, matching_attribute):
+    df = df_import(dataset_size_to_import)
+    df = df_prepare(df)
 
-
-    df = df.dropna(subset=['url_clean', 'name_clean'])
-    try:
-        df = df.sample(n=dataset_size)
-    except:
-        print('dataset size is larger than...')

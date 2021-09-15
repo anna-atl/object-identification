@@ -3,6 +3,7 @@ import numpy as np
 import string
 import datetime
 from sklearn import preprocessing
+import time
 
 pd.set_option('display.max_columns', None)
 
@@ -92,17 +93,19 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                 hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index] #check if list is already created
                 shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
-            shingles_weights_in_doc = {k:sum(v) for k,v in shingles_weights_in_doc.items()}
+            shingles_weights_in_doc = {k: sum(v) for k, v in shingles_weights_in_doc.items()}
 
     return docs_hashed, shingles_weights_in_docs
 
-def main():
+def main(docs, hash_type, shingle_size, hash_weight):
     start_time = time.time()
     print("Started creating hashes...")
-    hash_weights_list, hashes_dict = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
+    hash_weights_list, hashes_dict = create_hashes(docs, hash_type, shingle_size, hash_weight)
     print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started co nverting docs to hashes...")
-    docs_hashed, shingles_weights_in_docs = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_list, hashes_dict)
+    docs_hashed, shingles_weights_in_docs = convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_list, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
+
+    return docs_shingles, shingles_weights_in_docs, hash_weights_list
