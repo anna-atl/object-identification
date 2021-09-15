@@ -95,3 +95,14 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             shingles_weights_in_doc = {k:sum(v) for k,v in shingles_weights_in_doc.items()}
 
     return docs_hashed, shingles_weights_in_docs
+
+def main():
+    start_time = time.time()
+    print("Started creating hashes...")
+    hash_weights_list, hashes_dict = create_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight)
+    print("Creating hashes took --- %s seconds ---" % (time.time() - start_time))
+
+    start_time = time.time()
+    print("Started co nverting docs to hashes...")
+    docs_hashed, shingles_weights_in_docs = convert_docs_to_hashes(docs, attribute.hash_type, attribute.shingle_size, attribute.hash_weight, hash_weights_list, hashes_dict)
+    print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))

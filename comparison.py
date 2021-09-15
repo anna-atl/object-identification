@@ -69,3 +69,26 @@ def other_matching_methods(docs, matching_method):
                     if doc1 == doc2:
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
+
+def main():
+    start_time = time.time()
+    print("Started calculating jacc for potential matches in buckets...")
+    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, attribute.hash_weight, hash_weights_list)
+    finding_matches_time = round(time.time() - start_time, 6)
+    print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
+
+    print("Started creating one match score column from tuples...")
+    if len(matched_pairs) != 0:
+        df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=[
+            'match_score_{}'.format(
+                attribute.matching_attribute)])  # oriend='index' for making keys as rows, not columns
+        df_matches['matches_tuple'] = df_matches.index
+        a = df_matches['matches_tuple'].tolist()
+        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+        df_matches = df_matches.drop(['matches_tuple'], axis=1)
+        df_matches = df_matches.reset_index(drop=True)
+    else:
+        column_names = ['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']
+        df_matches = pd.DataFrame(columns=column_names)
+
+    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)]

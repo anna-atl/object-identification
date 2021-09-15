@@ -100,3 +100,18 @@ def create_buckets(signatures, bands_number):
         #print(a)
 
     return buckets_of_bands
+
+
+
+def main():
+    start_time = time.time()
+    print("Started creating signatures...")
+    signatures = create_signatures_array(docs_hashed, attribute.signature_size, hashes_dict, attribute.hash_weight, hash_weights_list, shingles_weights_in_docs)
+    signatures_creation_time = round(time.time() - start_time, 6)
+    print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
+
+    start_time = time.time()
+    print("Started creating buckets of potential matches...")
+    buckets_of_bands = create_buckets(signatures, attribute.bands_number, shingles_weights_in_docs)
+    buckets_creation_time = round(time.time() - start_time, 6)
+    print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
