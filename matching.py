@@ -84,6 +84,7 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
 
     hashes_dict = dict(zip(hashes_set, range(len(hashes_set))))
 
+    #should change shingles in hash_weights_dict to their indexes
     hash_weights_dict = {y: x for x, y in hash_weights_dict.iteritems()} #to switch shingles and their indexes
     hash_weights_list = [hash_weights_dict[key] if key in hash_weights_dict.keys() else 0 for key in range(len(hashes_set))]
 
