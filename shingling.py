@@ -40,12 +40,12 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
                 hashes.extend(hashes1)
         for word_index, word in enumerate(reversed(hashes)):
             hashes_set.add(word)
-            if hash_weight == 'weighted' or hash_weight == 'weighted minhash 1' or hash_weight == 'weighted minhash 2':
+            if hash_weight == 'weighted':
                 hash_weights_dict.setdefault(word, []).append(word_index + 1)
     if hash_weight == 'weighted hash':
         avg = {key: sum(value)/len(value)/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
-    elif hash_weight == 'weighted minhash 1' or hash_weight == 'weighted minhash 2':
+    elif hash_weight == 'weighted':
         avg = {key: 1/len(value) for key, value in hash_weights_dict.items()}
         hash_weights_dict.update(avg)
 
@@ -89,10 +89,8 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
             doc_shingled.append(hashes_dict[word])
 
         # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
-        if hash_weight == 'weighted minhash 1' or hash_weight == 'weighted minhash 2':
+        if hash_weight == 'weighted':
             for hash_position, hash_index in enumerate(reversed(doc_shingled)):
-                print(hash_weights_list[hash_index])
-                print(reversed(doc_shingled))
                 hash_in_doc_weight = (hash_position + 1)/len(doc_shingled) * hash_weights_list[hash_index] #check if list is already created
                 shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
             shingles_weights_in_doc = {k: sum(v) for k, v in shingles_weights_in_doc.items()}

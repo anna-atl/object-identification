@@ -35,17 +35,30 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                     print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
         elif buckets_type == 'weighted minhash 1':
             print(max(hash_weights_list))
+            print(min(hash_weights_list))
             for hash_index, hash_randomized in enumerate(hashes_randomized):
-                randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]) #this is [vk(x), vk(x)...], k the same, x changes
+                randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]+1) #this is [vk(x), vk(x)...], k the same, x changes
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 minvalue = 1000000
-                doc_a = hashes_randomized[hash_index]
-                hash_in_doc_weight = shingles_weights_in_docs[hash_index]
-                doc_a = doc_a[:hash_in_doc_weight + 1]
-                if min(doc_a) < minvalue:
-                    minvalue = min(doc_a)
-                    minindex = hash_index
+                shingles_weights_in_doc = shingles_weights_in_docs[doc_index]
+                for hash_position, hash_index in enumerate(doc_hashed):
+                    print(hash_index)
+                    doc_a = hashes_randomized[hash_index]
+                    print(doc_a)
+                    hash_in_doc_weight = shingles_weights_in_doc[hash_index]
+                    hash_in_doc_weight = np.round(hash_in_doc_weight[0], 0) #[0] hard coded, should be fixed
+                    hash_in_doc_weight = hash_in_doc_weight.astype(int)
+                    doc_a = doc_a[:hash_in_doc_weight+1]
+                    print(shingles_weights_in_doc[hash_index])
+                    print(doc_a)
+                    a = min(doc_a)
+                    print(a)
+                    if a < minvalue:
+                        minvalue = a
+                        minindex = hash_index
+                print(minvalue)
+                print(minindex)
                 signature[doc_index] = (minindex, minvalue)
         elif buckets_type == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
@@ -86,17 +99,10 @@ def create_buckets(signatures, bands_number):
             #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
             #if the signatures of this bucket are same then key is the signature and values: doc index
             #if unique signature then only one doc_index will be as a value
-            if (doc_index == 20236) | (doc_index == 23657):
-                print(signatures[band * r:band * r + r, doc_index]) #compare signature tuples. 2 element - is the number of an integer bw 0 and the weight
-                #index of the min generated random number
-                print(doc_index)
 
         filtered = {key: item for key, item in buckets_of_band.items() if len(item) > 1} #filter out where one value (one doc with this signature)
         buckets_of_band.clear()
         buckets_of_band.update(filtered)
-
-        #a = {key: item for key, item in buckets_of_band.items() if len(set(item).intersection([20236, 23657])) >= 2} #filter out where one value (one doc with this signature)
-        #print(a)
 
     return buckets_of_bands
 

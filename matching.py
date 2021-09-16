@@ -67,8 +67,8 @@ if __name__ == "__main__":
     matching_attribute = 'name_clean'
     hash_type = 'shingle'
     shingle_size = 3
-    hash_weight = 'weighted minhash 1'
-    buckets_type = 'minhash'
+    hash_weight = 'weighted'
+    buckets_type = 'weighted minhash 1'
     signature_size = 50
     bands_number = 5
     comparison_method = 'jaccard'
@@ -96,9 +96,4 @@ if __name__ == "__main__":
     results = results_evaluation.main(df_matches)
 
     print('------------------------------------------------')
-    print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(
-    atts.matching_attribute, atts.matching_method, len(docs), time.time() - start_time))
-
-
-
-
+    print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
