@@ -33,7 +33,7 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                     signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
                 except:
                     print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
-        elif buckets_type == 'weighted minhash':
+        elif buckets_type == 'weighted minhash 1':
             print(max(hash_weights_list))
             for hash_index, hash_randomized in enumerate(hashes_randomized):
                 randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]) #this is [vk(x), vk(x)...], k the same, x changes

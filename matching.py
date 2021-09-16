@@ -67,7 +67,7 @@ if __name__ == "__main__":
     matching_attribute = 'name_clean'
     hash_type = 'shingle'
     shingle_size = 3
-    hash_weight = 'weighted minhash'
+    hash_weight = 'weighted minhash 1'
     buckets_type = 'minhash'
     signature_size = 50
     bands_number = 5
