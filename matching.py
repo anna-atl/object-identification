@@ -13,7 +13,7 @@ import results_evaluation
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, hash_type='none', shingle_size=0, hash_weight='none', buckets_type = 'none', signature_size=50, bands_number=5, comparison_method='jaccard', sum_scores='sum', attribute_threshold=0):
+    def __init__(self, matching_attribute, hash_type='none', shingle_size=0, hash_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', sum_score='sum', attribute_threshold=0):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
@@ -28,13 +28,13 @@ class attribute_matching_params:
         self.bands_number = bands_number
         #comparison
         self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
-        self.sum_scores = sum_scores #sum_scores, multiplication
+        self.sum_score = sum_score #sum_scores, multiplication
         self.attribute_threshold = attribute_threshold
 
     def __str__(self):
         return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
-def add_attributes_to_matches():
+def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
     print("Started joining the result with the mapping table...")
     df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
     b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
@@ -59,24 +59,26 @@ def add_attributes_to_matches():
     df_matches_full = df_matches_full.drop(['id'], axis=1)
     return df_matches_full
 
-def main(df, dataset_size, attribute):
+if __name__ == "__main__":
     number_of_tries = 1 #how many random datasets should be created
     dataset_size_to_import = 500
     dataset_size = 1000000
 
     matching_attribute = 'name_clean'
-    buckets_type = 'minhash'
     hash_type = 'shingle'
-    bands_number = 5
-    signature_size = 50
-    hash_weight = 'weighted minhash'
     shingle_size = 3
+    hash_weight = 'weighted minhash'
+    buckets_type = 'minhash'
+    signature_size = 50
+    bands_number = 5
+    comparison_method = 'jaccard'
+    sum_score = 'sum'
     attribute_threshold = 0
 
     atts = attribute_matching_params(matching_attribute,
                                           hash_type, shingle_size, hash_weight,
                                           buckets_type, signature_size, bands_number,
-                                          comparison_method, sum_scores)
+                                          comparison_method, sum_score, attribute_threshold)
 
     start_time = time.time()
     print('------------------------------------------------')
@@ -89,13 +91,13 @@ def main(df, dataset_size, attribute):
     df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, atts.sum_scores)
 
     print("Started adding matches attributes...")
-    matches_with_attributes = create_df_with_attributes(matches, df_with_attributes, docs_mapping)
+    matches_with_attributes = add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
     print("...Added matches attributes")
-    results = results_evaluation.main(matches)
+    results = results_evaluation.main(df_matches)
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} attribute with {} and {} size --- {} seconds ---".format(
-    attribute.matching_attribute, attribute.matching_method, len(docs), time.time() - start_time))
+    atts.matching_attribute, atts.matching_method, len(docs), time.time() - start_time))
 
 
 

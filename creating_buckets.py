@@ -40,12 +40,12 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                 hashes_randomized[hash_index] = randomhash
             for doc_index, doc_hashed in enumerate(docs_hashed):
                 minvalue = 1000000
-                    doc_a = hashes_randomized[hash_index]
-                    hash_in_doc_weight = shingles_weights_in_docs[hash_index]
-                    doc_a = doc_a[:hash_in_doc_weight + 1]
-                    if min(doc_a) < minvalue:
-                        minvalue = min(doc_a)
-                        minindex = hash_index
+                doc_a = hashes_randomized[hash_index]
+                hash_in_doc_weight = shingles_weights_in_docs[hash_index]
+                doc_a = doc_a[:hash_in_doc_weight + 1]
+                if min(doc_a) < minvalue:
+                    minvalue = min(doc_a)
+                    minindex = hash_index
                 signature[doc_index] = (minindex, minvalue)
         elif buckets_type == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
@@ -114,4 +114,4 @@ def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_typ
     buckets_creation_time = round(time.time() - start_time, 6)
     print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
 
-return buckets_of_bands
+    return buckets_of_bands

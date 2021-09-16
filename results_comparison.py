@@ -7,8 +7,6 @@ import datetime
 from functools import reduce
 from matching import attribute_matching_params
 
-
-
 def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative, try_number):
     '''
     iterating through all matching methods for attributes for finding the best methods for each attribute

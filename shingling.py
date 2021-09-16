@@ -69,12 +69,12 @@ def create_hashes(docs, hash_type, shingle_size, hash_weight):
 def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_list, hashes_dict):
     '''
     '''
-    docs_hashed = [[] for i in range(len(docs))]
+    docs_shingled = [[] for i in range(len(docs))]
     shingles_weights_in_docs = [{} for i in range(len(docs))]
     hash_weights_list = [0] * len(hashes_dict) #check because when a text is smaller than k, a splace in the end is added. so this shingle might stay with 0 weight
     k = shingle_size
 
-    for doc_hashed, doc, shingles_weights_in_doc in zip(docs_hashed, docs, shingles_weights_in_docs):
+    for doc_shingled, doc, shingles_weights_in_doc in zip(docs_shingled, docs, shingles_weights_in_docs):
         if hash_type == 'token':
             hashes = [word for word in doc.split()]
         elif hash_type == 'shingle':
@@ -86,16 +86,16 @@ def convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weig
                 hashes1 = create_shingles(word, k)
                 hashes.extend(hashes1)
         for word in hashes:
-            doc_hashed.append(hashes_dict[word])
+            doc_shingled.append(hashes_dict[word])
 
         # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
         if hash_weight == 'weighted minhash' or hash_weight == 'weighted minhash 2':
-            for hash_position, hash_index in enumerate(reversed(doc_hashed)):
-                hash_in_doc_weight = (hash_position + 1)/len(doc_hashed) * hash_weights_list[hash_index] #check if list is already created
+            for hash_position, hash_index in enumerate(reversed(doc_shingled)):
+                hash_in_doc_weight = (hash_position + 1)/len(doc_shingled) * hash_weights_list[hash_index] #check if list is already created
                 shingles_weights_in_doc.setdefault(hash_index, []).append(hash_in_doc_weight)
             shingles_weights_in_doc = {k: sum(v) for k, v in shingles_weights_in_doc.items()}
 
-    return docs_hashed, shingles_weights_in_docs
+    return docs_shingled, shingles_weights_in_docs
 
 def main(docs, hash_type, shingle_size, hash_weight):
     start_time = time.time()
@@ -105,7 +105,7 @@ def main(docs, hash_type, shingle_size, hash_weight):
 
     start_time = time.time()
     print("Started co nverting docs to hashes...")
-    docs_hashed, shingles_weights_in_docs = convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_list, hashes_dict)
+    docs_shingled, shingles_weights_in_docs = convert_docs_to_hashes(docs, hash_type, shingle_size, hash_weight, hash_weights_list, hashes_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
 
-    return docs_shingles, shingles_weights_in_docs, hash_weights_list
+    return docs_shingled, shingles_weights_in_docs, hash_weights_list

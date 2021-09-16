@@ -46,28 +46,7 @@
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.results_comparison">
-    <configuration name="labeled_data_creation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="object-identification" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/labeled_data_creation.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.matching">
     <configuration name="matching" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="object-identification" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -102,6 +81,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/results_comparison.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="shingling" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="object-identification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/shingling.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -154,11 +154,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.matching" />
+        <item itemvalue="Python.shingling" />
         <item itemvalue="Python.results_comparison" />
         <item itemvalue="Python.tests" />
         <item itemvalue="Python.test_additional" />
-        <item itemvalue="Python.matching" />
-        <item itemvalue="Python.labeled_data_creation" />
       </list>
     </recent_temporary>
   </component>
@@ -192,45 +192,45 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state width="1222" height="466" key="DebuggerActiveHint/0.0.1440.900@0.0.1440.900" timestamp="1630124724269" />
-    <state width="1419" height="189" key="GridCell.Tab.0.bottom" timestamp="1631370751499">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.0.bottom" timestamp="1631778624823">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1631370749975" />
+    <state width="767" height="303" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1631778624823" />
     <state width="1419" height="189" key="GridCell.Tab.0.bottom/0.23.1440.809@0.23.1440.809" timestamp="1631370751499" />
-    <state width="1419" height="189" key="GridCell.Tab.0.center" timestamp="1631370751497">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.0.center" timestamp="1631778624821">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1631370749973" />
+    <state width="767" height="303" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1631778624821" />
     <state width="1419" height="189" key="GridCell.Tab.0.center/0.23.1440.809@0.23.1440.809" timestamp="1631370751497" />
-    <state width="1419" height="189" key="GridCell.Tab.0.left" timestamp="1631370751496">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.0.left" timestamp="1631778624820">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1631370749957" />
+    <state width="767" height="303" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1631778624820" />
     <state width="1419" height="189" key="GridCell.Tab.0.left/0.23.1440.809@0.23.1440.809" timestamp="1631370751496" />
-    <state width="1419" height="189" key="GridCell.Tab.0.right" timestamp="1631370751498">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.0.right" timestamp="1631778624822">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1631370749974" />
+    <state width="767" height="303" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1631778624822" />
     <state width="1419" height="189" key="GridCell.Tab.0.right/0.23.1440.809@0.23.1440.809" timestamp="1631370751498" />
-    <state width="1419" height="355" key="GridCell.Tab.1.bottom" timestamp="1631370751316">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.1.bottom" timestamp="1631778675109">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.1.bottom/0.0.1440.900@0.0.1440.900" timestamp="1631370749982" />
+    <state width="767" height="303" key="GridCell.Tab.1.bottom/0.0.1440.900@0.0.1440.900" timestamp="1631778675109" />
     <state width="1419" height="355" key="GridCell.Tab.1.bottom/0.23.1440.809@0.23.1440.809" timestamp="1631370751316" />
-    <state width="1419" height="355" key="GridCell.Tab.1.center" timestamp="1631370751313">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.1.center" timestamp="1631778675107">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.1.center/0.0.1440.900@0.0.1440.900" timestamp="1631370749976" />
+    <state width="767" height="303" key="GridCell.Tab.1.center/0.0.1440.900@0.0.1440.900" timestamp="1631778675107" />
     <state width="1419" height="355" key="GridCell.Tab.1.center/0.23.1440.809@0.23.1440.809" timestamp="1631370751313" />
-    <state width="1419" height="355" key="GridCell.Tab.1.left" timestamp="1631370751313">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.1.left" timestamp="1631778675107">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.1.left/0.0.1440.900@0.0.1440.900" timestamp="1631370749976" />
+    <state width="767" height="303" key="GridCell.Tab.1.left/0.0.1440.900@0.0.1440.900" timestamp="1631778675107" />
     <state width="1419" height="355" key="GridCell.Tab.1.left/0.23.1440.809@0.23.1440.809" timestamp="1631370751313" />
-    <state width="1419" height="355" key="GridCell.Tab.1.right" timestamp="1631370751314">
-      <screen x="0" y="23" width="1440" height="809" />
+    <state width="767" height="303" key="GridCell.Tab.1.right" timestamp="1631778675108">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
-    <state width="1419" height="355" key="GridCell.Tab.1.right/0.0.1440.900@0.0.1440.900" timestamp="1631370749977" />
+    <state width="767" height="303" key="GridCell.Tab.1.right/0.0.1440.900@0.0.1440.900" timestamp="1631778675108" />
     <state width="1419" height="355" key="GridCell.Tab.1.right/0.23.1440.809@0.23.1440.809" timestamp="1631370751314" />
     <state x="392" y="70" key="SettingsEditor" timestamp="1630661529417">
       <screen x="0" y="0" width="1440" height="900" />
@@ -251,6 +251,13 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/matching.py</url>
+          <line>89</line>
+          <option name="timeStamp" value="294" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
