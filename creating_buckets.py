@@ -18,7 +18,7 @@ class hashes_parameters:
 
 #creating signatures array
 def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weights_list, shingles_weights_in_docs):
-    signatures = np.zeros((signature_size, len(docs_hashed))) #create a df with # rows = signature_size and #columns = docs
+    signatures = np.zeros((signature_size, len(docs_hashed)), dtype=tuple) #create a df with # rows = signature_size and #columns = docs
     hashes_shuffled = [i for i in range(len(hash_weights_list))]  #create list of hashes indexes for further randomizing
 
     hashes_randomized = [[] for i in range(len(hash_weights_list))]
@@ -57,8 +57,9 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                     if a < minvalue:
                         minvalue = a
                         minindex = hash_index
-                print(minvalue)
-                print(minindex)
+                    print(minvalue)
+                    print(minindex)
+                print((minindex, minvalue))
                 signature[doc_index] = (minindex, minvalue)
         elif buckets_type == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(hash_weights_list):
