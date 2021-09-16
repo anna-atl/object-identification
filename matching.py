@@ -6,7 +6,7 @@ import string
 
 import df_imports
 import shingling
-import creating_signatures
+import creating_buckets
 import comparison
 import results_evaluation
 
@@ -65,7 +65,7 @@ def main(df, dataset_size, attribute):
     dataset_size = 1000000
 
     matching_attribute = 'name_clean'
-    matching_method = 'minhash'
+    buckets_type = 'minhash'
     hash_type = 'shingle'
     bands_number = 5
     signature_size = 50
@@ -75,18 +75,18 @@ def main(df, dataset_size, attribute):
 
     atts = attribute_matching_params(matching_attribute,
                                           hash_type, shingle_size, hash_weight,
-                                          matching_method, signature_size, bands_number,
+                                          buckets_type, signature_size, bands_number,
                                           comparison_method, sum_scores)
 
     start_time = time.time()
     print('------------------------------------------------')
     print('Started downloading datasets')
-    df_with_attributes, docs_mapping, docs = df_imports.df_import(dataset_size_to_import, atts.matching_attribute, dataset_size)
+    df_with_attributes, docs_mapping, docs = df_imports.main(dataset_size_to_import, atts.matching_attribute, dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     docs_shingled, shingles_weights_in_docs, hash_weights_list = shingling.main(docs, atts.hash_type, atts.shingle_size, atts.hash_weight)
-    candidate_pairs = creating_signatures.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
-    matches = comparison.main(candidate_pairs, atts.comparison_method, atts.sum_scores)
+    buckets_of_bands = creating_buckets.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
+    df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, atts.sum_scores)
 
     print("Started adding matches attributes...")
     matches_with_attributes = create_df_with_attributes(matches, df_with_attributes, docs_mapping)

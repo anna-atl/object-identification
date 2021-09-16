@@ -35,19 +35,15 @@ def jaccard_weighted(list1, list2, comparison_method, hash_weights_list, shingle
             print('didnt work for list1 {}, list2 {}, hash_weight {}'.format(list1, list2, hash_weight))
 
     #weighted minhash - weight in the doc
-def calculate_matches_ratios(buckets_of_bands, docs_hashed, comparison_method, hash_weights_list, shingles_weights_in_docs):
+def calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, hash_weights_list, shingles_weights_in_docs):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
         for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
             for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
-                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_hashed[doc_index_1], docs_hashed[doc_index_2], comparison_method, hash_weights_list, shingles_weights_in_docs))
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_shingled[doc_index_1], docs_shingled[doc_index_2], comparison_method, hash_weights_list, shingles_weights_in_docs))
                         #to change here to weights........
-    a = {key: item for key, item in matched_pairs.items() if 20236 in key}
-    print(a)
-    #if (doc_index_2 == 20236) | (doc_index_1 == 23657):
-    #print(matched_pairs)
 
     return matched_pairs
 
@@ -71,25 +67,37 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(candidate_pairs, comparison_method, sum_scores):
+def main(buckets_of_bands, docs_shingled, comparison_method, sum_scores):
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
-    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_hashed, comparison_method, hash_weights_list)
+    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, hash_weights_list)
     finding_matches_time = round(time.time() - start_time, 6)
     print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
     print("Started creating one match score column from tuples...")
     if len(matched_pairs) != 0:
         df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=[
-            'match_score_{}'.format(
-                attribute.matching_attribute)])  # oriend='index' for making keys as rows, not columns
+            'match_score_{}'.format(matching_attribute)])  # oriend='index' for making keys as rows, not columns
         df_matches['matches_tuple'] = df_matches.index
         a = df_matches['matches_tuple'].tolist()
         df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
         df_matches = df_matches.drop(['matches_tuple'], axis=1)
         df_matches = df_matches.reset_index(drop=True)
     else:
-        column_names = ['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']
+        column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
 
-    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)]
+    for attribute in matching_params:
+        try:
+            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches[
+                                                                                        'match_score_{}'.format(
+                                                                                            attribute.matching_attribute)].fillna(
+                0) * att1_weight
+            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
+                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
+        except:
+            print('No matches for the {} attribute'.format(attribute.matching_attribute))
+
+    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
+
+    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]

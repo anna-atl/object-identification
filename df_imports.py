@@ -84,7 +84,6 @@ def df_prepare(df):
 
 def df_import(dataset_size):
     database = "/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/datasets/companies.db"
-
     # create a database connection
     conn = sqlite3.connect(database)
     #labeled data mode
@@ -94,15 +93,15 @@ def df_import(dataset_size):
 
     return df
 
-def mapping_creation():
+def mapping_creation(df, matching_attribute, dataset_size):
     #docs = df[attribute.matching_attribute]
-    docs = df[['id', attribute.matching_attribute]]
-    docs = docs.dropna(subset=[attribute.matching_attribute])
+    docs = df[['id', matching_attribute]]
+    docs = docs.dropna(subset=[matching_attribute])
     #docs = docs.dropna()
     #docs = docs.head(dataset_size)
     #docs = docs.sample(n=dataset_size)
     docs_mapping = docs
-    docs = docs[attribute.matching_attribute]
+    docs = docs[matching_attribute]
     print(docs)
 
     print('------------------------------------------------')
@@ -114,8 +113,13 @@ def mapping_creation():
     docs_mapping = docs_mapping.reset_index(drop=True)
     docs_mapping['new_index'] = docs_mapping.index
     docs_mapping = docs_mapping.drop([attribute.matching_attribute], axis=1)
+    return docs_mapping
 
-def main(dataset_size_to_import, matching_attribute):
+def main(dataset_size_to_import, matching_attribute, dataset_size):
     df = df_import(dataset_size_to_import)
     df = df_prepare(df)
+
+    docs_mapping = mapping_creation(df, matching_attribute, dataset_size)
+
+    return df, docs_mapping, docs
 

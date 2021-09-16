@@ -113,3 +113,5 @@ def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_typ
     buckets_of_bands = create_buckets(signatures, bands_number)
     buckets_creation_time = round(time.time() - start_time, 6)
     print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
+
+return buckets_of_bands
