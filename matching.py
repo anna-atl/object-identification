@@ -9,6 +9,7 @@ import shingling
 import creating_buckets
 import comparison
 import results_evaluation
+import exporting_output
 
 pd.set_option('display.max_columns', None)
 
@@ -34,31 +35,6 @@ class attribute_matching_params:
     def __str__(self):
         return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
 
-def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
-    print("Started joining the result with the mapping table...")
-    df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
-    b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
-    print(b)
-
-    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
-    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-    df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
-    b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
-    print(b)
-
-    b = df_matches_full.loc[df_matches_full['doc_1'] < df_matches_full['doc_2']]
-    c = df_matches_full.loc[df_matches_full['doc_1'] > df_matches_full['doc_2']]
-    c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
-    c = c[['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']]
-    df_matches_full = b.append(c)
-
-    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    return df_matches_full
-
 if __name__ == "__main__":
     number_of_tries = 1 #how many random datasets should be created
     dataset_size_to_import = 500
@@ -72,7 +48,8 @@ if __name__ == "__main__":
     signature_size = 50
     bands_number = 5
     comparison_method = 'weighted jaccard'
-    sum_score = 'sum'
+
+    sum_score = 'sum' #outside of json
     attribute_threshold = 0
 
     atts = attribute_matching_params(matching_attribute,
@@ -81,19 +58,21 @@ if __name__ == "__main__":
                                           comparison_method, sum_score, attribute_threshold)
 
     start_time = time.time()
-    print('------------------------------------------------')
     print('Started downloading datasets')
-    df_with_attributes, docs_mapping, docs = df_imports.main(dataset_size_to_import, atts.matching_attribute, dataset_size)
+    df_with_attributes, docs_mapping, docs, df_labeled_data = df_imports.main(dataset_size_to_import, atts.matching_attribute, dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
+    #creating shingles and weights
     docs_shingled, shingles_weights_in_docs, hash_weights_list = shingling.main(docs, atts.hash_type, atts.shingle_size, atts.hash_weight)
+    #minhash
     buckets_of_bands = creating_buckets.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
+    #comparing candidate pairs
     df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score, atts.matching_attribute)
 
     print("Started adding matches attributes...")
-    matches_with_attributes = add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
+    matches_with_attributes = df_imports.add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
     print("...Added matches attributes")
-    results = results_evaluation.main(df_matches)
+    results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
@@ -110,3 +89,4 @@ if __name__ == "__main__":
     df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
 
     df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]
+    exporting_output.main()
