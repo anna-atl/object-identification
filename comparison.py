@@ -13,7 +13,7 @@ from multiset import Multiset
 from sklearn import preprocessing
 
 
-def jaccard_weighted(list1, list2, comparison_method, hash_weights_list, shingles_weights_in_docs): #is not counting duplicate hashes
+def jaccard_comparison(list1, list2, comparison_method, shingles_weights_in_doc_1, shingles_weights_in_doc_2): #is not counting duplicate hashes
     intersection = Multiset(list1).intersection(list2)
     union = Multiset(list1).union(list2)
 
@@ -21,29 +21,61 @@ def jaccard_weighted(list1, list2, comparison_method, hash_weights_list, shingle
     #union = set(list1 + list2)
 
     #    union = set(list1).union(list2) #for multisets
-    if comparison_method == 'normal':
+    if comparison_method == 'jaccard':
         return len(intersection)/len(union)
-    elif comparison_method == 'weighted minhash' or comparison_method == 'weighted minhash 2':
+    elif comparison_method == 'weighted jaccard':
+        # weighted minhash - weight in the doc
         try:
-            return sum([shingles_weights_in_docs[i] for i in intersection]) / sum([shingles_weights_in_docs[i] for i in union])
+            return sum(min((list1, shingles_weights_in_doc_1), (list2, shingles_weights_in_doc_2))) / sum(max(
+                (list1, shingles_weights_in_doc_1), (list2, shingles_weights_in_doc_2)))
         except:
-            print('didnt work for list1 {}, list2 {}, hash_weight {}'.format(list1, list2, hash_weight))
+            print('didnt work for list1 {}, list2 {}'.format(list1, list2))
     else:
         try:
-            return sum([hash_weights_list[i] for i in intersection])/sum([hash_weights_list[i] for i in union])
+            return sum([shingles_weights_in_docs[i] for i in intersection])/sum([shingles_weights_in_docs[i] for i in union])
         except:
-            print('didnt work for list1 {}, list2 {}, hash_weight {}'.format(list1, list2, hash_weight))
+            print('didnt work for list1 {}, list2 {}'.format(list1, list2))
 
-    #weighted minhash - weight in the doc
-def calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, hash_weights_list, shingles_weights_in_docs):
+def calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
         for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
             for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
-                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_weighted(docs_shingled[doc_index_1], docs_shingled[doc_index_2], comparison_method, hash_weights_list, shingles_weights_in_docs))
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(jaccard_comparison(docs_shingled[doc_index_1], docs_shingled[doc_index_2], comparison_method))
                         #to change here to weights........
+
+    return matched_pairs
+
+def gen_jaccard_comparison(doc_shingled_1, doc_shingled_2, shingles_weights_in_doc_1, shingles_weights_in_doc_2, comparison_method): #is not counting duplicate hashes
+    intersection = Multiset(doc_shingled_1).intersection(doc_shingled_2)
+    union = Multiset(doc_shingled_1).union(doc_shingled_2)
+
+    # weighted minhash - weight in the doc
+    try:
+        print(doc_shingled_1)
+        print(doc_shingled_2)
+        print(union)
+        print(intersection)
+        print([shingles_weights_in_doc_1[i] for i in intersection])
+        print([shingles_weights_in_doc_2[i] for i in intersection])
+        print([min(shingles_weights_in_doc_1[i][0], shingles_weights_in_doc_2[i][0]) for i in intersection])
+        print([max(shingles_weights_in_doc_1.get(i), shingles_weights_in_doc_2.get(i))[0] for i in union])
+        print([(shingles_weights_in_doc_1.get(i), shingles_weights_in_doc_2.get(i)) for i in union])
+        print([sum(min(shingles_weights_in_doc_1[i], shingles_weights_in_doc_2[i])[0]) for i in intersection])
+        return (sum(min(shingles_weights_in_doc_1[i], shingles_weights_in_doc_2[i])) for i in intersection)/(sum(max(shingles_weights_in_doc_1.get(i, 0), shingles_weights_in_doc_2.get(i))) for i in union)
+    except:
+        print('didnt work for list1 {}, list2 {}'.format(doc_shingled_1, doc_shingled_2))
+
+def calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
+    matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
+    for buckets_of_band in buckets_of_bands:
+        for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
+            for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
+                for doc_index_2 in docs_in_bucket:
+                    if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
+                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(gen_jaccard_comparison(docs_shingled[doc_index_1], docs_shingled[doc_index_2], shingles_weights_in_docs[doc_index_1], shingles_weights_in_docs[doc_index_2], comparison_method))
 
     return matched_pairs
 
@@ -67,10 +99,10 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(buckets_of_bands, docs_shingled, comparison_method, sum_scores):
+def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
-    matched_pairs = calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, hash_weights_list)
+    matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores)
     finding_matches_time = round(time.time() - start_time, 6)
     print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
@@ -87,12 +119,9 @@ def main(buckets_of_bands, docs_shingled, comparison_method, sum_scores):
         column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
 
-    for attribute in matching_params:
+    for attribute in matched_pairs:
         try:
-            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches[
-                                                                                        'match_score_{}'.format(
-                                                                                            attribute.matching_attribute)].fillna(
-                0) * att1_weight
+            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
             df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
                 'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
         except:

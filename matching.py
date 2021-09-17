@@ -71,7 +71,7 @@ if __name__ == "__main__":
     buckets_type = 'weighted minhash 1'
     signature_size = 50
     bands_number = 5
-    comparison_method = 'jaccard'
+    comparison_method = 'weighted jaccard'
     sum_score = 'sum'
     attribute_threshold = 0
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     docs_shingled, shingles_weights_in_docs, hash_weights_list = shingling.main(docs, atts.hash_type, atts.shingle_size, atts.hash_weight)
     buckets_of_bands = creating_buckets.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
-    df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, atts.sum_scores)
+    df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score)
 
     print("Started adding matches attributes...")
     matches_with_attributes = add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)

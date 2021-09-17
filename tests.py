@@ -180,6 +180,11 @@ def multiprocc():    # Start bar as a process
 
         p.join()
 
+def test_weighted_jaccard():
+	x = min((13, 23), (13, 11))[1]
+	y = sum(x)
+	print(x)
+
 #test_empty_dict()
 #test_jaccard()
 #test_jaccard_sum()
@@ -189,4 +194,5 @@ def multiprocc():    # Start bar as a process
 #test_shingles_dict()
 #test_shingles_doc()
 #test_df_prepare()
-test_multisets()
+#test_multisets()
+test_weighted_jaccard()
