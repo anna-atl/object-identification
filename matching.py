@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     docs_shingled, shingles_weights_in_docs, hash_weights_list = shingling.main(docs, atts.hash_type, atts.shingle_size, atts.hash_weight)
     buckets_of_bands = creating_buckets.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
-    df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score)
+    df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score, atts.matching_attribute)
 
     print("Started adding matches attributes...")
     matches_with_attributes = add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
@@ -97,3 +97,16 @@ if __name__ == "__main__":
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
+
+
+    for attribute in matched_pairs:
+        try:
+            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
+            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
+                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
+        except:
+            print('No matches for the {} attribute'.format(attribute.matching_attribute))
+
+    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
+
+    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]

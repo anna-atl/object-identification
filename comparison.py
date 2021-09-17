@@ -54,17 +54,17 @@ def gen_jaccard_comparison(doc_shingled_1, doc_shingled_2, shingles_weights_in_d
 
     # weighted minhash - weight in the doc
     try:
-        print(doc_shingled_1)
-        print(doc_shingled_2)
-        print(union)
-        print(intersection)
-        print([shingles_weights_in_doc_1[i] for i in intersection])
-        print([shingles_weights_in_doc_2[i] for i in intersection])
-        print([min(shingles_weights_in_doc_1[i][0], shingles_weights_in_doc_2[i][0]) for i in intersection])
-        print([max(shingles_weights_in_doc_1.get(i), shingles_weights_in_doc_2.get(i))[0] for i in union])
-        print([(shingles_weights_in_doc_1.get(i), shingles_weights_in_doc_2.get(i)) for i in union])
-        print([sum(min(shingles_weights_in_doc_1[i], shingles_weights_in_doc_2[i])[0]) for i in intersection])
-        return (sum(min(shingles_weights_in_doc_1[i], shingles_weights_in_doc_2[i])) for i in intersection)/(sum(max(shingles_weights_in_doc_1.get(i, 0), shingles_weights_in_doc_2.get(i))) for i in union)
+        #print(doc_shingled_1)
+        #print(doc_shingled_2)
+        #print(union)
+        #print(intersection)
+        #print([shingles_weights_in_doc_1.get(i, 0) for i in union])
+        #print([shingles_weights_in_doc_2.get(i, 0) for i in union])
+        #print([min(shingles_weights_in_doc_1[i][0], shingles_weights_in_doc_2[i][0]) for i in intersection])
+        #print([max(shingles_weights_in_doc_1.get(i, [0])[0], shingles_weights_in_doc_2.get(i, [0])[0]) for i in union])
+        #print(sum([min(shingles_weights_in_doc_1[i][0], shingles_weights_in_doc_2[i][0]) for i in intersection]))
+        #print(sum([max(shingles_weights_in_doc_1.get(i, [0])[0], shingles_weights_in_doc_2.get(i, [0])[0]) for i in union]))
+        return sum([min(shingles_weights_in_doc_1[i][0], shingles_weights_in_doc_2[i][0]) for i in intersection])/sum([max(shingles_weights_in_doc_1.get(i, [0])[0], shingles_weights_in_doc_2.get(i, [0])[0]) for i in union])
     except:
         print('didnt work for list1 {}, list2 {}'.format(doc_shingled_1, doc_shingled_2))
 
@@ -99,7 +99,7 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
+def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores, matching_attribute):
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
     matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores)
@@ -119,14 +119,5 @@ def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in
         column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
 
-    for attribute in matched_pairs:
-        try:
-            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
-            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
-                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
-        except:
-            print('No matches for the {} attribute'.format(attribute.matching_attribute))
+    return df_matches
 
-    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
-
-    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]

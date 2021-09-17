@@ -9,6 +9,12 @@ def import_labeled_data():
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (id_x, not doc_1 indexes)
 
+    b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
+    c = df_labeled_data.loc[df_labeled_data['id_x'] > df_labeled_data['id_y']]
+    c = c.rename(columns={'id_x': 'id_y', 'id_y': 'id_x'}, inplace=False)
+    c = c[['id_x', 'id_y', 'is_duplicate']]
+    df_labeled_data = b.append(c)
+
     return df_labeled_data
 
 def add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative):
@@ -25,18 +31,14 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
     return false_positive, false_negative, true_positive, true_negative
 
 if __name__ == "__main__":
-    column_names = ['try_number','dataset_size', 'matching_attribute', 'attribute_weight', 'attribute_threshold', 'matching_method',
-                    'hash_type', 'shingles_size',
-                    'hash_weight', 'signature_size', 'bands_number', 'total_time', 'signatures_creation_time',
-                    'buckets_creation_time', 'finding_matches_time', 'number_of_matches', 'false_pos', 'false_neg',
-                    'true_pos', 'true_neg', 'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
+    column_names = ['try_number', 'dataset_size', 'matching_attribute', 'hash_type', 'shingles_size',
+                    'shingle_size', 'hash_weight', 'buckets_type', 'signature_size', 'bands_number',
+                    'comparison_method', 'sum_score', 'attribute_threshold',
+                    'total_time', 'signatures_creation_time', 'buckets_creation_time', 'finding_matches_time',
+                    'number_of_matches', 'false_pos', 'false_neg', 'true_pos', 'true_neg',
+                    'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
 
     df_labeled_data = import_labeled_data()
-    b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
-    c = df_labeled_data.loc[df_labeled_data['id_x'] > df_labeled_data['id_y']]
-    c = c.rename(columns={'id_x': 'id_y', 'id_y': 'id_x'}, inplace=False)
-    c = c[['id_x', 'id_y', 'is_duplicate']]
-    df_labeled_data = b.append(c)
 
     df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
