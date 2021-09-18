@@ -11,18 +11,21 @@ import comparison
 import results_evaluation
 import exporting_output
 
+import json
+import matching_attributes
+
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, hash_type='none', shingle_size=0, hash_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', sum_score='sum', attribute_threshold=0):
+    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', sum_score='sum', attribute_threshold=0):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
         self.matching_attribute = matching_attribute
         #shingling
-        self.hash_type = hash_type# token, shingle, shingle words
+        self.shingle_type = shingle_type# token, shingle, shingle words
         self.shingle_size = shingle_size# 1,2
-        self.hash_weight = hash_weight# 'normal', 'frequency', 'weighted'
+        self.shingle_weight = shingle_weight# 'normal', 'frequency', 'weighted'
         #creating_signatures
         self.buckets_type = buckets_type #minhash, weighted minhash 1, weighted minhash 2,
         self.signature_size = signature_size
@@ -33,7 +36,7 @@ class attribute_matching_params:
         self.attribute_threshold = attribute_threshold
 
     def __str__(self):
-        return "matching_attribute: %s, matching_method: %s,  attribute_threshold: %s, hash_type: %s, shingle_size: %s, hash_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.matching_method, self.attribute_threshold, self.hash_type, self.shingle_size, self.hash_weight, self.bands_number, self.signature_size)
+        return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 if __name__ == "__main__":
     number_of_tries = 1 #how many random datasets should be created
@@ -41,9 +44,9 @@ if __name__ == "__main__":
     dataset_size = 1000000
 
     matching_attribute = 'name_clean'
-    hash_type = 'shingle'
+    shingle_type = 'shingle'
     shingle_size = 3
-    hash_weight = 'weighted'
+    shingle_weight = 'weighted'
     buckets_type = 'weighted minhash 1'
     signature_size = 50
     bands_number = 5
@@ -52,8 +55,10 @@ if __name__ == "__main__":
     sum_score = 'sum' #outside of json
     attribute_threshold = 0
 
+    json.loads(matching_attributes.matching_attributes)
+
     atts = attribute_matching_params(matching_attribute,
-                                          hash_type, shingle_size, hash_weight,
+                                          shingle_type, shingle_size, shingle_weight,
                                           buckets_type, signature_size, bands_number,
                                           comparison_method, sum_score, attribute_threshold)
 
@@ -63,9 +68,9 @@ if __name__ == "__main__":
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
     #creating shingles and weights
-    docs_shingled, shingles_weights_in_docs, hash_weights_list = shingling.main(docs, atts.hash_type, atts.shingle_size, atts.hash_weight)
+    docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, atts.shingle_type, atts.shingle_size, atts.shingle_weight)
     #minhash
-    buckets_of_bands = creating_buckets.main(docs_shingled, hash_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
+    buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
     #comparing candidate pairs
     df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score, atts.matching_attribute)
 
