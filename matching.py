@@ -12,7 +12,6 @@ import results_evaluation
 import exporting_output
 
 import json
-import matching_attributes
 
 pd.set_option('display.max_columns', None)
 
@@ -52,10 +51,14 @@ if __name__ == "__main__":
     bands_number = 5
     comparison_method = 'weighted jaccard'
 
-    sum_score = 'sum' #outside of json
+    sum_score = 'sum'
     attribute_threshold = 0
 
-    json.loads(matching_attributes.matching_attributes)
+    with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/matching_attributes.json', 'r') as json_file:
+        data = json.loads(json_file.read())
+        #json.load(json_file)
+
+    print(data["number_of_tries"])
 
     atts = attribute_matching_params(matching_attribute,
                                           shingle_type, shingle_size, shingle_weight,
