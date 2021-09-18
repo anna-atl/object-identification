@@ -16,7 +16,7 @@ import json
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', sum_score='sum', attribute_threshold=0):
+    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum'):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
@@ -31,8 +31,12 @@ class attribute_matching_params:
         self.bands_number = bands_number
         #comparison
         self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
-        self.sum_score = sum_score #sum_scores, multiplication
         self.attribute_threshold = attribute_threshold
+
+        self.number_of_tries = number_of_tries
+        self.dataset_size_to_import = dataset_size_to_import
+        self.dataset_size = dataset_size
+        self.sum_score = sum_score #sum_scores, multiplication
 
     def __str__(self):
         return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
@@ -60,10 +64,17 @@ if __name__ == "__main__":
 
     print(data["number_of_tries"])
 
-    atts = attribute_matching_params(matching_attribute,
-                                          shingle_type, shingle_size, shingle_weight,
-                                          buckets_type, signature_size, bands_number,
-                                          comparison_method, sum_score, attribute_threshold)
+    atts = attribute_matching_params(data["matching_attribute"], data["shingle_type"],
+                                     data["shingle_size"],
+                                     data["shingle_weight"], data["buckets_type"],
+                                     data["signature_size"], data["bands_number"],
+                                     data["comparison_method"], data["attribute_threshold"],
+
+                                     data["number_of_tries"],
+                                     data["dataset_size_to_import"],
+                                     data["dataset_size"],
+                                     data["sum_score"]
+    )
 
     start_time = time.time()
     print('Started downloading datasets')
