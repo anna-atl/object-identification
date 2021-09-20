@@ -43,27 +43,15 @@ class attribute_matching_params:
         return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 if __name__ == "__main__":
-    number_of_tries = 1 #how many random datasets should be created
-    dataset_size_to_import = 500
-    dataset_size = 1000000
-
-    matching_attribute = 'name_clean'
-    shingle_type = 'shingle'
-    shingle_size = 3
-    shingle_weight = 'weighted'
-    buckets_type = 'weighted minhash 1'
-    signature_size = 50
-    bands_number = 5
-    comparison_method = 'weighted jaccard'
-
-    sum_score = 'sum'
-    attribute_threshold = 0
-
     with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/matching_attributes.json', 'r') as json_file:
         data = json.loads(json_file.read())
         #json.load(json_file)
 
-    print(data["number_of_tries"])
+    #checks needed: dataset_size_to_import > dataset_size
+    #there should be at least one attribute without 'no buckets' bucket type
+
+    if data["scenario"] == 1:
+        atts = data
 
     atts = attribute_matching_params(data["scenario"],
                                      data["matching_attribute"], data["shingle_type"],
@@ -71,7 +59,6 @@ if __name__ == "__main__":
                                      data["shingle_weight"], data["buckets_type"],
                                      data["signature_size"], data["bands_number"],
                                      data["comparison_method"], data["attribute_threshold"],
-
                                      data["number_of_tries"],
                                      data["dataset_size_to_import"],
                                      data["dataset_size"],
@@ -86,10 +73,15 @@ if __name__ == "__main__":
     #creating shingles and weights
     docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, atts.shingle_type, atts.shingle_size, atts.shingle_weight)
 
-    if atts.buckets_type
-    #minhash
-    buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
-    #comparing candidate pairs
+    if atts.buckets_type != 'no buckets' or atts.buckets_type != 'one bucket':
+        #minhash
+        buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
+        #comparing candidate pairs
+    elif atts.buckets_type == 'one bucket':
+        buckets_of_bands = [{} for i in range(bands_number)]
+        #buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(doc_index)
+
+
     df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score, atts.matching_attribute)
 
     print("Started adding matches attributes...")
