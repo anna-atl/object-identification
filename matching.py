@@ -15,12 +15,21 @@ import json
 
 pd.set_option('display.max_columns', None)
 
+
+class scenario_matching_params:
+    def __init__(self, scenario, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum'):
+        self.scenario = scenario
+        self.number_of_tries = number_of_tries
+        self.dataset_size_to_import = dataset_size_to_import
+        self.dataset_size = dataset_size
+        self.sum_score = sum_score  # sum_scores, multiplication
+
+
 class attribute_matching_params:
-    def __init__(self, scenario, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum'):
+    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
-        self.scenario = scenario
         self.matching_attribute = matching_attribute
         #shingling
         self.shingle_type = shingle_type# token, shingle, shingle words
@@ -34,11 +43,6 @@ class attribute_matching_params:
         self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
         self.attribute_threshold = attribute_threshold
 
-        self.number_of_tries = number_of_tries
-        self.dataset_size_to_import = dataset_size_to_import
-        self.dataset_size = dataset_size
-        self.sum_score = sum_score #sum_scores, multiplication
-
     def __str__(self):
         return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
@@ -50,25 +54,27 @@ if __name__ == "__main__":
     #checks needed: dataset_size_to_import > dataset_size
     #there should be at least one attribute without 'no buckets' bucket type
 
-    if data["scenario"] == 1:
-        atts = data
-
-    atts = attribute_matching_params(data["scenario"],
-                                     data["matching_attribute"], data["shingle_type"],
-                                     data["shingle_size"],
-                                     data["shingle_weight"], data["buckets_type"],
-                                     data["signature_size"], data["bands_number"],
-                                     data["comparison_method"], data["attribute_threshold"],
+    mats = scenario_matching_params(data["scenario"],
                                      data["number_of_tries"],
                                      data["dataset_size_to_import"],
                                      data["dataset_size"],
                                      data["sum_score"]
     )
 
+    atts = attribute_matching_params(data["matching_attribute"], data["shingle_type"],
+                                     data["shingle_size"],
+                                     data["shingle_weight"], data["buckets_type"],
+                                     data["signature_size"], data["bands_number"],
+                                     data["comparison_method"], data["attribute_threshold"],
+    )
+
+
     start_time = time.time()
     print('Started downloading datasets')
-    df_with_attributes, docs_mapping, docs, df_labeled_data = df_imports.main(dataset_size_to_import, atts.matching_attribute, dataset_size)
+    df_with_attributes, docs_mapping, docs, df_labeled_data = df_imports.main(mats.dataset_size_to_import, atts.matching_attribute, mats.dataset_size)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
+
+    number_of_tries = mats.number_of_tries
 
     #creating shingles and weights
     docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, atts.shingle_type, atts.shingle_size, atts.shingle_weight)
