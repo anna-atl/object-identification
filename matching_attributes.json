@@ -1,4 +1,5 @@
 {
+    "scenario": 1,
     "number_of_tries": 1,
     "dataset_size_to_import": 500,
     "dataset_size": 1000000,

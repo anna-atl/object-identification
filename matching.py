@@ -16,17 +16,18 @@ import json
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum'):
+    def __init__(self, scenario, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum'):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
+        self.scenario = scenario
         self.matching_attribute = matching_attribute
         #shingling
         self.shingle_type = shingle_type# token, shingle, shingle words
         self.shingle_size = shingle_size# 1,2
         self.shingle_weight = shingle_weight# 'normal', 'frequency', 'weighted'
         #creating_signatures
-        self.buckets_type = buckets_type #minhash, weighted minhash 1, weighted minhash 2,
+        self.buckets_type = buckets_type #minhash, weighted minhash 1, weighted minhash 2, one bucket, no buckets
         self.signature_size = signature_size
         self.bands_number = bands_number
         #comparison
@@ -64,7 +65,8 @@ if __name__ == "__main__":
 
     print(data["number_of_tries"])
 
-    atts = attribute_matching_params(data["matching_attribute"], data["shingle_type"],
+    atts = attribute_matching_params(data["scenario"],
+                                     data["matching_attribute"], data["shingle_type"],
                                      data["shingle_size"],
                                      data["shingle_weight"], data["buckets_type"],
                                      data["signature_size"], data["bands_number"],
@@ -83,6 +85,8 @@ if __name__ == "__main__":
 
     #creating shingles and weights
     docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, atts.shingle_type, atts.shingle_size, atts.shingle_weight)
+
+    if atts.buckets_type
     #minhash
     buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
     #comparing candidate pairs
