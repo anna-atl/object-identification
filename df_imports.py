@@ -96,27 +96,3 @@ def main(dataset_size_to_import):
 
     return df
 
-def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
-    print("Started joining the result with the mapping table...")
-    df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
-    b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
-    print(b)
-
-    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'], right_on=['new_index'])
-    df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-    df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
-    b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
-    print(b)
-
-    b = df_matches_full.loc[df_matches_full['doc_1'] < df_matches_full['doc_2']]
-    c = df_matches_full.loc[df_matches_full['doc_1'] > df_matches_full['doc_2']]
-    c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
-    c = c[['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']]
-    df_matches_full = b.append(c)
-
-    df_matches_full = pd.merge(df_matches, df,  how='left', left_on=['doc_1'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    df_matches_full = pd.merge(df_matches_full, df,  how='left', left_on=['doc_2'], right_on=['id'])
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
-    return df_matches_full

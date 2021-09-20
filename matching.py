@@ -57,13 +57,6 @@ if __name__ == "__main__":
     #checks needed: dataset_size_to_import > dataset_size
     #there should be at least one attribute without 'no buckets' bucket type
 
-    atts = attribute_matching_params(data["matching_attribute"], data["shingle_type"],
-                                     data["shingle_size"],
-                                     data["shingle_weight"], data["buckets_type"],
-                                     data["signature_size"], data["bands_number"],
-                                     data["comparison_method"], data["attribute_threshold"],
-    )
-
     mats = scenario_matching_params(data["scenario"],
                                      data["number_of_tries"],
                                      data["dataset_size_to_import"],
@@ -77,30 +70,60 @@ if __name__ == "__main__":
     df_with_attributes = df_imports.main(mats.dataset_size_to_import)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
 
-    number_of_tries = mats.number_of_tries
-
-    for try_number in number_of_tries:
+    for try_number in mats.number_of_tries:
         df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, atts.matching_attribute, mats.dataset_size)
 
         df_labeled_data = df_labeled.main(df_to_match)
 
-        for attribute in mats.attribute_params:
+        buckets = []
+
+        for att in mats.attribute_params:
             #creating shingles and weights
-            docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, atts.shingle_type, atts.shingle_size, atts.shingle_weight)
+            docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, att.shingle_type, att.shingle_size, att.shingle_weight)
 
-        if atts.buckets_type != 'no buckets' or atts.buckets_type != 'one bucket':
-            #minhash
-            buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, atts.buckets_type, atts.signature_size, atts.bands_number)
-            #comparing candidate pairs
-        elif atts.buckets_type == 'one bucket':
-            buckets_of_bands = [{} for i in range(bands_number)]
-            #buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(doc_index)
+            if att.buckets_type != 'no buckets' or attribute.buckets_type != 'one bucket':
+                #minhash
+                buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, att.buckets_type, att.signature_size, att.bands_number)
+                #comparing candidate pairs
+            elif att.buckets_type == 'one bucket':
+                all_docs = [i for i in range(len(docs_shingled))]
+                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled))]}] #put all
+            buckets.append(buckets_of_bands)
 
-        for attribute in attributes:
-            df_matches = comparison.main(buckets_of_bands, docs_shingled, atts.comparison_method, shingles_weights_in_docs, atts.sum_score, atts.matching_attribute)
+        for att in mats.attribute_params:
+            df_att_matches = comparison.main(buckets, docs_shingled, att.comparison_method, shingles_weights_in_docs, mats.sum_score, att.matching_attribute)
 
 
         print("Started adding matches attributes...")
+
+
+        def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
+            print("Started joining the result with the mapping table...")
+            df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
+            b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
+            print(b)
+
+            df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
+            df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'],
+                                       right_on=['new_index'])
+            df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
+            df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
+            b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
+            print(b)
+
+            b = df_matches_full.loc[df_matches_full['doc_1'] < df_matches_full['doc_2']]
+            c = df_matches_full.loc[df_matches_full['doc_1'] > df_matches_full['doc_2']]
+            c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
+            c = c[['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']]
+            df_matches_full = b.append(c)
+
+            df_matches_full = pd.merge(df_matches, df, how='left', left_on=['doc_1'], right_on=['id'])
+            df_matches_full = df_matches_full.drop(['id'], axis=1)
+            df_matches_full = pd.merge(df_matches_full, df, how='left', left_on=['doc_2'], right_on=['id'])
+            df_matches_full = df_matches_full.drop(['id'], axis=1)
+            return df_matches_full
+
+        
         matches_with_attributes = df_imports.add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
         print("...Added matches attributes")
         results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
