@@ -29,7 +29,7 @@ def main(df, attribute_params, dataset_size):
     docs_mapping = {}
     docs = {}
 
-    for attribute_name, attribute_pars in attributes_to_bucket.items():
+    for attribute_name, attribute_pars in attribute_params.items():
         docs_mapping[attribute_name], docs[attribute_name] = mapping_creation(df, attribute_pars.matching_attribute)
 
     return df, docs_mapping, docs

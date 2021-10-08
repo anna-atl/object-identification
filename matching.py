@@ -67,6 +67,7 @@ if __name__ == "__main__":
 
     #checks needed: dataset_size_to_import > dataset_size
     #there should be at least one attribute without 'no buckets' bucket type
+    #
 
     start_time = time.time()
     print('Started downloading datasets')
@@ -93,10 +94,13 @@ if __name__ == "__main__":
                 buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_list, shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number)
             elif attribute_pars.buckets_type == 'one bucket':
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}] #put all
+            else:
+                buckets_of_bands = [{}]
             buckets.append(buckets_of_bands)
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], mats.sum_score, attribute_pars.matching_attribute)
+            print('h')
 
         print("Started adding matches attributes...")
 

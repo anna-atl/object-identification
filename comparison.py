@@ -35,7 +35,7 @@ def jaccard_comparison(list1, list2, comparison_method, shingles_weights_in_doc_
         except:
             print('didnt work for list1 {}, list2 {}'.format(list1, list2))
 
-def calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
+def calculate_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
         for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
@@ -67,7 +67,7 @@ def gen_jaccard_comparison(doc_shingled_1, doc_shingled_2, shingles_weights_in_d
     except:
         print('didnt work for list1 {}, list2 {}'.format(doc_shingled_1, doc_shingled_2))
 
-def calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores):
+def calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs):
     matched_pairs = {} #keys - tuple of duplicate docs and values - jacc of docs(lists of shingles(numbers))
     for buckets_of_band in buckets_of_bands:
         for bucket, docs_in_bucket in buckets_of_band.items(): #values_list - doc indexes in one buckets
@@ -98,10 +98,10 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores, matching_attribute):
+def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, matching_attribute):
     start_time = time.time()
     print("Started calculating jacc for potential matches in buckets...")
-    matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, sum_scores)
+    matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs)
     finding_matches_time = round(time.time() - start_time, 6)
     print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
