@@ -35,8 +35,7 @@ class attribute_matching_params:
         self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
         self.attribute_threshold = attribute_threshold
 
-    def __str__(self):
-        return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
+    #def __str__(self): return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 class scenario_matching_params:
     def __init__(self, scenario, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
@@ -67,7 +66,7 @@ if __name__ == "__main__":
 
     #checks needed: dataset_size_to_import > dataset_size
     #there should be at least one attribute without 'no buckets' bucket type
-    #
+    #if not no buckets buckets type, then to check if signature size !=0 and number of bands is correct
 
     start_time = time.time()
     print('Started downloading datasets')
@@ -86,10 +85,11 @@ if __name__ == "__main__":
         shingles_weights_in_docs = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items(): #add value
+            print('Started working on {} ', attribute_name)
             #creating shingles and weights
             docs_shingled[attribute_name], shingles_weights_in_docs[attribute_name], shingles_weights_list = shingling.main(docs[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
-
-            if attribute_pars.buckets_type != 'no buckets' or attribute_pars.buckets_type != 'one bucket':
+            if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
+                print(attribute_pars.buckets_type)
                 #minhash
                 buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_list, shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number)
             elif attribute_pars.buckets_type == 'one bucket':
@@ -99,7 +99,7 @@ if __name__ == "__main__":
             buckets.append(buckets_of_bands)
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
-            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], mats.sum_score, attribute_pars.matching_attribute)
+            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
             print('h')
 
         print("Started adding matches attributes...")

@@ -55,11 +55,14 @@ def create_hashes(docs, hash_type, shingle_size, shingle_weight):
     shingles_weights_list = [shingles_weights_dict[hash] for hash in hashes_list]
 
     #put it in diff function
-    shingles_weights_list_normalized = preprocessing.normalize([shingles_weights_list])
-    shingles_weights_list_normalized = np.round(shingles_weights_list_normalized * 1000, 0)
-    shingles_weights_list_normalized = shingles_weights_list_normalized.astype(int)
-    shingles_weights_list_normalized = shingles_weights_list_normalized[0].tolist()
-    shingles_weights_list_normalized = [i + 1 for i in shingles_weights_list_normalized] #fix it, this is for not creating 0 random values
+    try:
+        shingles_weights_list_normalized = preprocessing.normalize([shingles_weights_list])
+        shingles_weights_list_normalized = np.round(shingles_weights_list_normalized * 1000, 0)
+        shingles_weights_list_normalized = shingles_weights_list_normalized.astype(int)
+        shingles_weights_list_normalized = shingles_weights_list_normalized[0].tolist()
+        shingles_weights_list_normalized = [i + 1 for i in shingles_weights_list_normalized] #fix it, this is for not creating 0 random values
+    except:
+        shingles_weights_list_normalized = []
 
     return shingles_weights_list_normalized, hashes_dict
 
