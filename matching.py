@@ -58,7 +58,7 @@ class scenario_matching_params:
                                                                             params["attribute_threshold"])
 
 if __name__ == "__main__":
-    with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/scenarios/scenario_2', 'r') as json_file:
+    with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/scenarios/scenario_1', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario"], data["number_of_tries"], data["dataset_size_to_import"], data["dataset_size"],
@@ -76,7 +76,9 @@ if __name__ == "__main__":
 
     for try_number in range(mats.number_of_tries):
 
-        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
+        #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
+        attributes_to_bucket = [v.matching_attribute for k, v in mats.attribute_params.items() if v.buckets_type != 'no buckets']
+        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, attributes_to_bucket, mats.dataset_size)
         df_labeled_data = df_labeled.main(df_to_match)
 
         buckets = []
@@ -87,7 +89,7 @@ if __name__ == "__main__":
             #creating shingles and weights
             docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, att.shingle_type, att.shingle_size, att.shingle_weight)
 
-            if att.buckets_type != 'no buckets' or attribute.buckets_type != 'one bucket':
+            if att.buckets_type != 'no buckets' or att.buckets_type != 'one bucket':
                 #minhash
                 buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, att.buckets_type, att.signature_size, att.bands_number)
                 #comparing candidate pairs

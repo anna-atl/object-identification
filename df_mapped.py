@@ -18,12 +18,16 @@ def mapping_creation(df, matching_attribute):
     docs_mapping = docs_mapping.drop([matching_attribute], axis=1)
     return docs_mapping, docs
 
-def main(df, matching_attribute, dataset_size):
-    df = df.dropna(subset=['url_clean', 'name_clean'])
+def main(df, attributes_to_bucket, dataset_size):
+    df = df.dropna(subset=attributes_to_bucket)
     try:
         df = df.sample(n=dataset_size)
     except:
         print('dataset size is larger than...')
-    docs_mapping, docs = mapping_creation(df, matching_attribute)
+    docs_mapping = {}
+    docs = {}
+
+    for attribute_to_bucket in attributes_to_bucket:
+        docs_mapping[attribute_to_bucket], docs[attribute_to_bucket] = mapping_creation(df, attribute_to_bucket)
 
     return df, docs_mapping, docs
