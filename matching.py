@@ -61,12 +61,8 @@ if __name__ == "__main__":
     with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/scenarios/scenario_2', 'r') as json_file:
         data = json.loads(json_file.read())
 
-    mats = scenario_matching_params(data["scenario"],
-                                     data["number_of_tries"],
-                                     data["dataset_size_to_import"],
-                                     data["dataset_size"],
-                                     data["sum_score"],
-                                    data["attribute_params"]
+    mats = scenario_matching_params(data["scenario"], data["number_of_tries"], data["dataset_size_to_import"], data["dataset_size"],
+                                    data["sum_score"], data["attribute_params"]
                                     )
 
     #checks needed: dataset_size_to_import > dataset_size
@@ -76,11 +72,11 @@ if __name__ == "__main__":
     print('Started downloading datasets')
     df_with_attributes = df_imports.main(mats.dataset_size_to_import)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
+    a = mats.attribute_params
 
     for try_number in range(mats.number_of_tries):
 
-        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, atts.matching_attribute, mats.dataset_size)
-
+        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data = df_labeled.main(df_to_match)
 
         buckets = []
@@ -103,9 +99,7 @@ if __name__ == "__main__":
         for att in mats.attribute_params:
             df_att_matches = comparison.main(buckets, docs_shingled, att.comparison_method, shingles_weights_in_docs, mats.sum_score, att.matching_attribute)
 
-
         print("Started adding matches attributes...")
-
 
         def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
             print("Started joining the result with the mapping table...")
