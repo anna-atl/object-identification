@@ -99,9 +99,24 @@ if __name__ == "__main__":
                 buckets_of_bands = [{}]
             buckets.extend(buckets_of_bands)
 
-        df_matches_full = {}
+        matched_pairs = {}
+        for buckets_of_band in buckets:
+            for bucket, docs_in_bucket in buckets_of_band.items():  # values_list - doc indexes in one buckets
+                for doc_index_1 in docs_in_bucket:  # iterating through doc_indexes
+                    for doc_index_2 in docs_in_bucket:
+                        if doc_index_2 > doc_index_1:
+                            matched_pairs[doc_index_1, doc_index_2] = 1
 
+        df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
+        df_matches['matches_tuple'] = df_matches.index
+        a = df_matches['matches_tuple'].tolist()
+        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+        df_matches = df_matches.drop(['matches_tuple'], axis=1)
+        df_matches = df_matches.reset_index(drop=True)
+
+        df_matches_full = {}
         for attribute_name, attribute_pars in mats.attribute_params.items():
+            print('Started working on {} '.format(attribute_name))
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
 
             df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
@@ -115,6 +130,10 @@ if __name__ == "__main__":
             c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
             c = c[['match_score_{}'.format(attribute_pars.matching_attribute), 'doc_1', 'doc_2']]
             df_att_matches = b.append(c)
+
+            df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'], right_on=['doc_1', 'doc_2'])
+
+            df_matches_full[attribute_name] = df_att_matches
 
             print('h')
 
@@ -134,7 +153,6 @@ if __name__ == "__main__":
             df_matches_full = pd.merge(df_matches_full, df, how='left', left_on=['doc_2'], right_on=['id'])
             df_matches_full = df_matches_full.drop(['id'], axis=1)
             return df_matches_full
-
 
         matches_with_attributes = df_imports.add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
         print("...Added matches attributes")

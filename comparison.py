@@ -74,7 +74,11 @@ def calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, compariso
             for doc_index_1 in docs_in_bucket: #iterating through doc_indexes
                 for doc_index_2 in docs_in_bucket:
                     if doc_index_2 > doc_index_1 and (doc_index_1, doc_index_2) not in matched_pairs:
-                        matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(gen_jaccard_comparison(docs_shingled[doc_index_1], docs_shingled[doc_index_2], shingles_weights_in_docs[doc_index_1], shingles_weights_in_docs[doc_index_2], comparison_method))
+                        try:
+                            matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(gen_jaccard_comparison(docs_shingled[doc_index_1], docs_shingled[doc_index_2], shingles_weights_in_docs[doc_index_1], shingles_weights_in_docs[doc_index_2], comparison_method))
+                        except:
+                            print('didnt work')
+                            matched_pairs[(doc_index_1, doc_index_2)] = [-1]
 
     return matched_pairs
 
