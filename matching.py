@@ -18,7 +18,7 @@ import json
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_threshold=0):
+    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=50, bands_number=5, comparison_method='jaccard', attribute_weight=1, attribute_threshold=0):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
@@ -33,6 +33,7 @@ class attribute_matching_params:
         self.bands_number = bands_number
         #comparison
         self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
+        self.attribute_weight = attribute_weight
         self.attribute_threshold = attribute_threshold
 
     #def __str__(self): return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
@@ -54,6 +55,7 @@ class scenario_matching_params:
                                                                             params["signature_size"],
                                                                             params["bands_number"],
                                                                             params["comparison_method"],
+                                                                            params["attribute_weight"],
                                                                             params["attribute_threshold"])
 
 if __name__ == "__main__":
@@ -96,7 +98,7 @@ if __name__ == "__main__":
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}] #put all
             else:
                 buckets_of_bands = [{}]
-            buckets.append(buckets_of_bands)
+            buckets.extend(buckets_of_bands)
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
