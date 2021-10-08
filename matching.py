@@ -85,21 +85,21 @@ if __name__ == "__main__":
         docs_shingled_all = {}
         shingles_weights_in_docs = {}
 
-        for att, attribute in mats.attribute_params.items(): #add value
+        for attribute_name, attribute_pars in mats.attribute_params.items(): #add value
             #creating shingles and weights
-            docs_shingled, shingles_weights_in_docs, shingles_weights_list = shingling.main(docs, att.shingle_type, att.shingle_size, att.shingle_weight)
+            docs_shingled_all[attribute_name], shingles_weights_in_docs[attribute_name], shingles_weights_list = shingling.main(docs[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
 
-            if att.buckets_type != 'no buckets' or att.buckets_type != 'one bucket':
+            if attribute_pars.buckets_type != 'no buckets' or attribute_pars.buckets_type != 'one bucket':
                 #minhash
-                buckets_of_bands = creating_buckets.main(docs_shingled, shingles_weights_list, shingles_weights_in_docs, att.buckets_type, att.signature_size, att.bands_number)
+                buckets_of_bands = creating_buckets.main(docs_shingled_all[attribute_name], shingles_weights_list, shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number)
                 #comparing candidate pairs
-            elif att.buckets_type == 'one bucket':
-                all_docs = [i for i in range(len(docs_shingled))]
-                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled))]}] #put all
+            elif attribute_pars.buckets_type == 'one bucket':
+                all_docs = [i for i in range(len(docs_shingled_all[attribute_name]))]
+                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled_all[attribute_name]))]}] #put all
             buckets.append(buckets_of_bands)
 
-        for att in mats.attribute_params:
-            df_att_matches = comparison.main(buckets, docs_shingled, att.comparison_method, shingles_weights_in_docs, mats.sum_score, att.matching_attribute)
+        for attribute_name, attribute_pars in mats.attribute_params.items():
+            df_att_matches = comparison.main(buckets, docs_shingled_all[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], mats.sum_score, attribute_pars.matching_attribute)
 
         print("Started adding matches attributes...")
 
