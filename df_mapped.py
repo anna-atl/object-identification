@@ -20,11 +20,12 @@ def mapping_creation(df, matching_attribute):
 
 def main(df, attribute_params, dataset_size):
     attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
-    df = df.dropna(subset=[v.matching_attribute for k, v in attribute_params.items()])
+    df = df.dropna(subset=[v.matching_attribute for k, v in attributes_to_bucket.items()])
     try:
         df = df.sample(n=dataset_size)
     except:
         print('dataset size is larger than...')
+
     docs_mapping = {}
     docs = {}
 
