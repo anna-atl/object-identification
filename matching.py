@@ -77,7 +77,6 @@ if __name__ == "__main__":
     a = mats.attribute_params
 
     for try_number in range(mats.number_of_tries):
-
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
         df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data = df_labeled.main(df_to_match)
@@ -87,7 +86,7 @@ if __name__ == "__main__":
         shingles_weights_in_docs = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items(): #add value
-            print('Started working on {} ', attribute_name)
+            print('Started working on {} '.format(attribute_name))
             #creating shingles and weights
             docs_shingled[attribute_name], shingles_weights_in_docs[attribute_name], shingles_weights_list = shingling.main(docs[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
@@ -100,31 +99,35 @@ if __name__ == "__main__":
                 buckets_of_bands = [{}]
             buckets.extend(buckets_of_bands)
 
+        df_matches_full = {}
+
         for attribute_name, attribute_pars in mats.attribute_params.items():
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
+
+            df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
+            df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_1'], axis=1)
+            df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_2'],
+                                       right_on=['new_index'])
+            df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_2'], axis=1)
+            df_att_matches = df_att_matches.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
+            b = df_att_matches.loc[df_att_matches['doc_1'] < df_att_matches['doc_2']]
+            c = df_att_matches.loc[df_att_matches['doc_1'] > df_att_matches['doc_2']]
+            c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
+            c = c[['match_score_{}'.format(attribute_pars.matching_attribute), 'doc_1', 'doc_2']]
+            df_att_matches = b.append(c)
+
             print('h')
 
         print("Started adding matches attributes...")
 
         def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
             print("Started joining the result with the mapping table...")
-            df_matches_full = pd.merge(df_matches, docs_mapping, how='left', left_on=['doc_1'], right_on=['new_index'])
             b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
             print(b)
 
-            df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-            df_matches_full = pd.merge(df_matches_full, docs_mapping, how='left', left_on=['doc_2'],
-                                       right_on=['new_index'])
-            df_matches_full = df_matches_full.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-            df_matches_full = df_matches_full.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
             b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
             print(b)
 
-            b = df_matches_full.loc[df_matches_full['doc_1'] < df_matches_full['doc_2']]
-            c = df_matches_full.loc[df_matches_full['doc_1'] > df_matches_full['doc_2']]
-            c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
-            c = c[['match_score_{}'.format(attribute.matching_attribute), 'doc_1', 'doc_2']]
-            df_matches_full = b.append(c)
 
             df_matches_full = pd.merge(df_matches, df, how='left', left_on=['doc_1'], right_on=['id'])
             df_matches_full = df_matches_full.drop(['id'], axis=1)
