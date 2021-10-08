@@ -18,8 +18,9 @@ def mapping_creation(df, matching_attribute):
     docs_mapping = docs_mapping.drop([matching_attribute], axis=1)
     return docs_mapping, docs
 
-def main(df, attributes_to_bucket, dataset_size):
-    df = df.dropna(subset=attributes_to_bucket)
+def main(df, attribute_params, dataset_size):
+    attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
+    df = df.dropna(subset=[v.matching_attribute for k, v in attribute_params.items()])
     try:
         df = df.sample(n=dataset_size)
     except:
@@ -27,7 +28,7 @@ def main(df, attributes_to_bucket, dataset_size):
     docs_mapping = {}
     docs = {}
 
-    for attribute_to_bucket in attributes_to_bucket:
-        docs_mapping[attribute_to_bucket], docs[attribute_to_bucket] = mapping_creation(df, attribute_to_bucket)
+    for attribute_name, attribute_pars in attributes_to_bucket.items():
+        docs_mapping[attribute_name], docs[attribute_name] = mapping_creation(df, attribute_pars.matching_attribute)
 
     return df, docs_mapping, docs

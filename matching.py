@@ -77,8 +77,7 @@ if __name__ == "__main__":
     for try_number in range(mats.number_of_tries):
 
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
-        attributes_to_bucket = [v.matching_attribute for k, v in mats.attribute_params.items() if v.buckets_type != 'no buckets']
-        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, attributes_to_bucket, mats.dataset_size)
+        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data = df_labeled.main(df_to_match)
 
         buckets = []
