@@ -17,7 +17,7 @@ def add_results_estimation(df_matches_estimation, labeled_positive, labeled_nega
 
     return false_positive, false_negative, true_positive, true_negative
 
-def main(df_all_matches, df_with_attributes, df_labeled_data, labeled_positive, labeled_negative):
+def main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative):
     column_names = ['try_number', 'dataset_size', 'matching_attribute', 'hash_type', 'shingles_size',
                     'shingle_size', 'hash_weight', 'buckets_type', 'signature_size', 'bands_number',
                     'comparison_method', 'sum_score', 'attribute_threshold',
@@ -26,26 +26,15 @@ def main(df_all_matches, df_with_attributes, df_labeled_data, labeled_positive, 
                     'false_pos_rate', 'false_neg_rate', 'true_pos_rate', 'true_neg_rate']
 
     print("Started joining the result with the labeled data...")
-    df_matches_estimation = pd.merge(df_with_attributes, df_all_matches, how='left',
-                                     left_index=True, right_on=['doc_1'])
-    df_matches_estimation = pd.merge(df_matches_estimation, df_all_matches, how='left',
-                                     left_index=True, right_on=['doc_2'])
-
-    df_matches_estimation = pd.merge(df_all_matches, df_labeled_data, how='left',
-                                     left_on=['doc_1', 'doc_2'], right_on=['id_x', 'id_y'])
+    df_matches_estimation = pd.merge(df_matches_full, df_labeled_data, how='left',
+                                     left_on=['id_x', 'id_y'], right_on=['id_x', 'id_y'])
     print("...Joint the result with the labeled data")
 
-    df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_all_matches, how='left',
+    df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_matches_full, how='left',
                                          left_on=['id_x', 'id_y'],
-                                         right_on=['doc_1', 'doc_2'])
-    df_labeled_data_not_in_df = df_labeled_data_not_in_df[
-        df_labeled_data_not_in_df['doc_1'].isnull()]
-    df_labeled_data_not_in_df = df_labeled_data_not_in_df[['id_x', 'id_y', 'is_duplicate']]
-
-    df_not_labeled = pd.merge(df_labeled_data_not_in_df, df_with_attributes, how='left', left_on=['id_x'],
-                              right_on=['id'])
-    df_not_labeled = pd.merge(df_not_labeled, df_with_attributes, how='left', left_on=['id_y'],
-                              right_on=['id'])
+                                         right_on=['id_x', 'id_y'])
+    df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['id_x_y'].isnull()]
+    df_labeled_data_not_in_df = df_labeled_data_not_in_df[['id_x_x', 'id_y_x', 'is_duplicate']]
 
     false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative)
 

@@ -154,12 +154,10 @@ if __name__ == "__main__":
         print("Started adding matches attributes...")
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
-        results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, labeled_positive, labeled_negative)
+        results = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
 
         print('------------------------------------------------')
-        print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute,
-                                                                                         len(docs),
-                                                                                         time.time() - start_time))
+        print("Matching algorithm took for {} size --- {} seconds ---".format(len(docs), time.time() - start_time))
 
         exporting_output.main()
 
