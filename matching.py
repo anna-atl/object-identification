@@ -111,10 +111,9 @@ if __name__ == "__main__":
         df_matches['matches_tuple'] = df_matches.index
         a = df_matches['matches_tuple'].tolist()
         df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
-        df_matches = df_matches.drop(['matches_tuple'], axis=1)
+        df_matches = df_matches.drop(['matches_tuple', 0], axis=1)
         df_matches = df_matches.reset_index(drop=True)
 
-        df_matches_full = {}
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('Started working on {} '.format(attribute_name))
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
@@ -133,9 +132,12 @@ if __name__ == "__main__":
 
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'], right_on=['doc_1', 'doc_2'])
 
-            df_matches_full[attribute_name] = df_att_matches
-
             print('h')
+
+        print("Started creating a common matching score...")
+        df_matches['match_score Total'] = df_matches.iloc[:, 2:].sum(axis=1)
+        print("Finished creating a common matching score...")
+        print("------------------------------------------")
 
         print("Started adding matches attributes...")
 
@@ -160,7 +162,6 @@ if __name__ == "__main__":
 
         print('------------------------------------------------')
         print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
-
 
     for attribute in matched_pairs:
         try:
