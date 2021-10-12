@@ -58,6 +58,34 @@ class scenario_matching_params:
                                                                             params["attribute_weight"],
                                                                             params["attribute_threshold"])
 
+def add_attributes_to_matches(df_matches, df_with_attributes):
+    print("Started joining the result with the mapping table...")
+
+    df_matches_full = pd.merge(df_matches, df_with_attributes, how='left', left_on=['doc_1'], right_index=True)
+    df_matches_full = df_matches_full.drop(['id'], axis=1)
+    df_matches_full = pd.merge(df_matches_full, df_with_attributes, how='left', left_on=['doc_2'], right_index=True)
+    df_matches_full = df_matches_full.drop(['id'], axis=1)
+
+    results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
+
+    print('------------------------------------------------')
+    print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
+
+    for attribute in matched_pairs:
+        try:
+            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
+            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
+                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
+        except:
+            print('No matches for the {} attribute'.format(attribute.matching_attribute))
+
+    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
+
+    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]
+    exporting_output.main()
+
+    return df_matches_full
+
 if __name__ == "__main__":
     with open('/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/object-identification/scenarios/scenario_1', 'r') as json_file:
         data = json.loads(json_file.read())
@@ -140,38 +168,6 @@ if __name__ == "__main__":
         print("------------------------------------------")
 
         print("Started adding matches attributes...")
+        df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
-        def add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping):
-            print("Started joining the result with the mapping table...")
-            b = df_matches_full[(df_matches_full['doc_1'] == 20236)]
-            print(b)
-
-            b = df_matches_full[(df_matches_full['doc_1'] == 2490742) | (df_matches_full['doc_2'] == 3121092)]
-            print(b)
-
-
-            df_matches_full = pd.merge(df_matches, df, how='left', left_on=['doc_1'], right_on=['id'])
-            df_matches_full = df_matches_full.drop(['id'], axis=1)
-            df_matches_full = pd.merge(df_matches_full, df, how='left', left_on=['doc_2'], right_on=['id'])
-            df_matches_full = df_matches_full.drop(['id'], axis=1)
-            return df_matches_full
-
-        matches_with_attributes = df_imports.add_attributes_to_matches(df_matches, df_with_attributes, docs_mapping)
-        print("...Added matches attributes")
-        results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
-
-        print('------------------------------------------------')
-        print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
-
-    for attribute in matched_pairs:
-        try:
-            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
-            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
-                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
-        except:
-            print('No matches for the {} attribute'.format(attribute.matching_attribute))
-
-    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
-
-    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]
-    exporting_output.main()
+        print('end')
