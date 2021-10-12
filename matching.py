@@ -62,24 +62,15 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     print("Started joining the result with the mapping table...")
 
     df_matches_full = pd.merge(df_matches, df_with_attributes, how='left', left_on=['doc_1'], right_index=True)
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
+    #df_matches_full = df_matches_full.drop(['id'], axis=1)
     df_matches_full = pd.merge(df_matches_full, df_with_attributes, how='left', left_on=['doc_2'], right_index=True)
-    df_matches_full = df_matches_full.drop(['id'], axis=1)
+    #df_matches_full = df_matches_full.drop(['id'], axis=1)
 
     results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
 
     print('------------------------------------------------')
     print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
 
-    for attribute in matched_pairs:
-        try:
-            df_all_matches['match_score_{}'.format(attribute.matching_attribute)] = df_all_matches['match_score_{}'.format(attribute.matching_attribute)].fillna(0) * att1_weight
-            df_all_matches['match_score'] = df_all_matches['match_score'] + df_all_matches[
-                'match_score_{}'.format(attribute.matching_attribute)] * att2_weight
-        except:
-            print('No matches for the {} attribute'.format(attribute.matching_attribute))
-
-    df_all_matches = df_all_matches.sort_values(by='match_score', ascending=False)
 
     df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]
     exporting_output.main()
@@ -163,7 +154,8 @@ if __name__ == "__main__":
             print('h')
 
         print("Started creating a common matching score...")
-        df_matches['match_score Total'] = df_matches.iloc[:, 2:].sum(axis=1)
+        df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
+        df_matches = df_matches.sort_values(by='match_score', ascending=False)
         print("Finished creating a common matching score...")
         print("------------------------------------------")
 
