@@ -89,14 +89,14 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
 
     return signatures
 
-def create_buckets(signatures, bands_number):
+def create_buckets(signatures, bands_number, docs_mapping):
     r = int(len(signatures)/bands_number) #number of rows per band
     buckets_of_bands = [{} for i in range(bands_number)] #create a list of dict which is number of buckets
     #buckets are going to be created (buckets - potential similar items)
 
     for band, buckets_of_band in zip(range(bands_number), buckets_of_bands): #buckets - dict:1,2,3,4,5. key - one bucket
         for doc_index in range(len(signatures[0])): #iterating through docs
-            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(doc_index)
+            buckets_of_band.setdefault(tuple(signatures[band*r:band*r+r, doc_index]), []).append(docs_mapping[doc_index])
             #setdefault(key, value) creates a key if it doesnt exist with the value (here - list)
             #if the signatures of this bucket are same then key is the signature and values: doc index
             #if unique signature then only one doc_index will be as a value
@@ -107,7 +107,7 @@ def create_buckets(signatures, bands_number):
 
     return buckets_of_bands
 
-def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_type, signature_size, bands_number):
+def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
     start_time = time.time()
     print("Started creating signatures...")
     signatures = create_signatures_array(docs_shingled, buckets_type, signature_size,
@@ -117,7 +117,7 @@ def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_typ
 
     start_time = time.time()
     print("Started creating buckets of potential matches...")
-    buckets_of_bands = create_buckets(signatures, bands_number)
+    buckets_of_bands = create_buckets(signatures, bands_number, docs_mapping)
     buckets_creation_time = round(time.time() - start_time, 6)
     print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
 

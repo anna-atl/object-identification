@@ -92,8 +92,9 @@ if __name__ == "__main__":
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
                 print(attribute_pars.buckets_type)
                 #minhash
-                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_list, shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number)
+                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_list, shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
+                #FIX IT
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}] #put all
             else:
                 buckets_of_bands = [{}]
@@ -118,12 +119,11 @@ if __name__ == "__main__":
             print('Started working on {} '.format(attribute_name))
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
 
-            df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
-            df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-            df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_2'],
-                                       right_on=['new_index'])
-            df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-            df_att_matches = df_att_matches.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
+            #df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
+            #df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_1'], axis=1)
+            #df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_2'], right_on=['new_index'])
+            #df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_2'], axis=1)
+            #df_att_matches = df_att_matches.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
             b = df_att_matches.loc[df_att_matches['doc_1'] < df_att_matches['doc_2']]
             c = df_att_matches.loc[df_att_matches['doc_1'] > df_att_matches['doc_2']]
             c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
