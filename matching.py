@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     for try_number in range(mats.number_of_tries):
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
-        df_to_match, docs_mapping, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
+        df_to_match, docs_mapping, docs_mapping_old_new, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data = df_labeled.main(df_to_match)
 
         buckets = []
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('Started working on {} '.format(attribute_name))
-            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute)
+            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
 
             #df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
             #df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_1'], axis=1)
