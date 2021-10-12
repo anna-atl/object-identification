@@ -34,4 +34,4 @@ def main(df):
     df_labeled_data = import_labeled_data()
     df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count = find_labeled_data_in_df(df_labeled_data, df)
 
-    return df_labeled_data
+    return df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count

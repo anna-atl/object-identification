@@ -66,15 +66,6 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     df_matches_full = pd.merge(df_matches_full, df_with_attributes, how='left', left_on=['doc_2'], right_index=True)
     #df_matches_full = df_matches_full.drop(['id'], axis=1)
 
-    results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, atts.matching_attribute)
-
-    print('------------------------------------------------')
-    print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute, len(docs), time.time() - start_time))
-
-
-    df_all_matches['match_score'] = df_all_matches['match_score_{}'.format(matching_attribute)]
-    exporting_output.main()
-
     return df_matches_full
 
 if __name__ == "__main__":
@@ -98,7 +89,7 @@ if __name__ == "__main__":
     for try_number in range(mats.number_of_tries):
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
         df_to_match, docs_mapping, docs_mapping_old_new, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
-        df_labeled_data = df_labeled.main(df_to_match)
+        df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_match)
 
         buckets = []
         docs_shingled = {}
@@ -149,7 +140,8 @@ if __name__ == "__main__":
             c = c[['match_score_{}'.format(attribute_pars.matching_attribute), 'doc_1', 'doc_2']]
             df_att_matches = b.append(c)
 
-            df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'], right_on=['doc_1', 'doc_2'])
+            df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
+                                  right_on=['doc_1', 'doc_2'])
 
             print('h')
 
@@ -161,5 +153,14 @@ if __name__ == "__main__":
 
         print("Started adding matches attributes...")
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
+
+        results = results_evaluation.main(df_matches, df_with_attributes, df_labeled_data, labeled_positive, labeled_negative)
+
+        print('------------------------------------------------')
+        print("Matching algorithm took for the {} and {} size --- {} seconds ---".format(atts.matching_attribute,
+                                                                                         len(docs),
+                                                                                         time.time() - start_time))
+
+        exporting_output.main()
 
         print('end')
