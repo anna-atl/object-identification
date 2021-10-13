@@ -106,6 +106,6 @@ def main(docs, shingle_type, shingle_size, shingle_weight):
     start_time = time.time()
     print("Started converting docs to hashes...")
     docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_dict, shingles_dict)
-    print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
+    print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
     return docs_shingled, shingles_weights_dict, shingles_weights_in_docs

@@ -84,12 +84,11 @@ if __name__ == "__main__":
     print('Started downloading datasets')
     df_with_attributes = df_imports.main(mats.dataset_size_to_import)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
-    a = mats.attribute_params
 
     for try_number in range(mats.number_of_tries):
 
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
-        df_to_bucket, docs_mapping, docs_mapping_old_new, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
+        df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_bucket)
 
         buckets = []
@@ -101,13 +100,14 @@ if __name__ == "__main__":
             print('Started working on {} '.format(attribute_name))
             start_time = time.time()
             print("Started creating shingles...")
-            docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name] = shingling.main(docs[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
+            docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
+            print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
+
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
-                print(attribute_pars.buckets_type)
-                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping[attribute_name])
+                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
                 #FIX IT
-                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}] #put all
+                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
             else:
                 buckets_of_bands = [{}]
             buckets.extend(buckets_of_bands)
@@ -130,17 +130,6 @@ if __name__ == "__main__":
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('Started working on {} '.format(attribute_name))
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
-
-            #df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_1'], right_on=['new_index'])
-            #df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_1'], axis=1)
-            #df_att_matches = pd.merge(df_att_matches, docs_mapping[attribute_name], how='left', left_on=['doc_2'], right_on=['new_index'])
-            #df_att_matches = df_att_matches.drop(['new_index', 'old_index', 'doc_2'], axis=1)
-            #df_att_matches = df_att_matches.rename(columns={'id_x': 'doc_1', 'id_y': 'doc_2'}, inplace=False)
-            b = df_att_matches.loc[df_att_matches['doc_1'] < df_att_matches['doc_2']]
-            c = df_att_matches.loc[df_att_matches['doc_1'] > df_att_matches['doc_2']]
-            c = c.rename(columns={'doc_1': 'doc_2', 'doc_2': 'doc_1'}, inplace=False)
-            c = c[['match_score_{}'.format(attribute_pars.matching_attribute), 'doc_1', 'doc_2']]
-            df_att_matches = b.append(c)
 
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
                                   right_on=['doc_1', 'doc_2'])

@@ -1,18 +1,15 @@
 import pandas as pd
 import numpy as np
 
-def mapping_creation(df, matching_attribute):
-    docs = df[['id', matching_attribute]]
-    docs = docs.dropna(subset=[matching_attribute])
-    docs_mapping = docs
-    docs = docs[matching_attribute]
-    print(docs)
+def create_mapping(df, matching_attribute):
+    docs_to_match = df[['id', matching_attribute]]
+    docs_to_match = docs_to_match.dropna(subset=[matching_attribute])
+    docs_mapping = docs_to_match
+    docs_to_match = docs_to_match[matching_attribute]
 
     print('------------------------------------------------')
-    print('The attribute {} has {} records'.format(matching_attribute, len(docs)))
+    print('The attribute {} has {} records'.format(matching_attribute, len(docs_to_match)))
 
-    docs_mapping_dict_new_old = {}
-    docs_mapping_dict_old_new = {}
     docs_mapping = docs_mapping.dropna(subset=[matching_attribute])
     docs_mapping['old_index'] = docs_mapping.index
     docs_mapping = docs_mapping.reset_index(drop=True)
@@ -22,7 +19,7 @@ def mapping_creation(df, matching_attribute):
     docs_mapping_dict_new_old = {k: v[0] for k, v in docs_mapping_dict_new_old.items()}
     docs_mapping_dict_old_new = docs_mapping.set_index('old_index').T.to_dict('list')
     docs_mapping_dict_old_new = {k: v[0] for k, v in docs_mapping_dict_old_new.items()}
-    return docs_mapping_dict_new_old, docs_mapping_dict_old_new, docs
+    return docs_mapping_dict_new_old, docs_mapping_dict_old_new, docs_to_match
 
 def main(df, attribute_params, dataset_size):
     attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
@@ -30,13 +27,13 @@ def main(df, attribute_params, dataset_size):
     try:
         df_to_bucket = df_to_bucket.sample(n=dataset_size)
     except:
-        print('dataset size is larger than...')
+        print('dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
 
-    docs_mapping = {}
-    docs_mapping_old_new ={}
-    docs = {}
+    docs_mapping_new_old = {}
+    docs_mapping_old_new = {}
+    docs_to_match = {}
 
     for attribute_name, attribute_pars in attribute_params.items():
-        docs_mapping[attribute_name], docs_mapping_old_new[attribute_name], docs[attribute_name] = mapping_creation(df_to_bucket, attribute_pars.matching_attribute)
+        docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], docs_to_match[attribute_name] = create_mapping(df_to_bucket, attribute_pars.matching_attribute)
 
-    return df_to_bucket, docs_mapping, docs_mapping_old_new, docs
+    return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match
