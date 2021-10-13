@@ -62,8 +62,13 @@ def test_df():
     for row, column in df:
         print(row)
 
-#    df_2['zip'] = np.nan
+def test_loops():
+	l = [0, 1, 2]
+	for a in l:
+		a = 3
+	print(l)
 
+test_loops()
 #test_lists_append()
 #test_nan()
-test_list()
+#test_list()

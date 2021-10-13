@@ -87,9 +87,10 @@ if __name__ == "__main__":
     a = mats.attribute_params
 
     for try_number in range(mats.number_of_tries):
+
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
-        df_to_match, docs_mapping, docs_mapping_old_new, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
-        df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_match)
+        df_to_bucket, docs_mapping, docs_mapping_old_new, docs = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
+        df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_bucket)
 
         buckets = []
         docs_shingled = {}
@@ -98,6 +99,8 @@ if __name__ == "__main__":
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('Started working on {} '.format(attribute_name))
+            start_time = time.time()
+            print("Started creating shingles...")
             docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name] = shingling.main(docs[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
                 print(attribute_pars.buckets_type)
