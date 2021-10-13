@@ -16,30 +16,29 @@ class hashes_parameters:
         self.b2 = b2
         self.c = c
 
-#creating signatures array
-def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weights_list, shingles_weights_in_docs):
-    signatures = np.zeros((signature_size, len(docs_hashed)), dtype=tuple) #create a df with # rows = signature_size and #columns = docs
-    hashes_shuffled = [i for i in range(len(hash_weights_list))]  #create list of hashes indexes for further randomizing
+def create_signatures_array(docs_shingled, buckets_type, signature_size, shingles_weights_dict, shingles_weights_in_docs):
+    signatures = np.zeros((signature_size, len(docs_shingled)), dtype=tuple) #create a df with # rows = signature_size and #columns = docs
+    shingles_shuffled = [i for i in range(len(shingles_weights_dict))]  #create list of hashes indexes for further randomizing
 
-    hashes_randomized = [[] for i in range(len(hash_weights_list))]
-    hash_weights_random = [i for i in range(len(hash_weights_list))]
+    hashes_randomized = [[] for i in range(len(shingles_weights_dict))]
+    hash_weights_random = [i for i in range(len(shingles_weights_dict))]
 
-    for signature in signatures:   #iterating through rows of the signatures df
+    for signature in signatures:   #iterating through rows of the signatures array
         if buckets_type == 'minhash':
-            random.shuffle(hashes_shuffled)
-            for doc_index, doc_hashed in enumerate(docs_hashed): #for iterating over indexes in list as well
-                doc_a = [hashes_shuffled[i] for i in doc_hashed] # --check this-- recreating shingles list of a doc with randomization
+            random.shuffle(shingles_shuffled)
+            for doc_index, doc_shingled in enumerate(docs_shingled):
+                doc_a = [shingles_shuffled[i] for i in doc_shingled] # --check this-- recreating shingles list of a doc with randomization
                 try:
                     signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
                 except:
-                    print('didnt work for docs_hashed {}'.format(docs_hashed[doc_index]))
+                    print('didnt work for docs_shingled {}'.format(docs_shingled[doc_index]))
         elif buckets_type == 'weighted minhash 1':
-            #print(max(hash_weights_list))
-            #print(min(hash_weights_list))
+            #print(max(shingles_weights_dict))
+            #print(min(shingles_weights_dict))
             for hash_index, hash_randomized in enumerate(hashes_randomized):
-                randomhash = random.sample(range(0, 1000), hash_weights_list[hash_index]+1) #this is [vk(x), vk(x)...], k the same, x changes
+                randomhash = random.sample(range(0, 1000), shingles_weights_dict[hash_index]+1) #this is [vk(x), vk(x)...], k the same, x changes
                 hashes_randomized[hash_index] = randomhash
-            for doc_index, doc_hashed in enumerate(docs_hashed):
+            for doc_index, doc_hashed in enumerate(docs_shingled):
                 minvalue = 1000000
                 shingles_weights_in_doc = shingles_weights_in_docs[doc_index]
                 for hash_position, hash_index in enumerate(doc_hashed):
@@ -50,26 +49,21 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                     hash_in_doc_weight = np.round(hash_in_doc_weight[0], 0) #[0] hard coded, should be fixed
                     hash_in_doc_weight = hash_in_doc_weight.astype(int)
                     doc_a = doc_a[:hash_in_doc_weight+1]
-                    #print(shingles_weights_in_doc[hash_index])
-                    #print(doc_a)
                     a = min(doc_a)
                     #print(a)
                     if a < minvalue:
                         minvalue = a
                         minindex = hash_index
-                    #print(minvalue)
-                    #print(minindex)
-                #print((minindex, minvalue))
                 signature[doc_index] = (minindex, minvalue)
         elif buckets_type == 'weighted minhash 2':
-            for hash_index, hash_weight in enumerate(hash_weights_list):
+            for hash_index, hash_weight in enumerate(shingles_weights_dict):
                 r1 = random.gammavariate(2, 1)
                 r2 = random.gammavariate(2, 1)
                 b1 = random.uniform(0, 1)
                 b2 = random.uniform(0, 1)
                 c = random.gammavariate(2, 1)
                 hash_weights_random[hash_index] = hashes_parameters(r1, r2, b1, b2, c) #class here is ok
-            for doc_index, doc_hashed in enumerate(docs_hashed):  # for iterating over indexes in list as well
+            for doc_index, doc_hashed in enumerate(docs_shingled):  # for iterating over indexes in list as well
                 minvalue = 1000000
                 for hash_position, hash_index in enumerate(reversed(doc_hashed)):
                     hash_in_doc_weight = shingles_weights_in_docs[hash_index]
@@ -82,7 +76,7 @@ def create_signatures_array(docs_hashed, buckets_type, signature_size, hash_weig
                         minposition = hash_position
                 k = minindex
                 #for the I2CWS:
-                hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * hash_weights_list[k] #this won't be needed
+                hash_in_doc_weight = (minposition + 1) / len(doc_hashed) * shingles_weights_dict[k] #this won't be needed
                 hash_in_doc_weight = round(hash_in_doc_weight, 0) #no rounding
                 t1 = math.floor(math.log(hash_in_doc_weight) / hash_weights_random[k].r1 + hash_weights_random[k].b1)
                 signature[doc_index] = (k, t1)
@@ -107,11 +101,11 @@ def create_buckets(signatures, bands_number, docs_mapping):
 
     return buckets_of_bands
 
-def main(docs_shingled, hash_weights_list, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
+def main(docs_shingled, shingles_weights_dict, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
     start_time = time.time()
     print("Started creating signatures...")
     signatures = create_signatures_array(docs_shingled, buckets_type, signature_size,
-                                         hash_weights_list, shingles_weights_in_docs)
+                                         shingles_weights_dict, shingles_weights_in_docs)
     signatures_creation_time = round(time.time() - start_time, 6)
     print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 

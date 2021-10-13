@@ -100,11 +100,14 @@ if __name__ == "__main__":
             print('Started working on {} '.format(attribute_name))
             start_time = time.time()
             print("Started creating shingles...")
-            docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name], attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
+            docs_shingled[attribute_name], shingles_weights_dict[attribute_name]\
+                , shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name]
+                , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
             print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
-                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name], shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
+                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
+                            , shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
                 #FIX IT
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
@@ -133,8 +136,6 @@ if __name__ == "__main__":
 
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
                                   right_on=['doc_1', 'doc_2'])
-
-            print('h')
 
         print("Started creating a common matching score...")
         df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)

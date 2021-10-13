@@ -67,6 +67,8 @@ def create_shingles_dict(docs, shingle_type, shingle_size, shingle_weight):
         avg = {key: 1/len(value) for key, value in shingles_weights_dict.items()}
         shingles_weights_dict.update(avg)
         shingles_weights_dict = create_normalized_shingles_weights(shingles_weights_dict, shingles_dict)
+    elif shingle_weight == 'normal':
+        shingles_weights_dict = {v: 1 for k, v in shingles_dict.items()}
 
     return shingles_dict, shingles_weights_dict
 
