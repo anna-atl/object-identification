@@ -14,8 +14,25 @@ def create_shingles(doc, k):
         shingles = [doc + '_' * (k - len(doc))]
     return shingles
 
+def create_normalized_shingles_weights(shingles_weights_dict)
+    shingles_weights_list = [shingles_weights_dict[shingle] for shingle in shingles_weights_dict]
+
+    #put it in diff function
+    try:
+        shingles_weights_list_normalized = preprocessing.normalize([shingles_weights_list])
+        shingles_weights_list_normalized = np.round(shingles_weights_list_normalized * 1000, 0)
+        shingles_weights_list_normalized = shingles_weights_list_normalized.astype(int)
+        shingles_weights_list_normalized = shingles_weights_list_normalized[0].tolist()
+        shingles_weights_list_normalized = [i + 1 for i in shingles_weights_list_normalized] #fix it, this is for not creating 0 random values
+    except:
+        shingles_weights_list_normalized = []
+
+    shingles_weights_dict_normalized = shingles_weights_list_normalized
+
+    return shingles_weights_dict_normalized
+
 #creating shingles_dict
-def create_hashes(docs, shingle_type, shingle_size, shingle_weight):
+def create_shingles(docs, shingle_type, shingle_size, shingle_weight):
     '''
     This function creates a list and dict of shingles
     :param texts:one string column of a df (comp names), which is going to be divided in shingles
@@ -23,8 +40,8 @@ def create_hashes(docs, shingle_type, shingle_size, shingle_weight):
     :return: list of all shingles with order
     dict of shingles, shingle as a key, index of the shingle in the list as a value
     '''
-    shingles_set = set()#hash - hashed token or shingle
-    shingles_weights_dict = {} #token - unique word, value - tokens index
+    shingles_set = set()
+    shingles_weights_dict = {} #key - shingle, value - shingle weight
     k = shingle_size
 
     for doc in docs:
@@ -38,36 +55,25 @@ def create_hashes(docs, shingle_type, shingle_size, shingle_weight):
             for word in words:
                 shingles_of_word = create_shingles(word, k)
                 shingles.extend(shingles_of_word)
-        for word_index, word in enumerate(reversed(shingles)):
-            shingles_set.add(word)
-            if shingle_weight == 'weighted':
-                shingles_weights_dict.setdefault(word, []).append(word_index + 1)
-    if shingle_weight == 'weighted':
+        for shingles_index_from_end, shingle in enumerate(reversed(shingles)):
+            shingles_set.add(shingle)
+            if shingle_weight == 'weighted 1' or shingle_weight == 'weighted 2':
+                shingles_weights_dict.setdefault(shingle, []).append(shingles_index_from_end + 1)
+    if shingle_weight == 'weighted 1':
         avg = {key: sum(value)/len(value)/len(value) for key, value in shingles_weights_dict.items()}
         shingles_weights_dict.update(avg)
-    elif shingle_weight == 'weighted':
+        shingles_weights_dict = create_normalized_shingles_weights(shingles_weights_dict)
+    elif shingle_weight == 'weighted 2':
         avg = {key: 1/len(value) for key, value in shingles_weights_dict.items()}
         shingles_weights_dict.update(avg)
+        shingles_weights_dict = create_normalized_shingles_weights(shingles_weights_dict)
 
-    shingles_dict = dict(zip(shingles_set, range(len(shingles_set))))
-    shingles_list = [k for k in shingles_dict.keys()]
+    shingles_dict = dict(zip(shingles_set, range(len(shingles_set)))) #key - shingle, value - shingle index
 
-    shingles_weights_list = [shingles_weights_dict[shingle] for shingle in shingles_dict]
-
-    #put it in diff function
-    try:
-        shingles_weights_list_normalized = preprocessing.normalize([shingles_weights_list])
-        shingles_weights_list_normalized = np.round(shingles_weights_list_normalized * 1000, 0)
-        shingles_weights_list_normalized = shingles_weights_list_normalized.astype(int)
-        shingles_weights_list_normalized = shingles_weights_list_normalized[0].tolist()
-        shingles_weights_list_normalized = [i + 1 for i in shingles_weights_list_normalized] #fix it, this is for not creating 0 random values
-    except:
-        shingles_weights_list_normalized = []
-
-    return shingles_weights_list_normalized, shingles_dict
+    return shingles_dict, shingles_weights_dict
 
 #converting docs to shingles
-def convert_docs_to_hashes(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_list, shingles_dict):
+def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_list, shingles_dict):
     '''
     '''
     docs_shingled = [[] for i in range(len(docs))]
@@ -85,14 +91,14 @@ def convert_docs_to_hashes(docs, shingle_type, shingle_size, shingle_weight, shi
             for word in words:
                 shingles_of_word = create_shingles(word, k)
                 shingles.extend(shingles_of_word)
-        for word in shingle_type:
-            doc_shingled.append(shingles_dict[word])
+        for shingle in shingles:
+            doc_shingled.append(shingles_dict[shingle])
 
         # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
-        if shingle_weight == 'weighted':
-            for shingle_position, shingle_index in enumerate(reversed(doc_shingled)):
-                hash_in_doc_weight = (shingle_position + 1)/len(doc_shingled) * shingles_weights_list[shingle_index] #check if list is already created
-                shingles_weights_in_doc.setdefault(shingle_index, []).append(hash_in_doc_weight)
+        if shingle_weight == 'weighted 1' or shingle_weight == 'weighted 2':
+            for shingle_position_from_end, shingle_index in enumerate(reversed(doc_shingled)):
+                shingle_in_doc_weight = (shingle_position_from_end + 1)/len(doc_shingled) * shingles_weights_list[shingle_index] #check if list is already created
+                shingles_weights_in_doc.setdefault(shingle_index, []).append(shingle_in_doc_weight)
             shingles_weights_in_doc = {k: sum(v) for k, v in shingles_weights_in_doc.items()}
 
     return docs_shingled, shingles_weights_in_docs
@@ -100,12 +106,12 @@ def convert_docs_to_hashes(docs, shingle_type, shingle_size, shingle_weight, shi
 def main(docs, shingle_type, shingle_size, shingle_weight):
     start_time = time.time()
     print("Started creating shingles...")
-    shingles_weights_list, shingles_dict = create_hashes(docs, shingle_type, shingle_size, shingle_weight)
+    shingles_dict, shingles_weights_dict = create_shingles(docs, shingle_type, shingle_size, shingle_weight)
     print("Creating shingles took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
     print("Started converting docs to hashes...")
-    docs_shingled, shingles_weights_in_docs = convert_docs_to_hashes(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_list, shingles_dict)
+    docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_list, shingles_dict)
     print("Converting docs to hashes took --- %s seconds ---" % (time.time() - start_time))
 
-    return docs_shingled, shingles_weights_in_docs, shingles_weights_list
+    return docs_shingled, shingles_weights_dict, shingles_weights_in_docs
