@@ -92,10 +92,12 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shing
             doc_shingled.append(shingles_dict[shingle])
 
         # and create weights of shingles in docs - list of dictionaries, key - shingle(index), value - weight (sum the weights if its several times)
-        if shingle_weight == 'weighted 1' or shingle_weight == 'weighted 2':
-            for shingle_position_from_end, shingle_index in enumerate(reversed(doc_shingled)):
+        for shingle_position_from_end, shingle_index in enumerate(reversed(doc_shingled)):
+            if shingle_weight == 'weighted 1' or shingle_weight == 'weighted 2':
                 shingle_in_doc_weight = (shingle_position_from_end + 1)/len(doc_shingled) * shingles_weights_dict[shingle_index] #check if list is already created
                 shingles_weights_in_doc.setdefault(shingle_index, []).append(shingle_in_doc_weight)
+            elif shingle_weight == 'normal':
+                shingles_weights_in_doc[shingle_index] = [1]
 
     return docs_shingled, shingles_weights_in_docs
 
@@ -106,7 +108,7 @@ def main(docs, shingle_type, shingle_size, shingle_weight):
     print("Creating shingles took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
-    print("Started converting docs to hashes...")
+    print("Started converting docs to shingles...")
     docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_dict, shingles_dict)
     print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 

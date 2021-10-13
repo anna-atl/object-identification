@@ -149,8 +149,8 @@ if __name__ == "__main__":
         results = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
 
         print('------------------------------------------------')
-        print("Matching algorithm took for {} size --- {} seconds ---".format(len(docs), time.time() - start_time))
+        print("Matching algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time))
 
-        exporting_output.main()
+        #exporting_output.main()
 
         print('end')

@@ -33,8 +33,8 @@ def main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative):
     df_labeled_data_not_in_df = pd.merge(df_labeled_data, df_matches_full, how='left',
                                          left_on=['id_x', 'id_y'],
                                          right_on=['id_x', 'id_y'])
-    df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['id_x_y'].isnull()]
-    df_labeled_data_not_in_df = df_labeled_data_not_in_df[['id_x_x', 'id_y_x', 'is_duplicate']]
+    df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['doc_1'].isnull()]
+    df_labeled_data_not_in_df = df_labeled_data_not_in_df[df_labeled_data_not_in_df['doc_2'].isnull()]
 
     false_positive, false_negative, true_positive, true_negative = add_results_estimation(df_matches_estimation, labeled_positive, labeled_negative)
 
