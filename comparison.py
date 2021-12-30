@@ -121,6 +121,7 @@ def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in
     else:
         column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
+    print('------------------------------------------------')
 
     return df_matches
 

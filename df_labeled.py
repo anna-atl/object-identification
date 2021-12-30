@@ -40,5 +40,6 @@ def main(df):
     print('Identifying which labeled data is in imported df')
     df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count = find_labeled_data_in_df(df_labeled_data, df)
     print("Merging labeled dataset with df took --- %s seconds ---" % (time.time() - start_time))
+    print('------------------------------------------------')
 
     return df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count

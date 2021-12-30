@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 
 def create_mapping(df, matching_attribute):
     docs_to_match = df[['id', matching_attribute]]
@@ -7,7 +8,6 @@ def create_mapping(df, matching_attribute):
     docs_mapping = docs_to_match
     docs_to_match = docs_to_match[matching_attribute]
 
-    print('------------------------------------------------')
     print('The attribute {} has {} records'.format(matching_attribute, len(docs_to_match)))
 
     docs_mapping = docs_mapping.dropna(subset=[matching_attribute])
@@ -33,7 +33,11 @@ def main(df, attribute_params, dataset_size):
     docs_mapping_old_new = {}
     docs_to_match = {}
 
+    start_time = time.time()
+    print('Started to create documents mapping')
     for attribute_name, attribute_pars in attribute_params.items():
         docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], docs_to_match[attribute_name] = create_mapping(df_to_bucket, attribute_pars.matching_attribute)
+    print("Creating documents took --- %s seconds ---" % (time.time() - start_time))
+    print('------------------------------------------------')
 
     return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match
