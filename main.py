@@ -97,6 +97,7 @@ if __name__ == "__main__":
         shingles_weights_in_docs = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
+            print("----------------------")
             print('Started working on {} '.format(attribute_name))
             start_time = time.time()
             print("Started creating shingles...")

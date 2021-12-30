@@ -18,6 +18,7 @@ def df_prepare(df):
     df['name_clean'] = df['name_clean'].apply(lambda x: x.replace('.', ''))
     df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
+
     df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
     df['name_clean'] = df['name_clean'].str.strip()
     df['name_clean'] = df['name_clean'].replace('NONE', np.nan)
