@@ -1,7 +1,7 @@
 {
     "scenario": 2,
     "number_of_tries": 1,
-    "dataset_size_to_import": 500,
+    "dataset_size_to_import": 500000,
     "dataset_size": 1000000,
     "sum_score": "sum",
     "attribute_params":

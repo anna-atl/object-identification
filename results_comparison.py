@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-import matching
+import main
 import df_imports
 import time
 import datetime
 from functools import reduce
-from matching import attribute_matching_params
+from main import attribute_matching_params
 
 def finding_best_methods_for_atts(df, df_results, df_labeled_data, labeled_positive, labeled_negative, try_number):
     '''

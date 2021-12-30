@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def import_labeled_data():
-    labeled_data = "~/Dropbox/Botva/TUM/Master_Thesis/object-identification/labeled_data_final_2.csv"
+    labeled_data = "labeled_data_final_2.csv"
     df_labeled_data = pd.read_csv(labeled_data, sep=';', error_bad_lines=False)
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (id_x, not doc_1 indexes)

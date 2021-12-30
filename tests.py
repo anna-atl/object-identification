@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import string
 import multiset
-import matching
+import main
 
 class TestDfPreparation:
 	df_input = pd.DataFrame(columns=['name'])

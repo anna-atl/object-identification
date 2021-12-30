@@ -81,7 +81,7 @@ def df_prepare(df):
     return df
 
 def df_import(dataset_size_to_import):
-    database = "/Users/Annie/Dropbox/Botva/TUM/Master_Thesis/datasets/companies.db"
+    database = "datasets/companies.db"
     # create a database connection
     conn = sqlite3.connect(database)
     df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size_to_import,))
