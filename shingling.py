@@ -103,13 +103,13 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shing
 
 def main(docs, shingle_type, shingle_size, shingle_weight):
     start_time = time.time()
-    print("Started creating shingles...")
+    print("----Started creating shingles...")
     shingles_dict, shingles_weights_dict = create_shingles_dict(docs, shingle_type, shingle_size, shingle_weight)
-    print("Creating shingles took --- %s seconds ---" % (time.time() - start_time))
+    print("----Creating shingles took --- %s seconds ---" % (time.time() - start_time))
 
     start_time = time.time()
-    print("Started converting docs to shingles...")
+    print("----Started converting docs to shingles...")
     docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, shingles_weights_dict, shingles_dict)
-    print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
+    print("----Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
     return docs_shingled, shingles_weights_dict, shingles_weights_in_docs

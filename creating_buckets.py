@@ -103,16 +103,16 @@ def create_buckets(signatures, bands_number, docs_mapping):
 
 def main(docs_shingled, shingles_weights_dict, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
     start_time = time.time()
-    print("Started creating signatures...")
+    print("----Started creating signatures...")
     signatures = create_signatures_array(docs_shingled, buckets_type, signature_size,
                                          shingles_weights_dict, shingles_weights_in_docs)
     signatures_creation_time = round(time.time() - start_time, 6)
-    print("Creating signatures took --- %s seconds ---" % (signatures_creation_time))
+    print("----//Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 
     start_time = time.time()
-    print("Started creating buckets of potential matches...")
+    print("----Started creating buckets of potential matches...")
     buckets_of_bands = create_buckets(signatures, bands_number, docs_mapping)
     buckets_creation_time = round(time.time() - start_time, 6)
-    print("Creating buckets took --- %s seconds ---" % (buckets_creation_time))
+    print("----//Creating buckets took --- %s seconds ---" % (buckets_creation_time))
 
     return buckets_of_bands

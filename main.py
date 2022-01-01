@@ -97,15 +97,13 @@ if __name__ == "__main__":
         shingles_weights_in_docs = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
-            print('Started working on {} '.format(attribute_name))
-            start_time = time.time()
-            print("Started creating shingles...")
+            print('--Started preprocessing {} '.format(attribute_name))
             docs_shingled[attribute_name], shingles_weights_dict[attribute_name]\
                 , shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name]
                 , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
-            print("Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
+                print('--Started bucketing {} '.format(attribute_name))
                 buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
                             , shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
@@ -131,7 +129,7 @@ if __name__ == "__main__":
         df_matches = df_matches.reset_index(drop=True)
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
-            print('Started working on {} '.format(attribute_name))
+            print('--Started comparing on {} '.format(attribute_name))
             df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
 
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
@@ -140,8 +138,6 @@ if __name__ == "__main__":
         print("Started creating a common matching score...")
         df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
         df_matches = df_matches.sort_values(by='match_score', ascending=False)
-        print("Finished creating a common matching score...")
-        print("------------------------------------------")
 
         print("Started adding matches attributes...")
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
@@ -149,7 +145,6 @@ if __name__ == "__main__":
         df_matches_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
         df_matches_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.mode, str(mats.scenario), str(datetime.datetime.now())))
 
-        print('------------------------------------------------')
         print("Matching algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time))
         print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time_0))
 

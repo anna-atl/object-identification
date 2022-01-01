@@ -103,12 +103,10 @@ def other_matching_methods(docs, matching_method):
 
 def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, matching_attribute, docs_mapping_old_new):
     start_time = time.time()
-    print("Started calculating jacc for potential matches in buckets...")
+    print("----Started calculating jacc for potential matches in buckets...")
     matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, docs_mapping_old_new)
     finding_matches_time = round(time.time() - start_time, 6)
-    print("Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
-    print("Started creating one match score column from tuples...")
     if len(matched_pairs) != 0:
         df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index', columns=[
             'match_score_{}'.format(matching_attribute)])  # oriend='index' for making keys as rows, not columns
@@ -120,7 +118,7 @@ def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in
     else:
         column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)
-    print('------------------------------------------------')
+    print("----//Creating matches (jaccard) took --- %s seconds ---" % (finding_matches_time))
 
     return df_matches
 

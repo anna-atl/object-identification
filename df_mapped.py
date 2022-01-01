@@ -38,6 +38,5 @@ def main(df, attribute_params, dataset_size):
     for attribute_name, attribute_pars in attribute_params.items():
         docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], docs_to_match[attribute_name] = create_mapping(df_to_bucket, attribute_pars.matching_attribute)
     print("Creating mapped documents took --- %s seconds ---" % (time.time() - start_time))
-    print('------------------------------------------------')
 
     return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match

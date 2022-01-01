@@ -33,13 +33,12 @@ def find_labeled_data_in_df(df_labeled_data, df):
     return df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count
 
 def main(df):
-    print('Started to download the labeled data')
+    print('----Started to download the labeled data')
     df_labeled_data = import_labeled_data()
 
     start_time = time.time()
-    print('Identifying which labeled data is in imported df')
+    print('----Identifying which labeled data is in imported df')
     df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count = find_labeled_data_in_df(df_labeled_data, df)
-    print("Merging labeled dataset with df took --- %s seconds ---" % (time.time() - start_time))
-    print('------------------------------------------------')
+    print("----//Merging labeled dataset with df took --- %s seconds ---" % (time.time() - start_time))
 
     return df_labeled_data_in_df, labeled_positive, labeled_negative, labeled_matches_count

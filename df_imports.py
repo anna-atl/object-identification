@@ -94,7 +94,6 @@ def df_import(dataset_size_to_import):
 def main(dataset_size_to_import):
     df = df_import(dataset_size_to_import)
     df = df_prepare(df)
-    print('------------------------------------------------')
 
     return df
 
