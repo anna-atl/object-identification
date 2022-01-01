@@ -27,7 +27,7 @@ def main(df, attribute_params, dataset_size):
     try:
         df_to_bucket = df_to_bucket.sample(n=dataset_size)
     except:
-        print('dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
+        print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
 
     docs_mapping_new_old = {}
     docs_mapping_old_new = {}
@@ -37,7 +37,7 @@ def main(df, attribute_params, dataset_size):
     print('Started to create documents mapping')
     for attribute_name, attribute_pars in attribute_params.items():
         docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], docs_to_match[attribute_name] = create_mapping(df_to_bucket, attribute_pars.matching_attribute)
-    print("Creating documents took --- %s seconds ---" % (time.time() - start_time))
+    print("Creating mapped documents took --- %s seconds ---" % (time.time() - start_time))
     print('------------------------------------------------')
 
     return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match

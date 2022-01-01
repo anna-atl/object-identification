@@ -1,8 +1,5 @@
 import pandas as pd
 import time
-import numpy as np
-import datetime
-import string
 
 import df_imports
 import df_mapped
@@ -84,6 +81,7 @@ if __name__ == "__main__":
     print('Started downloading datasets')
     df_with_attributes = df_imports.main(mats.dataset_size_to_import)
     print("Importing datasets took --- %s seconds ---" % (time.time() - start_time))
+    print('------------------------------------------------')
 
     for try_number in range(mats.number_of_tries):
 
@@ -146,7 +144,8 @@ if __name__ == "__main__":
         print("Started adding matches attributes...")
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
-        results = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
+        df_matches_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
+        df_matches_estimation.to_csv("df_results_{}_{}.csv".format(matching_attribute, str(datetime.datetime.now())))
 
         print('------------------------------------------------')
         print("Matching algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time))

@@ -20,7 +20,7 @@ def import_labeled_data():
 def find_labeled_data_in_df(df_labeled_data, df):
     df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
-    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
+    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'name_x', 'name_y', 'is_duplicate']]
     df_labeled_data_in_df = pd.merge(df_labeled_data_in_df, df,  how='left', left_on=['id_y'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate', 'name_x', 'name_y']]

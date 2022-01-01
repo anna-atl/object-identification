@@ -11,7 +11,6 @@ from fuzzywuzzy import process
 from multiset import Multiset
 from sklearn import preprocessing
 
-
 def jaccard_comparison(list1, list2, comparison_method, shingles_weights_in_doc_1, shingles_weights_in_doc_2): #is not counting duplicate hashes
     intersection = Multiset(list1).intersection(list2)
     union = Multiset(list1).union(list2)
@@ -77,8 +76,8 @@ def calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, compariso
                         try:
                             matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(gen_jaccard_comparison(docs_shingled[docs_mapping_old_new[doc_index_1]], docs_shingled[docs_mapping_old_new[doc_index_2]], shingles_weights_in_docs[docs_mapping_old_new[doc_index_1]], shingles_weights_in_docs[docs_mapping_old_new[doc_index_2]], comparison_method))
                         except:
-                            print('didnt work')
-                            matched_pairs[(doc_index_1, doc_index_2)] = [-1]
+                            #print('didnt work')
+                            matched_pairs[(doc_index_1, doc_index_2)] = [0]
 
     return matched_pairs
 
