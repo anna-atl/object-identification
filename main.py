@@ -110,6 +110,7 @@ if __name__ == "__main__":
                 #FIX IT
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
             else:
+                print('--No bucketing for {} '.format(attribute_name))
                 buckets_of_bands = [{}]
             buckets.extend(buckets_of_bands)
             print('')
