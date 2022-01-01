@@ -89,6 +89,7 @@ if __name__ == "__main__":
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
         df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_bucket)
+        print('')
 
         buckets = []
         docs_shingled = {}
@@ -111,6 +112,7 @@ if __name__ == "__main__":
             else:
                 buckets_of_bands = [{}]
             buckets.extend(buckets_of_bands)
+            print('')
 
         matched_pairs = {}
         for buckets_of_band in buckets:
