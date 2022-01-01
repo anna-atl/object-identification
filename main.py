@@ -129,14 +129,15 @@ if __name__ == "__main__":
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('--Started comparing on {} '.format(attribute_name))
-            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method,
+            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, attribute_pars.attribute_weight,
                                              shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
 
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
                                   right_on=['doc_1', 'doc_2'])
 
         print("Started creating a common matching score...")
-        df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
+        if mats.sum_score == 'sum':
+            df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
         df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
         print("Started adding matches attributes...")

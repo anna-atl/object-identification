@@ -101,7 +101,7 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, matching_attribute, docs_mapping_old_new):
+def main(buckets_of_bands, docs_shingled, comparison_method, attribute_weight, shingles_weights_in_docs, matching_attribute, docs_mapping_old_new):
     start_time = time.time()
     print("----Started calculating jacc for potential matches in buckets...")
     matched_pairs = calculate_weighted_matches_ratios(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in_docs, docs_mapping_old_new)
@@ -115,6 +115,7 @@ def main(buckets_of_bands, docs_shingled, comparison_method, shingles_weights_in
         df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
         df_matches = df_matches.drop(['matches_tuple'], axis=1)
         df_matches = df_matches.reset_index(drop=True)
+        df_matches['match_score_{}'.format(matching_attribute)] = df_matches['match_score_{}'.format(matching_attribute)]*attribute_weight
     else:
         column_names = ['match_score_{}'.format(matching_attribute), 'doc_1', 'doc_2']
         df_matches = pd.DataFrame(columns=column_names)

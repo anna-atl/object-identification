@@ -16,7 +16,7 @@
                 "signature_size": 50,
                 "bands_number": 5,
                 "comparison_method": "jaccard",
-                "attribute_weight": 1,
+                "attribute_weight": 3,
                 "attribute_threshold": 0
             },
             "name": {
