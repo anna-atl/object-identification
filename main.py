@@ -1,6 +1,6 @@
 import pandas as pd
 import time
-
+import datetime
 import df_imports
 import df_mapped
 import df_labeled
@@ -36,8 +36,9 @@ class attribute_matching_params:
     #def __str__(self): return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 class scenario_matching_params:
-    def __init__(self, scenario, number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
+    def __init__(self, scenario, mode="test", number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
         self.scenario = scenario
+        self.mode = mode
         self.number_of_tries = number_of_tries
         self.dataset_size_to_import = dataset_size_to_import
         self.dataset_size = dataset_size
@@ -66,10 +67,11 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
+    start_time_0 = time.time()
     with open('scenarios/scenario_1', 'r') as json_file:
         data = json.loads(json_file.read())
 
-    mats = scenario_matching_params(data["scenario"], data["number_of_tries"], data["dataset_size_to_import"], data["dataset_size"],
+    mats = scenario_matching_params(data["scenario"], data["mode"], data["number_of_tries"], data["dataset_size_to_import"], data["dataset_size"],
                                     data["sum_score"], data["attribute_params"]
                                     )
 
@@ -145,10 +147,11 @@ if __name__ == "__main__":
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
         df_matches_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
-        df_matches_estimation.to_csv("df_results_{}_{}.csv".format(matching_attribute, str(datetime.datetime.now())))
+        df_matches_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.mode, str(mats.scenario), str(datetime.datetime.now())))
 
         print('------------------------------------------------')
         print("Matching algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time))
+        print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), time.time() - start_time_0))
 
         #exporting_output.main()
 
