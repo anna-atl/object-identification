@@ -8,7 +8,7 @@ import shingling
 import creating_buckets
 import comparison
 import results_evaluation
-import exporting_output
+import exporting_experiment_results
 
 import json
 
@@ -145,10 +145,12 @@ if __name__ == "__main__":
         final_time = time.time() - start_time
         print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
 
-        print("Started preparing results outputs")
+        print("Started preparing results outputs and evaluation")
         df_matches_with_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
+        #df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
+
         df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.mode, mats.scenario_name, str(datetime.datetime.now())))
 
-        experiment_results = exporting_output.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, false_positive, false_negative, true_positive, true_negative)
+        experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, false_positive, false_negative, true_positive, true_negative)
 
         print('end')
