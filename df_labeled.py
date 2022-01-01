@@ -6,7 +6,7 @@ def import_labeled_data():
     labeled_data = "labeled_data/labeled_data_final_2.csv"
     df_labeled_data = pd.read_csv(labeled_data, sep=';', error_bad_lines=False)
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
-    #df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate']] ##this is correct! (id_x, not doc_1 indexes)
+    df_labeled_data = df_labeled_data.loc[(df_labeled_data['is_duplicate'] == 2) | (df_labeled_data['is_duplicate'] == 0)]
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate', 'name_x', 'name_y']] ##this is correct! (id_x, not doc_1 indexes)
 
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
