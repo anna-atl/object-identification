@@ -75,7 +75,6 @@ def df_prepare(df):
     df['industry_clean'] = df['industry_clean'].replace('NONE', np.nan)
 
     df = df.replace(r'^\s*$', np.NaN, regex=True)
-    #df = df.dropna(subset=['url_clean'])
     df = df.dropna(how='all')
     df = df.reset_index(drop=True)
 

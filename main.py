@@ -36,9 +36,9 @@ class attribute_matching_params:
     #def __str__(self): return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 class scenario_matching_params:
-    def __init__(self, scenario_name, mode="test", number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
+    def __init__(self, scenario_name, experiment_mode="test", number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
         self.scenario_name = scenario_name
-        self.mode = mode
+        self.experiment_mode = experiment_mode
         self.number_of_tries = number_of_tries
         self.dataset_size_to_import = dataset_size_to_import
         self.dataset_size = dataset_size
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     with open('scenarios/scenario_1', 'r') as json_file:
         data = json.loads(json_file.read())
 
-    mats = scenario_matching_params(data["scenario_name"], data["mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
+    mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
                                     data["sum_score"], data["attribute_params"]
                                     )
 
@@ -138,22 +138,22 @@ if __name__ == "__main__":
             df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
                                   right_on=['doc_1', 'doc_2'])
 
-        print("Started creating a common matching score...")
+        print("--Started postprocessing the results...")
+        print("----Started creating a common matching score...")
         if mats.sum_score == 'sum':
             df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
         df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
-        print("Started adding matches attributes...")
+        print("----Started adding matches attributes...")
         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
         final_time = time.time() - start_time
         print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
-
-        print("Started preparing results outputs and evaluation")
+        print("----Started preparing results outputs and evaluation")
         df_matches_with_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
-        #df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
+        df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
 
-        df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.mode, mats.scenario_name, str(datetime.datetime.now())))
+        df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.experiment_mode, mats.scenario_name, str(datetime.datetime.now())))
 
         experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, false_positive, false_negative, true_positive, true_negative)
 
