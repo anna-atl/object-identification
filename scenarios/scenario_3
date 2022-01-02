@@ -1,0 +1,23 @@
+{
+    "scenario_name": "scenario_3",
+    "experiment_mode": "test",
+    "number_of_experiments": 1,
+    "dataset_size_to_import": 1000,
+    "dataset_size": 1000,
+    "sum_score": "sum",
+    "attribute_params":
+        {
+            "name": {
+                "matching_attribute": "name_clean",
+                "shingle_type": "token",
+                "shingle_size": 3,
+                "shingle_weight": "tf-idf-cp-0",
+                "buckets_type": "minhash",
+                "signature_size": 50,
+                "bands_number": 5,
+                "comparison_method": "weighted jaccard",
+                "attribute_weight": 1,
+                "attribute_threshold": 0
+            }
+        }
+  }
