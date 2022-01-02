@@ -100,7 +100,7 @@ if __name__ == "__main__":
             print('--Started preprocessing {} '.format(attribute_name))
             docs_shingled[attribute_name], shingles_weights_dict[attribute_name]\
                 , shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name]
-                , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight)
+                , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
                 print('--Started bucketing {} '.format(attribute_name))

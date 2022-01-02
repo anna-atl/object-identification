@@ -21,7 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="7fdd36f4-85c6-45c1-aeb1-61fdd4e49384" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deleted_code.py" beforeDir="false" afterPath="$PROJECT_DIR$/deleted_code.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shingling.py" beforeDir="false" afterPath="$PROJECT_DIR$/shingling.py" afterDir="false" />
     </list>
@@ -227,7 +226,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/shingling.py</url>
-          <line>114</line>
+          <line>119</line>
           <option name="timeStamp" value="409" />
         </line-breakpoint>
       </breakpoints>

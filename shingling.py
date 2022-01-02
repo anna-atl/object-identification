@@ -30,7 +30,7 @@ def create_normalized_shingles_weights(shingles_weights_dict, shingles_dict):
 
     return shingles_weights_dict_normalized
 
-def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight):
+def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     '''
     This function creates a list and dict of shingles
     :param texts:one string column of a df (comp names), which is going to be divided in shingles
@@ -45,6 +45,7 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight):
     common_shingle_position = {}
     common_shingle_position_from_end = {}
     idf_shingles = {}
+    all_shingles_weights = {}
 
     docs_shingled = [[] for i in range(len(docs))]
     shingles_positions_in_docs = [[] for i in range(len(docs))]
@@ -53,9 +54,8 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight):
     tf_shingles_in_docs = [[] for i in range(len(docs))]
     cp_shingles_in_docs = [[] for i in range(len(docs))]
     cp_shingles_in_docs_from_end = [[] for i in range(len(docs))]
+    cp_shingles_in_docs_final = [[] for i in range(len(docs))]
     shingles_weights_in_docs = [[] for i in range(len(docs))]
-
-    shingle_positions_in_docs = [{} for i in range(len(docs))]
 
     for doc_index, doc in enumerate(docs):
         if shingle_type == 'token':
@@ -64,7 +64,7 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight):
             shingles_in_doc = create_shingles(doc, k)
         elif shingle_type == 'shingle words':
             words = [word for word in doc.split()]
-            shingles = []
+            shingles_in_doc = []
             for word in words:
                 shingles_in_word = create_shingles(word, k)
                 shingles_in_doc.extend(shingles_in_word)
@@ -108,16 +108,21 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight):
                 #FIX THIS +1
                 cp_shingles_in_docs[doc_index][shingle_index_in_doc] = abs(shingles_positions_in_docs[doc_index][shingle_index_in_doc] - common_shingle_position[shingle]) + 1
                 cp_shingles_in_docs_from_end[doc_index][shingle_index_in_doc] = abs(shingles_positions_in_docs_from_end[doc_index][shingle_index_in_doc] - common_shingle_position_from_end[shingle]) + 1
-                cp_shingles_in_docs[doc_index][shingle_index_in_doc] = min(cp_shingles_in_docs[doc_index][shingle_index_in_doc], cp_shingles_in_docs_from_end[doc_index][shingle_index_in_doc])
+                cp_shingles_in_docs_final[doc_index][shingle_index_in_doc] = min(cp_shingles_in_docs[doc_index][shingle_index_in_doc], cp_shingles_in_docs_from_end[doc_index][shingle_index_in_doc])
 
-                shingles_weights_in_docs[doc_index][shingle_index_in_doc] = tf_shingles_in_docs[doc_index][shingle_index_in_doc] * idf_shingles[shingle_in_doc] * cp_shingles_in_docs[doc_index][shingle_index_in_doc]
+                shingles_weights_in_docs[doc_index][shingle_index_in_doc] = tf_shingles_in_docs[doc_index][shingle_index_in_doc] * idf_shingles[shingle_in_doc] * cp_shingles_in_docs_final[doc_index][shingle_index_in_doc]
 
-    return docs_shingled, shingles_weights_in_docs
+                all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs[doc_index][shingle_index_in_doc]))
 
-def main(docs, shingle_type, shingle_size, shingle_weight):
+    if experiment_mode == 'test':
+        df_shingles_weights = pd.DataFrame.from_dict(all_shingles_weights, orient='index')
+
+    return docs_shingled, shingles_weights_in_docs, all_shingles_weights
+
+def main(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     start_time = time.time()
     print("----Started converting docs to shingles...")
-    docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight)
+    docs_shingled, shingles_weights_in_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode)
     print("----Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
     shingles_weights_dict = 0
