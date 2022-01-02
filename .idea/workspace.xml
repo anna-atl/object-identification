@@ -21,6 +21,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7fdd36f4-85c6-45c1-aeb1-61fdd4e49384" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deleted_code.py" beforeDir="false" afterPath="$PROJECT_DIR$/deleted_code.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/shingling.py" beforeDir="false" afterPath="$PROJECT_DIR$/shingling.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,6 +39,14 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
@@ -215,6 +225,11 @@
           <line>159</line>
           <option name="timeStamp" value="408" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/shingling.py</url>
+          <line>114</line>
+          <option name="timeStamp" value="409" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -227,6 +242,7 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="df_labeled_data" />
+        <watch expression="len(shingles_positions_in_doc[shingle_index])" />
       </configuration>
     </watches-manager>
   </component>
