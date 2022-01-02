@@ -93,19 +93,19 @@ if __name__ == "__main__":
 
         buckets = []
         docs_shingled = {}
-        shingles_weights_dict = {}
+        all_shingles_weights = {}
         shingles_weights_in_docs = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('--Started preprocessing {} '.format(attribute_name))
-            docs_shingled[attribute_name], shingles_weights_dict[attribute_name]\
+            docs_shingled[attribute_name], all_shingles_weights[attribute_name]\
                 , shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name]
                 , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
                 print('--Started bucketing {} '.format(attribute_name))
                 buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
-                            , shingles_weights_dict[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
+                            , all_shingles_weights[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
                 #FIX IT
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]

@@ -16,12 +16,15 @@ class hashes_parameters:
         self.b2 = b2
         self.c = c
 
-def create_signatures_array(docs_shingled, buckets_type, signature_size, shingles_weights_dict, shingles_weights_in_docs):
+def create_signatures_array(docs_shingled, buckets_type, signature_size, all_shingles_weights, shingles_weights_in_docs):
     signatures = np.zeros((signature_size, len(docs_shingled)), dtype=tuple) #create a df with # rows = signature_size and #columns = docs
-    shingles_shuffled = [i for i in range(len(shingles_weights_dict))]  #create list of hashes indexes for further randomizing
+    shingles_shuffled = [i for i in range(len(all_shingles_weights))]  #create list of shingles indexes for further randomizing
 
-    hashes_randomized = [[] for i in range(len(shingles_weights_dict))]
-    hash_weights_random = [i for i in range(len(shingles_weights_dict))]
+    random_numbers_of_shingles = [[] for i in range(len(all_shingles_weights))]
+
+    hash_weights_random = [i for i in range(len(all_shingles_weights))]
+
+    number_of_shingles = len(all_shingles_weights.keys())
 
     for signature in signatures:   #iterating through rows of the signatures array
         if buckets_type == 'minhash':
@@ -32,31 +35,30 @@ def create_signatures_array(docs_shingled, buckets_type, signature_size, shingle
                     signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
                 except:
                     print('didnt work for docs_shingled {}'.format(docs_shingled[doc_index]))
-        elif buckets_type == 'weighted minhash 1':
-            #print(max(shingles_weights_dict))
-            #print(min(shingles_weights_dict))
-            for hash_index, hash_randomized in enumerate(hashes_randomized):
-                randomhash = random.sample(range(0, 1000), shingles_weights_dict[hash_index]+1) #this is [vk(x), vk(x)...], k the same, x changes
-                hashes_randomized[hash_index] = randomhash
-            for doc_index, doc_hashed in enumerate(docs_shingled):
+
+        elif buckets_type == 'cws':
+            for shingle_index, random_numbers_of_shingle in enumerate(random_numbers_of_shingles):
+                all_shingles_max_weights = max([i[1] for i in all_shingles_weights[shingle_index]])
+                random_numbers_of_shingles[shingle_index] = random.sample(range(0, number_of_shingles), all_shingles_max_weights) #this is [vk(x), vk(x)...], k the same, x changes
+            for doc_index, shingles_in_doc in enumerate(docs_shingled):
                 minvalue = 1000000
                 shingles_weights_in_doc = shingles_weights_in_docs[doc_index]
-                for hash_position, hash_index in enumerate(doc_hashed):
+                for shingle_position, shingle_index in enumerate(shingles_in_doc):
                     #print(hash_index)
-                    doc_a = hashes_randomized[hash_index]
+                    random_numbers_of_shingle = random_numbers_of_shingles[shingle_index]
                     #print(doc_a)
-                    hash_in_doc_weight = shingles_weights_in_doc[hash_index]
-                    hash_in_doc_weight = np.round(hash_in_doc_weight[0], 0) #[0] hard coded, should be fixed
-                    hash_in_doc_weight = hash_in_doc_weight.astype(int)
-                    doc_a = doc_a[:hash_in_doc_weight+1]
-                    a = min(doc_a)
+                    shingle_weight_in_doc = shingles_weights_in_doc[shingle_index]
+                    random_numbers_of_shingle = random_numbers_of_shingle[:shingle_weight_in_doc]
+                    a = min(random_numbers_of_shingle)
                     #print(a)
                     if a < minvalue:
                         minvalue = a
-                        minindex = hash_index
+                        minindex = shingle_index
                 signature[doc_index] = (minindex, minvalue)
+
+
         elif buckets_type == 'weighted minhash 2':
-            for hash_index, hash_weight in enumerate(shingles_weights_dict):
+            for hash_index, hash_weight in enumerate(all_shingles_weights):
                 r1 = random.gammavariate(2, 1)
                 r2 = random.gammavariate(2, 1)
                 b1 = random.uniform(0, 1)
@@ -101,11 +103,11 @@ def create_buckets(signatures, bands_number, docs_mapping):
 
     return buckets_of_bands
 
-def main(docs_shingled, shingles_weights_dict, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
+def main(docs_shingled, all_shingles_weights, shingles_weights_in_docs, buckets_type, signature_size, bands_number, docs_mapping):
     start_time = time.time()
     print("----Started creating signatures...")
     signatures = create_signatures_array(docs_shingled, buckets_type, signature_size,
-                                         shingles_weights_dict, shingles_weights_in_docs)
+                                         all_shingles_weights, shingles_weights_in_docs)
     signatures_creation_time = round(time.time() - start_time, 6)
     print("----//Creating signatures took --- %s seconds ---" % (signatures_creation_time))
 
