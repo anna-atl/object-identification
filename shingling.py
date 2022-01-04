@@ -134,6 +134,4 @@ def main(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     docs_shingled, shingles_weights_in_docs, all_shingles_weights = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode)
     print("----Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
-    shingles_weights_dict = 0
-
-    return docs_shingled, all_shingles_weights, shingles_weights_in_docs
+    return docs_shingled, all_shingles_weights, shingles_weights_in_docs #all_shingled_weights: keys - shingles, values - all the weights, shingles_weigths_in_docs = [[weight of shingle in doc,],]

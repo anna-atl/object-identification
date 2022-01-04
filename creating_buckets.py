@@ -37,17 +37,17 @@ def create_signatures_array(docs_shingled, buckets_type, signature_size, all_shi
                     print('didnt work for docs_shingled {}'.format(docs_shingled[doc_index]))
 
         elif buckets_type == 'cws':
-            for shingle_index, random_numbers_of_shingle in enumerate(random_numbers_of_shingles):
+            for shingle_index in all_shingles_weights.keys(): #creating random numbers for all shingles for this permutation
                 all_shingles_max_weights = max([i[1] for i in all_shingles_weights[shingle_index]])
                 random_numbers_of_shingles[shingle_index] = random.sample(range(0, number_of_shingles), all_shingles_max_weights) #this is [vk(x), vk(x)...], k the same, x changes
             for doc_index, shingles_in_doc in enumerate(docs_shingled):
                 minvalue = 1000000
                 shingles_weights_in_doc = shingles_weights_in_docs[doc_index]
-                for shingle_position, shingle_index in enumerate(shingles_in_doc):
+                for shingle_position_in_doc, shingle_index in enumerate(shingles_in_doc):
                     #print(hash_index)
                     random_numbers_of_shingle = random_numbers_of_shingles[shingle_index]
                     #print(doc_a)
-                    shingle_weight_in_doc = shingles_weights_in_doc[shingle_index]
+                    shingle_weight_in_doc = shingles_weights_in_doc[shingle_position_in_doc]
                     random_numbers_of_shingle = random_numbers_of_shingle[:shingle_weight_in_doc]
                     a = min(random_numbers_of_shingle)
                     #print(a)
@@ -55,7 +55,6 @@ def create_signatures_array(docs_shingled, buckets_type, signature_size, all_shi
                         minvalue = a
                         minindex = shingle_index
                 signature[doc_index] = (minindex, minvalue)
-
 
         elif buckets_type == 'weighted minhash 2':
             for hash_index, hash_weight in enumerate(all_shingles_weights):
