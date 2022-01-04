@@ -41,6 +41,7 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
     k = shingle_size
     shingles_dict = {}
     all_shingles_docs = {}
+    all_shingles_and_their_docs = {}
     all_shingles_positions_in_docs = {}
     all_shingles_positions_in_docs_from_end = {}
     common_shingle_position = {}
@@ -74,7 +75,7 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
         for shingle_index_in_doc, shingle_in_doc in enumerate(shingles_in_doc):
             all_shingles_docs.setdefault(shingle_in_doc, []).append(doc_index)
 
-    shingles_dict = dict(zip(all_shingles_docs.keys(), range(len(all_shingles_docs))))  # key - shingle, value - shingle index
+    shingles_dict = dict(zip(all_shingles_docs.keys(), range(len(all_shingles_docs))))  # key - shingle, value - shingle overall index
     docs_shingled = [[shingles_dict[shingle] for shingle in doc_shingled] for doc_shingled in docs_shingled]
 
     if shingle_weight != "none":
@@ -82,18 +83,15 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
             shingles_positions_in_docs[doc_index] = list(range(len(shingles_in_doc)))
             shingles_positions_in_docs_from_end[doc_index] = list(range(len(shingles_in_doc)))
             for shingle_index_in_doc, shingle_in_doc in enumerate(shingles_in_doc):
-                all_shingles_docs.setdefault(shingle_in_doc, []).append(doc_index)
+                all_shingles_and_their_docs.setdefault(shingle_in_doc, []).append(doc_index)
                 shingles_positions_in_docs[doc_index][shingle_index_in_doc] = shingle_index_in_doc
                 shingles_positions_in_docs_from_end[doc_index][shingle_index_in_doc] = len(shingles_in_doc) - shingle_index_in_doc
                 #shingles_positions_in_doc.append(shingle_index_in_doc)
                 #shingles_positions_in_doc_from_end.append(len(shingles_in_doc) - shingle_index_in_doc)
                 all_shingles_positions_in_docs.setdefault(shingle_in_doc, []).append(shingle_index_in_doc)
                 all_shingles_positions_in_docs_from_end.setdefault(shingle_in_doc, []).append(len(shingles_in_doc) - shingle_index_in_doc)
-
-
-    if shingle_weight != "none":
         total_number_of_docs = len(docs)
-        for shingle, docs_with_this_shingle in all_shingles_docs.items():
+        for shingle, docs_with_this_shingle in all_shingles_and_their_docs.items():
             number_of_docs_with_this_shingle = len(docs_with_this_shingle)
             idf_shingles[shingle] = total_number_of_docs / number_of_docs_with_this_shingle
             common_shingle_position[shingle] = statistics.median(all_shingles_positions_in_docs[shingle])
@@ -106,10 +104,11 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
             tf_shingles_in_docs[doc_index] = list(range(len(shingles_in_doc)))
             cp_shingles_in_docs[doc_index] = list(range(len(shingles_in_doc)))
             cp_shingles_in_docs_from_end[doc_index] = list(range(len(shingles_in_doc)))
+            cp_shingles_in_docs_final[doc_index] = list(range(len(shingles_in_doc)))
             shingles_weights_in_docs[doc_index] = list(range(len(shingles_in_doc)))
 
             for shingle_index_in_doc, shingle_in_doc in enumerate(shingles_in_doc):
-                shingles_frequency_in_docs[doc_index][shingle_index_in_doc] = all_shingles[shingle_in_doc].count(doc_index)
+                shingles_frequency_in_docs[doc_index][shingle_index_in_doc] = all_shingles_and_their_docs[shingle_in_doc].count(doc_index)
 
                 tf_shingles_in_docs[doc_index][shingle_index_in_doc] = shingles_frequency_in_docs[doc_index][shingle_index_in_doc]/total_number_of_shingles_in_doc
 
