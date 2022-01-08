@@ -67,7 +67,7 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_4', 'r') as json_file:
+    with open('scenarios/scenario_3', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
@@ -95,10 +95,11 @@ if __name__ == "__main__":
         docs_shingled = {}
         all_shingles_weights = {}
         shingles_weights_in_docs = {}
+        shingles_weights_in_docs_dict = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('--Started preprocessing {} '.format(attribute_name))
-            docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs[attribute_name] = shingling.main(docs_to_match[attribute_name]
+            docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs[attribute_name], shingles_weights_in_docs_dict[attribute_name] = shingling.main(docs_to_match[attribute_name]
                 , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
@@ -122,37 +123,39 @@ if __name__ == "__main__":
                         if doc_index_2 > doc_index_1:
                             matched_pairs[doc_index_1, doc_index_2] = 1
 
-        df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
-        df_matches['matches_tuple'] = df_matches.index
-        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(list(df_matches['matches_tuple']), index=df_matches.index)
-        df_matches = df_matches.drop(['matches_tuple', 0], axis=1)
-        df_matches = df_matches.reset_index(drop=True)
+        if len(matched_pairs) != 0:
+            df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
+            df_matches['matches_tuple'] = df_matches.index
+            df_matches[['doc_1', 'doc_2']] = pd.DataFrame(list(df_matches['matches_tuple']), index=df_matches.index)
+            df_matches = df_matches.drop(['matches_tuple', 0], axis=1)
+            df_matches = df_matches.reset_index(drop=True)
 
-        for attribute_name, attribute_pars in mats.attribute_params.items():
-            print('--Started comparing on {} '.format(attribute_name))
-            df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, attribute_pars.attribute_weight,
-                                             shingles_weights_in_docs[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
+            for attribute_name, attribute_pars in mats.attribute_params.items():
+                print('--Started comparing on {} '.format(attribute_name))
+                df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, attribute_pars.attribute_weight,
+                                                 shingles_weights_in_docs[attribute_name], shingles_weights_in_docs_dict[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
 
-            df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
-                                  right_on=['doc_1', 'doc_2'])
+                df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
+                                      right_on=['doc_1', 'doc_2'])
 
-        print("--Started postprocessing the results...")
-        print("----Started creating a common matching score...")
-        if mats.sum_score == 'sum':
-            df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
-        df_matches = df_matches.sort_values(by='match_score', ascending=False)
+            print("--Started postprocessing the results...")
+            print("----Started creating a common matching score...")
+            if mats.sum_score == 'sum':
+                df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
+            df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
-        print("----Started adding matches attributes...")
-        df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
+            print("----Started adding matches attributes...")
+            df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
 
-        final_time = time.time() - start_time
-        print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
-        print("----Started preparing results outputs and evaluation")
-        df_matches_with_estimation, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
-        df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
+            final_time = time.time() - start_time
+            print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
+            print("----Started preparing results outputs and evaluation")
+            df_matches_with_estimation, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
+            df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
 
-        df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.experiment_mode, mats.scenario_name, str(datetime.datetime.now())))
+            df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.experiment_mode, mats.scenario_name, str(datetime.datetime.now())))
 
-        experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative)
-
+            experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative)
+        else:
+            print('no matches found')
         print('end')

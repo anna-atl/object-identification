@@ -59,6 +59,8 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
     cp_shingles_in_docs_final = [[] for i in range(len(docs))]
     shingles_weights_in_docs = [[] for i in range(len(docs))]
 
+    shingles_weights_in_docs_dict = [{} for i in range(len(docs))]
+
     for doc_index, doc in enumerate(docs):
         if shingle_type == 'token':
             shingles_in_doc = [word for word in doc.split()]
@@ -121,19 +123,22 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
                 shingles_weights_in_docs[doc_index][shingle_index_in_doc] = np.round(shingles_weights_in_docs[doc_index][shingle_index_in_doc], 0)
                 shingles_weights_in_docs[doc_index][shingle_index_in_doc] = shingles_weights_in_docs[doc_index][shingle_index_in_doc].astype(int)
 
+                shingles_weights_in_docs_dict[doc_index].setdefault(shingle_in_doc, []).append(shingles_weights_in_docs[doc_index][shingle_index_in_doc])
+
                 all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs[doc_index][shingle_index_in_doc]))
+
     else:
         all_shingles_weights = dict(zip(range(len(all_shingles_docs)), all_shingles_docs.keys()))  # key - shingle, value - shingle overall index
 
     if experiment_mode == 'test':
         df_shingles_weights = pd.DataFrame.from_dict(all_shingles_weights, orient='index')
 
-    return docs_shingled, shingles_weights_in_docs, all_shingles_weights
+    return docs_shingled, shingles_weights_in_docs, shingles_weights_in_docs_dict, all_shingles_weights
 
 def main(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     start_time = time.time()
     print("----Started converting docs to shingles...")
-    docs_shingled, shingles_weights_in_docs, all_shingles_weights = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode)
+    docs_shingled, shingles_weights_in_docs, shingles_weights_in_docs_dict, all_shingles_weights = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode)
     print("----Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
-    return docs_shingled, all_shingles_weights, shingles_weights_in_docs #all_shingled_weights: keys - shingles, values - all the weights, shingles_weigths_in_docs = [[weight of shingle in doc,],]
+    return docs_shingled, all_shingles_weights, shingles_weights_in_docs, shingles_weights_in_docs_dict #all_shingled_weights: keys - shingles, values - all the weights, shingles_weigths_in_docs = [[weight of shingle in doc,],]

@@ -2,8 +2,8 @@
     "scenario_name": "scenario_4",
     "experiment_mode": "test",
     "number_of_experiments": 1,
-    "dataset_size_to_import": 1000,
-    "dataset_size": 1000,
+    "dataset_size_to_import": 1000000,
+    "dataset_size": 1000000,
     "sum_score": "sum",
     "attribute_params":
         {
