@@ -124,8 +124,7 @@ if __name__ == "__main__":
 
         df_matches = pd.DataFrame.from_dict(matched_pairs, orient='index')
         df_matches['matches_tuple'] = df_matches.index
-        a = df_matches['matches_tuple'].tolist()
-        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(df_matches['matches_tuple'].tolist(), index=df_matches.index)
+        df_matches[['doc_1', 'doc_2']] = pd.DataFrame(list(df_matches['matches_tuple']), index=df_matches.index)
         df_matches = df_matches.drop(['matches_tuple', 0], axis=1)
         df_matches = df_matches.reset_index(drop=True)
 
@@ -149,11 +148,11 @@ if __name__ == "__main__":
         final_time = time.time() - start_time
         print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
         print("----Started preparing results outputs and evaluation")
-        df_matches_with_estimation, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
+        df_matches_with_estimation, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
         df_matches_with_estimation = df_matches_with_estimation.sort_values(by='match_score', ascending=False)
 
         df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.experiment_mode, mats.scenario_name, str(datetime.datetime.now())))
 
-        experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, false_positive, false_negative, true_positive, true_negative)
+        experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative)
 
         print('end')

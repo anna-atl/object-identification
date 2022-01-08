@@ -122,6 +122,8 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
                 shingles_weights_in_docs[doc_index][shingle_index_in_doc] = shingles_weights_in_docs[doc_index][shingle_index_in_doc].astype(int)
 
                 all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs[doc_index][shingle_index_in_doc]))
+    else:
+        all_shingles_weights = dict(zip(range(len(all_shingles_docs)), all_shingles_docs.keys()))  # key - shingle, value - shingle overall index
 
     if experiment_mode == 'test':
         df_shingles_weights = pd.DataFrame.from_dict(all_shingles_weights, orient='index')

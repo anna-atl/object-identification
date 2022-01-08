@@ -30,7 +30,10 @@ def create_signatures_array(docs_shingled, buckets_type, signature_size, all_shi
         if buckets_type == 'minhash':
             random.shuffle(shingles_shuffled)
             for doc_index, doc_shingled in enumerate(docs_shingled):
-                doc_a = [shingles_shuffled[i] for i in doc_shingled] # --check this-- recreating shingles list of a doc with randomization
+                try:
+                    doc_a = [shingles_shuffled[i] for i in doc_shingled] # --check this-- recreating shingles list of a doc with randomization
+                except:
+                    print(doc_shingled, shingles_shuffled)
                 try:
                     signature[doc_index] = min(doc_a) #saving the smallest number for this randomization for this signature
                 except:

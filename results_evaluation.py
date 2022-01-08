@@ -43,4 +43,4 @@ def main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative):
     df_false_positives = df_matches_estimation.loc[df_matches_estimation['is_duplicate'] == 0]
     df_false_negative = df_labeled_data_not_in_df.loc[df_labeled_data_not_in_df['is_duplicate'] == 2]
 
-    return df_matches_estimation, false_positive, false_negative, true_positive, true_negative
+    return df_matches_estimation, labeled_positive+labeled_negative, false_positive, false_negative, true_positive, true_negative

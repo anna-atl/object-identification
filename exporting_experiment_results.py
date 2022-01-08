@@ -1,9 +1,10 @@
-def main(df_matches_estimation, scenario_name, experiment_number, dataset_size, final_time, false_positive, false_negative, true_positive, true_negative):
+def main(df_matches_estimation, scenario_name, experiment_number, dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative):
     experiment_results = {'scenario_name': scenario_name,
                   'experiment_number': experiment_number,
                   'dataset_size': dataset_size,
                   'total_time': final_time,
                   'number_of_matches': len(df_matches_estimation),
+                  'number_of_labeled_matches': labeled_number_of_matches,
                   'false_pos': false_positive,
                   'false_neg': false_negative,
                   'true_pos': true_positive,
