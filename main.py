@@ -156,6 +156,17 @@ if __name__ == "__main__":
             df_matches_with_estimation.to_csv("df_results_{}_{}_{}.csv".format(mats.experiment_mode, mats.scenario_name, str(datetime.datetime.now())))
 
             experiment_results = exporting_experiment_results.main(df_matches_with_estimation, mats.scenario_name, experiment_number, mats.dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative)
+
+            del df_matches_full
+            del df_matches
+            del df_labeled_data
+            del df_att_matches
+            del docs_shingled
+            del df_with_attributes
+            del df_to_bucket
+            del docs_mapping_new_old
+            del docs_mapping_old_new
+            del docs_to_match
         else:
             print('no matches found')
         print('end')

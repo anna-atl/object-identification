@@ -118,5 +118,6 @@ def main(docs_shingled, all_shingles_weights, shingles_weights_in_docs, buckets_
     buckets_of_bands = create_buckets(signatures, bands_number, docs_mapping)
     buckets_creation_time = round(time.time() - start_time, 6)
     print("----//Creating buckets took --- %s seconds ---" % (buckets_creation_time))
+    del signatures
 
     return buckets_of_bands
