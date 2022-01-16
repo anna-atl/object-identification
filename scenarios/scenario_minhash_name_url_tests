@@ -1,9 +1,9 @@
 {
-    "scenario_name": "scenario_3",
-    "experiment_mode": "test",
+    "scenario_name": "scenario_minhash_name_url_tests",
+    "experiment_mode": "prod_with_labeled",
     "number_of_experiments": 3,
-    "dataset_size_to_import": 1000000,
-    "dataset_size": 1000000,
+    "dataset_size_to_import": 1000,
+    "dataset_size": 1000,
     "sum_score": "sum",
     "attribute_params":
         {

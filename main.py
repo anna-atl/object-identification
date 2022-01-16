@@ -85,7 +85,6 @@ if __name__ == "__main__":
     print('------------------------------------------------')
 
     for experiment_number in range(mats.number_of_tries):
-
         #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
         df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
         df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_bucket)
@@ -94,18 +93,17 @@ if __name__ == "__main__":
         buckets = []
         docs_shingled = {}
         all_shingles_weights = {}
-        shingles_weights_in_docs = {}
         shingles_weights_in_docs_dict = {}
 
         for attribute_name, attribute_pars in mats.attribute_params.items():
             print('--Started preprocessing {} '.format(attribute_name))
-            docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs[attribute_name], shingles_weights_in_docs_dict[attribute_name] = shingling.main(docs_to_match[attribute_name]
+            docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name] = shingling.main(docs_to_match[attribute_name]
                 , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
 
             if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
                 print('--Started bucketing {} '.format(attribute_name))
                 buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
-                            , all_shingles_weights[attribute_name], shingles_weights_in_docs[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
+                            , all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
             elif attribute_pars.buckets_type == 'one bucket':
                 #FIX IT
                 buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
@@ -133,7 +131,7 @@ if __name__ == "__main__":
             for attribute_name, attribute_pars in mats.attribute_params.items():
                 print('--Started comparing on {} '.format(attribute_name))
                 df_att_matches = comparison.main(buckets, docs_shingled[attribute_name], attribute_pars.comparison_method, attribute_pars.attribute_weight,
-                                                 shingles_weights_in_docs[attribute_name], shingles_weights_in_docs_dict[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
+                                                 shingles_weights_in_docs_dict[attribute_name], attribute_pars.matching_attribute, docs_mapping_old_new[attribute_name])
 
                 df_matches = pd.merge(df_matches, df_att_matches, how='left', left_on=['doc_1', 'doc_2'],
                                       right_on=['doc_1', 'doc_2'])

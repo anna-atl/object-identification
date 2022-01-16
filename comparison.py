@@ -78,7 +78,7 @@ def other_matching_methods(docs, matching_method):
                         matched_pairs.setdefault((doc_index_1, doc_index_2), []).append(1)
     return matched_pairs
 
-def main(buckets_of_bands, docs_shingled, comparison_method, attribute_weight, shingles_weights_in_docs, shingles_weights_in_docs_dict, matching_attribute, docs_mapping_old_new):
+def main(buckets_of_bands, docs_shingled, comparison_method, attribute_weight, shingles_weights_in_docs_dict, matching_attribute, docs_mapping_old_new):
 
     start_time = time.time()
     print("----Started calculating comparison functions for potential matches in buckets...")
