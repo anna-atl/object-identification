@@ -98,7 +98,7 @@ def create_buckets(signatures, bands_number, docs_mapping):
 
     return buckets_of_bands
 
-def main(docs_shingled, all_shingles_weights, shingles_weights_shingles_weights_in_docs_dictin_docs_dict, buckets_type, signature_size, bands_number, docs_mapping):
+def main(docs_shingled, all_shingles_weights,shingles_weights_in_docs_dict, buckets_type, signature_size, bands_number, docs_mapping):
     start_time = time.time()
     print("----Started creating signatures...")
     signatures = create_signatures_array(docs_shingled, buckets_type, signature_size,
