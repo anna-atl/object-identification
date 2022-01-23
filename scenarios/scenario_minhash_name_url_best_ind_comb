@@ -16,8 +16,8 @@
                 "signature_sizes": [30, 40, 50],
                 "bands_numbers": [5, 10],
                 "comparison_methods": ["jaccard"],
-                "attribute_weights": [0.5, 0.7, 0.8, 0.85, 0.9, 0.95, 0.99],
-                "attribute_thresholds": [0]
+                "attribute_weights": [1],
+                "attribute_thresholds": [0.5, 0.7, 0.8, 0.85, 0.9, 0.95, 0.99]
             }
         }
   }

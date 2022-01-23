@@ -21,10 +21,9 @@
   <component name="ChangeListManager">
     <list default="true" id="7fdd36f4-85c6-45c1-aeb1-61fdd4e49384" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/df_mapped.py" beforeDir="false" afterPath="$PROJECT_DIR$/df_mapped.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/exporting_experiment_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/exporting_experiment_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scenarios/scenario_3" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/shingling.py" beforeDir="false" afterPath="$PROJECT_DIR$/shingling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,7 +222,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>213</line>
+          <line>212</line>
           <option name="timeStamp" value="408" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -240,11 +239,6 @@
           <url>file://$PROJECT_DIR$/shingling.py</url>
           <line>79</line>
           <option name="timeStamp" value="447" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>148</line>
-          <option name="timeStamp" value="477" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
