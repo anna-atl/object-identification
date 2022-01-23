@@ -348,3 +348,28 @@ def create_weights(docs_shingled, all_shingles_docs, shingle_weight, experiment_
                 for signature_size in signature_sizes:
                     for bands_number in bands_numbers:
                         for attribute_threshold in attribute_thresholds:
+
+                            attributes_to_bucket = {k: v for k, v in attribute_params.items() if
+                                                    v.buckets_type != 'no buckets'}
+                            df_to_bucket = df.dropna(
+                                subset=[v.matching_attribute for k, v in attributes_to_bucket.items()])
+                            try:
+                                df_to_bucket = df_to_bucket.sample(n=dataset_size)
+                            except:
+                                print('Warning: dataset size {} is larger than the imported {} dataset size'.format(
+                                    dataset_size, len(df_to_bucket.index)))
+
+                            docs_mapping_new_old = {}
+                            docs_mapping_old_new = {}
+                            docs_to_match = {}
+
+                            start_time = time.time()
+                            print('Started to create documents mapping')
+                            for attribute_name, attribute_pars in attribute_params.items():
+                                docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], \
+                                docs_to_match[attribute_name] = create_mapping(df_to_bucket,
+                                                                               attribute_pars.matching_attribute)
+                            print("Creating mapped documents took --- %s seconds ---" % (time.time() - start_time))
+
+                            return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match
+

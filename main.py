@@ -15,28 +15,29 @@ import json
 pd.set_option('display.max_columns', None)
 
 class attribute_matching_params:
-    def __init__(self, matching_attribute, shingle_type='none', shingle_size=0, shingle_weight='none', buckets_type='none', signature_size=0, bands_number=0, comparison_method='none', attribute_weight=1, attribute_threshold=0):
+    def __init__(self, matching_attributes, shingle_types=['none'], shingle_sizes=[1], shingle_weights=['none'],
+                 buckets_types=['none'], signature_sizes=[0], bands_numbers=[0], comparison_methods=['none'], attribute_weights=[1], attribute_thresholds=[0]):
         '''
         important to have the attribute_threshold in the end bc it's not used for the finding_best_methods_for_atts
         '''
-        self.matching_attribute = matching_attribute
+        self.matching_attributes = matching_attributes
         #shingling
-        self.shingle_type = shingle_type# token, shingle, shingle words
-        self.shingle_size = shingle_size# 1,2
-        self.shingle_weight = shingle_weight# 'normal', 'frequency', 'weighted'
+        self.shingle_types = shingle_types# token, shingle, shingle words
+        self.shingle_sizes = shingle_sizes# 1,2
+        self.shingle_weights = shingle_weights# 'normal', 'frequency', 'weighted'
         #creating_signatures
-        self.buckets_type = buckets_type #minhash, weighted minhash 1, weighted minhash 2, one bucket, no buckets
-        self.signature_size = signature_size
-        self.bands_number = bands_number
+        self.buckets_types = buckets_types #minhash, weighted minhash 1, weighted minhash 2, one bucket, no buckets
+        self.signature_sizes = signature_sizes
+        self.bands_numbers = bands_numbers
         #comparison
-        self.comparison_method = comparison_method #jaccard, weighted jaccard, fuzzy
-        self.attribute_weight = attribute_weight
-        self.attribute_threshold = attribute_threshold
+        self.comparison_methods = comparison_methods #jaccard, weighted jaccard, fuzzy
+        self.attribute_weights = attribute_weights
+        self.attribute_thresholds = attribute_thresholds
 
     #def __str__(self): return "matching_attribute: %s,  attribute_threshold: %s, shingle_type: %s, shingle_size: %s, shingle_weight: %s, bands_number: %s, signature_size: %s" % (self.matching_attribute, self.attribute_threshold, self.shingle_type, self.shingle_size, self.shingle_weight, self.bands_number, self.signature_size)
 
 class scenario_matching_params:
-    def __init__(self, scenario_name, experiment_mode="test", number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='sum', attribute_params={}):
+    def __init__(self, scenario_name, experiment_mode="test", number_of_tries=1, dataset_size_to_import=0, dataset_size=0, sum_score='none', attribute_params={}):
         self.scenario_name = scenario_name
         self.experiment_mode = experiment_mode
         self.number_of_tries = number_of_tries
@@ -45,16 +46,16 @@ class scenario_matching_params:
         self.sum_score = sum_score  # sum_scores, multiplication
         self.attribute_params = {}
         for attribute, params in attribute_params.items():
-            self.attribute_params[attribute] = attribute_matching_params(params["matching_attribute"],
-                                                                            params["shingle_type"],
-                                                                            params["shingle_size"],
-                                                                            params["shingle_weight"],
-                                                                            params["buckets_type"],
-                                                                            params["signature_size"],
-                                                                            params["bands_number"],
-                                                                            params["comparison_method"],
-                                                                            params["attribute_weight"],
-                                                                            params["attribute_threshold"])
+            self.attribute_params[attribute] = attribute_matching_params(params["matching_attributes"],
+                                                                            params["shingle_types"],
+                                                                            params["shingle_sizes"],
+                                                                            params["shingle_weights"],
+                                                                            params["buckets_types"],
+                                                                            params["signature_sizes"],
+                                                                            params["bands_numbers"],
+                                                                            params["comparison_methods"],
+                                                                            params["attribute_weights"],
+                                                                            params["attribute_thresholds"])
 
 def add_attributes_to_matches(df_matches, df_with_attributes):
     print("Started joining the result with the mapping table...")
@@ -67,12 +68,14 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_3', 'r') as json_file:
+    with open('scenarios/scenario_minhash_name_url_best_ind_comb', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
                                     data["sum_score"], data["attribute_params"]
                                     )
+
+    print('Started working on the {}'.format(mats.scenario_name))
 
     #checks needed: dataset_size_to_import > dataset_size
     #there should be at least one attribute without 'no buckets' bucket type
@@ -85,33 +88,43 @@ if __name__ == "__main__":
     print('------------------------------------------------')
 
     for experiment_number in range(mats.number_of_tries):
-        #created a list of attributes which are going to be minhashed (create buckets), so they should be not null
-        df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match = df_mapped.main(df_with_attributes, mats.attribute_params, mats.dataset_size)
-        df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(df_to_bucket)
-        print('')
-
-        buckets = []
-        docs_shingled = {}
-        all_shingles_weights = {}
-        shingles_weights_in_docs_dict = {}
-
         for attribute_name, attribute_pars in mats.attribute_params.items():
-            print('--Started preprocessing {} '.format(attribute_name))
-            docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name] = shingling.main(docs_to_match[attribute_name]
-                , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
 
-            if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
-                print('--Started bucketing {} '.format(attribute_name))
-                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
-                            , all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
-            elif attribute_pars.buckets_type == 'one bucket':
-                #FIX IT
-                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
-            else:
-                print('--No bucketing for {} '.format(attribute_name))
-                buckets_of_bands = [{}]
-            buckets.extend(buckets_of_bands)
+            # created a list of attributes which are going to be minhashed (create buckets), so they should be not null
+            df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match = df_mapped.main(
+                df_with_attributes, attribute_pars.matching_attributes, attribute_pars.buckets_types, mats.dataset_size, mats.experiment_mode, mats.attribute_params)
+            df_labeled_data, labeled_positive, labeled_negative, labeled_matches_count = df_labeled.main(
+                df_to_bucket)
             print('')
+
+            buckets = []
+            docs_shingled = {}
+            all_shingles_weights = {}
+            shingles_weights_in_docs_dict = {}
+
+            for matching_attribute in attribute_pars.matching_attributes:
+                for shingle_type in attribute_pars.shingle_types:
+                    for shingle_size in attribute_pars.shingle_sizes:
+                        for shingle_weight in attribute_pars.shingle_weights:
+                            print('--Started preprocessing {} '.format(attribute_name))
+                        docs_shingled[attribute_name], all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name] = shingling.main(docs_to_match[attribute_name]
+                            , attribute_pars.shingle_type, attribute_pars.shingle_size, attribute_pars.shingle_weight, mats.experiment_mode)
+
+                for buckets_type in buckets_types:
+                    for signature_size in signature_sizes:
+                        for bands_number in bands_numbers:
+                            if attribute_pars.buckets_type != 'no buckets' and attribute_pars.buckets_type != 'one bucket':
+                                print('--Started bucketing {} '.format(attribute_name))
+                                buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name]
+                                            , all_shingles_weights[attribute_name], shingles_weights_in_docs_dict[attribute_name], attribute_pars.buckets_type, attribute_pars.signature_size, attribute_pars.bands_number, docs_mapping_new_old[attribute_name])
+                            elif attribute_pars.buckets_type == 'one bucket':
+                                #FIX IT
+                                buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]
+                            else:
+                                print('--No bucketing for {} '.format(attribute_name))
+                                buckets_of_bands = [{}]
+                            buckets.extend(buckets_of_bands)
+                            print('')
 
         matched_pairs = {}
         for buckets_of_band in buckets:
@@ -137,10 +150,18 @@ if __name__ == "__main__":
                                       right_on=['doc_1', 'doc_2'])
 
             print("--Started postprocessing the results...")
-            print("----Started creating a common matching score...")
-            if mats.sum_score == 'sum':
-                df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
-            df_matches = df_matches.sort_values(by='match_score', ascending=False)
+            for attribute_threshold in attribute_thresholds:
+                for attribute_weight in attribute_weights:
+                    if mats.sum_score == 'none':
+                        print("----Started creating a weighted matching score...")
+                        if mats.sum_score == 'sum':
+                            df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
+                        df_matches = df_matches.sort_values(by='match_score', ascending=False)
+                    if mats.sum_score != 'none':
+                        print("----Started creating a common matching score...")
+                        if mats.sum_score == 'sum':
+                            df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
+                        df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
             print("----Started adding matches attributes...")
             df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)

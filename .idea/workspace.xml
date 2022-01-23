@@ -22,8 +22,12 @@
     <list default="true" id="7fdd36f4-85c6-45c1-aeb1-61fdd4e49384" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deleted_code.py" beforeDir="false" afterPath="$PROJECT_DIR$/deleted_code.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/df_mapped.py" beforeDir="false" afterPath="$PROJECT_DIR$/df_mapped.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_tests" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_tests" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_tests" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_tests_2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/shingling.py" beforeDir="false" afterPath="$PROJECT_DIR$/shingling.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,7 +226,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>169</line>
+          <line>190</line>
           <option name="timeStamp" value="408" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -237,8 +241,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/shingling.py</url>
-          <line>72</line>
+          <line>81</line>
           <option name="timeStamp" value="447" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>165</line>
+          <option name="timeStamp" value="451" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>109</line>
+          <option name="timeStamp" value="455" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

@@ -21,22 +21,34 @@ def create_mapping(df, matching_attribute):
     docs_mapping_dict_old_new = {k: v[0] for k, v in docs_mapping_dict_old_new.items()}
     return docs_mapping_dict_new_old, docs_mapping_dict_old_new, docs_to_match
 
-def main(df, attribute_params, dataset_size):
-    attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
-    df_to_bucket = df.dropna(subset=[v.matching_attribute for k, v in attributes_to_bucket.items()])
-    try:
-        df_to_bucket = df_to_bucket.sample(n=dataset_size)
-    except:
-        print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
+def main(df, matching_attributes, buckets_types, dataset_size, experiment_mode, attribute_params):
+
+    for matching_attribute in matching_attributes:
+        if experiment_mode != 'individual combinations':
+            attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
+            df_to_bucket = df.dropna(subset=[v.matching_attribute for k, v in attributes_to_bucket.items()])
+            try:
+                df_to_bucket = df_to_bucket.sample(n=dataset_size)
+            except:
+                print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
+        else:
+            for buckets_type in buckets_types:
+                if buckets_type != 'no buckets':
+                    df_to_bucket = df.dropna(subset=[matching_attribute])
+                    try:
+                        df_to_bucket = df_to_bucket.sample(n=dataset_size)
+                    except:
+                        print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
 
     docs_mapping_new_old = {}
     docs_mapping_old_new = {}
     docs_to_match = {}
 
     start_time = time.time()
-    print('Started to create documents mapping')
-    for attribute_name, attribute_pars in attribute_params.items():
-        docs_mapping_new_old[attribute_name], docs_mapping_old_new[attribute_name], docs_to_match[attribute_name] = create_mapping(df_to_bucket, attribute_pars.matching_attribute)
-    print("Creating mapped documents took --- %s seconds ---" % (time.time() - start_time))
+
+    for matching_attribute in matching_attributes:
+        print('Started to create documents mapping')
+        docs_mapping_new_old[matching_attribute], docs_mapping_old_new[matching_attribute], docs_to_match[matching_attribute] = create_mapping(df_to_bucket, matching_attribute)
+        print("Creating mapped documents took --- %s seconds ---" % (time.time() - start_time))
 
     return df_to_bucket, docs_mapping_new_old, docs_mapping_old_new, docs_to_match

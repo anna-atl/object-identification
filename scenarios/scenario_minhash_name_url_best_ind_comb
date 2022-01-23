@@ -1,23 +1,23 @@
 {
     "scenario_name": "scenario_minhash_name_url_tests",
-    "experiment_mode": "prod",
-    "experiment_mode": "experimenting_labeled",
+    "experiment_mode": "individual combinations",
     "number_of_experiments": 3,
     "dataset_size_to_import": 1000,
     "dataset_size": 1000,
+    "sum_score": "none",
     "attribute_params":
         {
-            "several": {
-                "matching_attribute": ["name_clean", "url_clean"],
-                "shingle_type": ["shingle", "token", "shingle words"],
-                "shingle_size": [2, 3, 4],
-                "shingle_weight": "tf-idf-cp-0",
-                "buckets_type": ["minhash"],
-                "signature_size": [30, 40, 50],
-                "bands_number": [5, 10],
-                "comparison_method": "weighted jaccard",
-                "attribute_weight": [0.5, 0.7, 0.8, 0.85, 0.9, 0.95, 0.99],
-                "attribute_threshold": 0
+            "name": {
+                "matching_attributes": ["name_clean"],
+                "shingle_types": ["shingle", "token", "shingle words"],
+                "shingle_sizes": [2, 3, 4],
+                "shingle_weights": ["none"],
+                "buckets_types": ["minhash"],
+                "signature_sizes": [30, 40, 50],
+                "bands_numbers": [5, 10],
+                "comparison_methods": "jaccard",
+                "attribute_weights": [0.5, 0.7, 0.8, 0.85, 0.9, 0.95, 0.99],
+                "attribute_thresholds": 0
             }
         }
   }
