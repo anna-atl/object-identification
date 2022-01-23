@@ -1,5 +1,6 @@
 {
     "scenario_name": "scenario_minhash_name_url_tests",
+    "experiment_mode": "prod",
     "experiment_mode": "experimenting_labeled",
     "number_of_experiments": 3,
     "dataset_size_to_import": 1000,
@@ -7,10 +8,11 @@
     "attribute_params":
         {
             "several": {
-                "matching_attribute": ['name_clean', 'url_clean'],
-                "shingle_type": ['shingle', 'token', 'shingle words'],
+                "matching_attribute": ["name_clean", "url_clean"],
+                "shingle_type": ["shingle", "token", "shingle words"],
                 "shingle_size": [2, 3, 4],
-                "buckets_type": ['minhash'],
+                "shingle_weight": "tf-idf-cp-0",
+                "buckets_type": ["minhash"],
                 "signature_size": [30, 40, 50],
                 "bands_number": [5, 10],
                 "comparison_method": "weighted jaccard",

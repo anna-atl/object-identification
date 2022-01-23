@@ -338,3 +338,13 @@ def create_weights(docs_shingled, all_shingles_docs, shingle_weight, experiment_
         df_shingles_weights = pd.DataFrame.from_dict(all_shingles_weights, orient='index') #to see all shingles weights in docs overall
 
     return shingles_weights_in_docs, shingles_weights_in_docs_dict, all_shingles_weights
+
+
+
+
+    for matching_attribute in matching_attributes:
+        for shingle_type in shingle_types:
+            for buckets_type in buckets_types:
+                for signature_size in signature_sizes:
+                    for bands_number in bands_numbers:
+                        for attribute_threshold in attribute_thresholds:
