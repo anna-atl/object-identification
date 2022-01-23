@@ -161,7 +161,7 @@ if __name__ == "__main__":
                     if mats.sum_score == 'sum':
                         print("----Started creating a common matching score...")
                         df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
-                    if mats.sum_score != 'none':
+                    elif mats.sum_score == 'none':
                         df_matches['match_score'] = df_matches['match_score_{}'.format(matching_attribute)]
                     df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
