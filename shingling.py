@@ -21,7 +21,6 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
     dict of shingles, shingle as a key, index of the shingle in the list as a value
     '''
     k = shingle_size
-    shingles_dict = {}
     all_shingles_docs = {}
 
     docs_shingled = [[] for i in range(len(docs))]
@@ -82,6 +81,7 @@ def create_weights(docs_shingled, all_shingles_docs, shingle_weight, experiment_
 
 def main(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     start_time = time.time()
+
     print("----Started converting docs to shingles...")
     docs_shingled, all_shingles, all_shingles_docs = create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, experiment_mode)
     print("----//Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))

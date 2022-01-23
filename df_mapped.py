@@ -30,15 +30,15 @@ def main(df, dataset_size, experiment_mode, attribute_params):
                 df_to_bucket = df_to_bucket.sample(n=dataset_size)
             except:
                 print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
-        else:
+        elif experiment_mode == 'individual combinations':
             for buckets_type in attribute_pars.buckets_types:
                 for matching_attribute in attribute_pars.matching_attributes:
                     if buckets_type != 'no buckets':
                         df_to_bucket = df.dropna(subset=[matching_attribute])
-                        try:
-                            df_to_bucket = df_to_bucket.sample(n=dataset_size)
-                        except:
-                            print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
+                    try:
+                        df_to_bucket = df_to_bucket.sample(n=dataset_size)
+                    except:
+                        print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
 
     docs_mapping_new_old = {}
     docs_mapping_old_new = {}
