@@ -36,10 +36,12 @@ def import_labeled_data_2():
 def find_labeled_data_in_df(df_labeled_data, df):
     df_labeled_data_in_df = pd.merge(df_labeled_data, df,  how='left', left_on=['id_x'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
-    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'name_x', 'name_y', 'is_duplicate']]
+    #df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'name_x', 'name_y', 'is_duplicate']]
+    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
     df_labeled_data_in_df = pd.merge(df_labeled_data_in_df, df,  how='left', left_on=['id_y'], right_on=['id'])
     df_labeled_data_in_df = df_labeled_data_in_df.dropna(subset=['id'])
-    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate', 'name_x', 'name_y']]
+    df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate']]
+    #df_labeled_data_in_df = df_labeled_data_in_df[['id_x', 'id_y', 'is_duplicate', 'name_x', 'name_y']]
 
     #labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[(df_labeled_data_in_df['is_duplicate'] == 1) | (df_labeled_data_in_df['is_duplicate'] == 2)].count()
     labeled_positive = df_labeled_data_in_df['is_duplicate'].loc[df_labeled_data_in_df['is_duplicate'] == 2].count()

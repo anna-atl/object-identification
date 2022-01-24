@@ -84,7 +84,10 @@ def df_import(dataset_size_to_import):
     database = "datasets/companies.db"
     # create a database connection
     conn = sqlite3.connect(database)
-    df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size_to_import,))
+    #labeled data option 1
+    #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size_to_import,))
+    # labeled data option 2
+    df = pd.read_sql_query("SELECT * FROM companies WHERE lower(country) = 'united kingdom' ORDER BY name LIMIT (?)", conn, params=(dataset_size_to_import,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE url IS NOT NULL LIMIT (?)", conn, params=(dataset_size_to_import,))
     #df = pd.read_sql_query("SELECT * FROM companies WHERE datasource <> 'peopledatalab' and url IS NOT NULL ORDER BY name LIMIT (?)", conn, params=(dataset_size_to_import,))
 

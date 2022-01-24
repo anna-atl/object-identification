@@ -68,7 +68,7 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_minhash_name_url_best_ind_comb', 'r') as json_file:
+    with open('scenarios/scenario_weighted_minhash_name_url_best_ind_comb', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
