@@ -33,8 +33,8 @@ def gen_jaccard_comparison(doc_shingled_1, doc_shingled_2, shingles_weights_in_d
     union = Multiset(doc_shingled_1).union(doc_shingled_2)
 
     try:
-        min_weight = min(min(shingles_weights_in_doc_1[shingle] for shingle in intersection), min(shingles_weights_in_doc_2[shingle] for shingle in intersection))
-        max_weight = max(max(shingles_weights_in_doc_1.get(shingle, [0]) for shingle in union), max(shingles_weights_in_doc_2.get(shingle, [0]) for shingle in union))
+        min_weight = min(min(shingles_weights_in_doc_1[shingle], shingles_weights_in_doc_2[shingle]) for shingle in intersection)
+        max_weight = max(max(shingles_weights_in_doc_1.get(shingle, [0]), shingles_weights_in_doc_2.get(shingle, [0])) for shingle in union)
 
         return min_weight/max_weight
         #for doc_index in union:

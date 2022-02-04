@@ -102,27 +102,31 @@ if __name__ == "__main__":
             buckets = {}
             docs_shingled = {}
             all_shingles_weights = {}
+            all_shingles_weights_only_weight = {}
             shingles_weights_in_docs_dict = {}
 
             for matching_attribute in attribute_pars.matching_attributes:
                 docs_shingled[attribute_name] = {}
                 all_shingles_weights[attribute_name] = {}
+                all_shingles_weights_only_weight[attribute_name] = {}
                 shingles_weights_in_docs_dict[attribute_name] = {}
                 buckets[attribute_name] = {}
                 for shingle_type in attribute_pars.shingle_types:
                     docs_shingled[attribute_name][shingle_type] = {}
                     all_shingles_weights[attribute_name][shingle_type] = {}
+                    all_shingles_weights_only_weight[attribute_name][shingle_type] = {}
                     shingles_weights_in_docs_dict[attribute_name][shingle_type] = {}
                     buckets[attribute_name][shingle_type] = {}
                     for shingle_size in attribute_pars.shingle_sizes:
                         docs_shingled[attribute_name][shingle_type][shingle_size] = {}
                         all_shingles_weights[attribute_name][shingle_type][shingle_size] = {}
+                        all_shingles_weights_only_weight[attribute_name][shingle_type][shingle_size] = {}
                         shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size] = {}
                         buckets[attribute_name][shingle_type][shingle_size] = {}
                         for shingle_weight in attribute_pars.shingle_weights:
                             print('--Started preprocessing {} '.format(attribute_name))
                             docs_shingled[attribute_name][shingle_type][shingle_size][shingle_weight], all_shingles_weights[attribute_name][shingle_type][shingle_size][shingle_weight]\
-                                , shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size][shingle_weight] = shingling.main(docs_to_match[attribute_name], shingle_type, shingle_size, shingle_weight, mats.experiment_mode)
+                                , all_shingles_weights_only_weight[attribute_name][shingle_type][shingle_size][shingle_weight], shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size][shingle_weight] = shingling.main(docs_to_match[attribute_name], shingle_type, shingle_size, shingle_weight, mats.experiment_mode)
 
                             buckets[attribute_name][shingle_type][shingle_size][shingle_weight] = {}
                             for buckets_type in attribute_pars.buckets_types:
@@ -136,7 +140,7 @@ if __name__ == "__main__":
                                         if buckets_type != 'no buckets' and buckets_type != 'one bucket':
                                             print('--Started bucketing {} '.format(attribute_name))
                                             buckets_of_bands = creating_buckets.main(docs_shingled[attribute_name][shingle_type][shingle_size][shingle_weight]
-                                                                                     , all_shingles_weights[attribute_name][shingle_type][shingle_size][shingle_weight], shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size][shingle_weight], buckets_type, signature_size, bands_number, docs_mapping_new_old[attribute_name])
+                                                                                     , all_shingles_weights[attribute_name][shingle_type][shingle_size][shingle_weight], all_shingles_weights_only_weight[attribute_name][shingle_type][shingle_size][shingle_weight], shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size][shingle_weight], buckets_type, signature_size, bands_number, docs_mapping_new_old[attribute_name])
                                         elif buckets_type == 'one bucket':
                                             #FIX IT
                                             buckets_of_bands = [{(0, 0): [i for i in range(len(docs_shingled[attribute_name]))]}]

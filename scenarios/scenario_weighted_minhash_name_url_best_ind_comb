@@ -2,7 +2,7 @@
     "scenario_name": "scenario_weighted_minhash_name_url_tests",
     "experiment_mode": "individual combinations",
     "number_of_experiments": 3,
-    "dataset_size_to_import": 1000,
+    "dataset_size_to_import": 100,
     "dataset_size": 1000000,
     "sum_score": "none",
     "attribute_params":

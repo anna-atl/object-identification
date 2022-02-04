@@ -1,3 +1,25 @@
+for shingle_in_doc in shingle_counts:
+    tf_shingle_in_doc = shingle_counts[shingle_in_doc] / len(shingles_in_doc)
+    shingle_weight_in_doc = tf_shingle_in_doc * idf_shingles[shingle_in_doc]
+    shingles_weights_in_docs_dict[doc_index][shingle_in_doc] = int(round(shingle_weight_in_doc * 100,
+                                                                         0))  # each doc has dict. key - shingle index, value - shingle's weight in doc
+    all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs_dict[doc_index][
+        shingle_in_doc]))  # key - shingle, value - all weights of the shingle
+    all_shingles_weights_only_weight.setdefault(shingle_in_doc, []).append(
+        shingles_weights_in_docs_dict[doc_index][shingle_in_doc])
+    if experiment_mode == 'test':
+        all_shingles_weights_only_weight.setdefault(all_shingles[shingle_in_doc], []).append(
+            shingles_weights_in_docs_dict[doc_index][shingle_in_doc])
+
+
+
+number_of_shingles = len(all_shingles_weights.keys())
+
+
+
+
+
+
 def create_weights(docs_shingled, all_shingles_docs, shingle_weight, experiment_mode, all_shingles_weights):
     idf_shingles = {}
 
