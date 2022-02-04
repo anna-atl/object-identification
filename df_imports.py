@@ -18,7 +18,6 @@ def df_prepare(df):
     df['name_clean'] = df['name_clean'].apply(lambda x: x.replace('.', ''))
     df['name_clean'] = df['name_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['name_clean'] = df['name_clean'].str.replace(' +', ' ')
-
     df['name_clean'] = df['name_clean'].replace(r'^\s*$', np.NaN, regex=True) #i dont know why the one beofre doesnt work
     df['name_clean'] = df['name_clean'].str.strip()
     df['name_clean'] = df['name_clean'].replace('NONE', np.nan)
@@ -28,7 +27,7 @@ def df_prepare(df):
     df['country_clean'] = df['country_clean'].str.replace('[^0-9a-zA-Z]+', ' ')
     df['country_clean'] = df['country_clean'].str.replace(' +', ' ')
     df['country_clean'] = df['country_clean'].str.strip()
-    df['country_clean'] = df['country_clean'].replace('NONE', np.nan)
+    df['country_clean'] = df['country_clean'].replace('NONxE', np.nan)
 
     df['state_clean'] = df['state'].apply(lambda x: x.replace('.', ''))
     #df['state_clean'] = df['state_clean'].apply(lambda x: x.astype(str).str.upper())

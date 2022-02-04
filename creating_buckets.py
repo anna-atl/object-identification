@@ -52,7 +52,7 @@ def create_signatures_array(docs_shingled, buckets_type, signature_size, all_shi
                     minshingle = shingle
                 signature[doc_index] = (minshingle, minnumber)
 
-        elif buckets_type == 'weighted minhash 2':
+        elif buckets_type == 'i2cws':
             for hash_index, hash_weight in enumerate(all_shingles_weights):
                 r1 = random.gammavariate(2, 1)
                 r2 = random.gammavariate(2, 1)

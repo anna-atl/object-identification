@@ -36,7 +36,6 @@ def main(number_of_matches, scenario_name, experiment_number, dataset_size, fina
                           'true_neg_rate (specifity)': true_neg_rate,
                           'attribute_name': attribute_name,
                           'shingle_type': shingle_type,
-                          'attribute_name': attribute_name,
                           'shingle_size': shingle_size,
                           'shingle_weight': shingle_weight,
                           'buckets_type': buckets_type,

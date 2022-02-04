@@ -1,3 +1,38 @@
+def create_weights(docs_shingled, all_shingles_docs, shingle_weight, experiment_mode, all_shingles_weights):
+    idf_shingles = {}
+
+    tf_shingles_in_docs = [{} for i in range(len(docs_shingled))]
+    shingles_weights_in_docs_dict = [{} for i in range(len(docs_shingled))]
+
+    if shingle_weight == 'tf-idf-0':
+        for (doc_index, shingles_in_doc), tf_shingles_in_doc in zip(enumerate(docs_shingled), tf_shingles_in_docs):
+            for shingle_in_doc in shingles_in_doc:
+                tf_shingles_in_doc.setdefault(shingle_in_doc, []).append(all_shingles_docs[shingle_in_doc].count(doc_index)/len(shingles_in_doc))
+                idf_shingles[shingle_in_doc] = len(docs_shingled) / all_shingles_docs[shingle_in_doc].count(doc_index)
+
+                shingle_weight_in_doc = functools.reduce(operator.mul, tf_shingles_in_docs[doc_index][shingle_in_doc], idf_shingles[shingle_in_doc])
+                shingles_weights_in_docs_dict[doc_index].setdefault(shingle_in_doc, []).append(shingle_weight_in_doc)
+                all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs_dict[doc_index][shingle_in_doc]))
+    elif shingle_weight == 'tf-idf-cp-0':
+        for (doc_index, shingles_in_doc), tf_shingles_in_doc in zip(enumerate(docs_shingled), tf_shingles_in_docs):
+            for shingle_in_doc in shingles_in_doc:
+                tf_shingles_in_doc.setdefault(shingle_in_doc, []).append(all_shingles_docs[shingle_in_doc].count(doc_index)/len(shingles_in_doc))
+                idf_shingles[shingle_in_doc] = len(docs_shingled) / all_shingles_docs[shingle_in_doc].count(doc_index)
+
+                shingle_weight_in_doc = functools.reduce(operator.mul, tf_shingles_in_docs[doc_index][shingle_in_doc], idf_shingles[shingle_in_doc])
+                shingles_weights_in_docs_dict[doc_index].setdefault(shingle_in_doc, []).append(shingle_weight_in_doc)
+                all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_docs_dict[doc_index][shingle_in_doc]))
+                #CP SHOULD BE ADDED HERE
+    if experiment_mode == 'test':
+        df_shingles_weights = pd.DataFrame.from_dict(all_shingles_weights, orient='index') #to see all shingles weights in docs overall
+
+    return shingles_weights_in_docs_dict, all_shingles_weights
+
+
+
+
+
+
 docs_shingled[doc_index] = shingles
 doc_shingled.append(shingles_dict[shingle])  # fix the reversed
 

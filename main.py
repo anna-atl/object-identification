@@ -78,9 +78,10 @@ if __name__ == "__main__":
     print('Started working on the {}'.format(mats.scenario_name))
     df_experiment_results = pd.DataFrame()
 
-    #checks needed: dataset_size_to_import > dataset_size
-    #there should be at least one attribute without 'no buckets' bucket type
-    #if not no buckets buckets type, then to check if signature size !=0 and number of bands is correct
+    # checks needed for the dataset:
+    # dataset_size_to_import > dataset_size
+    # if bucket type == no buckets/one bucket, then signature size =0 and number of bands = 0
+    # if shingle_weight!= none, then buckets_types = cws or i2cws
 
     start_time = time.time()
     print('Started downloading datasets')
@@ -180,7 +181,7 @@ if __name__ == "__main__":
                                                         if mats.sum_score == 'sum':
                                                             print("----Started creating a common matching score...")
                                                             df_matches['match_score'] = df_matches.iloc[:, 2:].sum(axis=1)
-                                                        elif mats.sum_score == 'none':
+                                                        elif mats.sum_score == 'none': #when only one attribute is used -> we don't need to sum up
                                                             df_matches['match_score'] = df_matches['match_score_{}'.format(matching_attribute)]
                                                         df_matches = df_matches.sort_values(by='match_score', ascending=False)
 
