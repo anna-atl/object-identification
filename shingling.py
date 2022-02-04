@@ -61,16 +61,14 @@ def create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experi
             shingle_counts = {}
             for shingle_in_doc in shingles_in_doc:
                 shingle_counts.setdefault(shingle_in_doc, 0) #dict for each doc. key - shingle index, value - number of shingle in the doc
-                shingle_counts[shingle_in_doc] += 1  # can be used for cp
-            for shingle_in_doc in shingles_in_doc:
+                shingle_counts[shingle_in_doc] += 1  # can be used for cp, instead of +=1 can be the position
+            for shingle_in_doc in shingle_counts:
                 tf_shingle_in_doc = shingle_counts[shingle_in_doc] / len(shingles_in_doc)
                 shingle_weight_in_doc = int(round(tf_shingle_in_doc * idf_shingles[shingle_in_doc]*100, 0))
-                #shingles_weights_in_docs_dict[doc_index][shingle_in_doc] = int(round(shingle_weight_in_doc*100, 0)) #each doc has dict. key - shingle index, value - shingle's weight in doc
-                shingles_weights_in_doc_dict.setdefault(shingle_in_doc, []).append(shingle_weight_in_doc) #each doc has dict. key - shingle index, value - shingle's weights in doc
+                shingles_weights_in_docs_dict[doc_index][shingle_in_doc] = shingle_weight_in_doc #each doc has dict. key - shingle index, value - shingle's weight in doc
 
                 all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_doc_dict[shingle_in_doc])) #key - shingle, value - all weights of the shingle
-                all_shingles_weights_only_weight.setdefault(shingle_in_doc, []).append(
-                    shingle_weight_in_doc)
+                all_shingles_weights_only_weight.setdefault(shingle_in_doc, []).append(shingle_weight_in_doc)
                 if experiment_mode == 'test':
                     all_shingles_weights_only_weight.setdefault(all_shingles[shingle_in_doc], []).append(
                         shingles_weights_in_docs_dict[doc_index][shingle_in_doc])
