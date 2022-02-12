@@ -1,20 +1,20 @@
 {
-    "scenario_name": "scenario_minhash_name_url_tests",
+    "scenario_name": "scenario_minhash_name",
     "experiment_mode": "individual combinations",
-    "number_of_experiments": 3,
+    "number_of_experiments": 1,
     "dataset_size_to_import": 1000,
-    "dataset_size": 1000,
+    "dataset_size": 1000000,
     "sum_score": "none",
     "attribute_params":
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["shingle", "token", "shingle words"],
-                "shingle_sizes": [2, 3, 4],
+                "shingle_types": ["shingle"],
+                "shingle_sizes": [2,3,4,5,6,7],
                 "shingle_weights": ["none"],
                 "buckets_types": ["minhash"],
-                "signature_sizes": [30, 40, 50],
-                "bands_numbers": [5, 10],
+                "signature_sizes": [20,30,40,50],
+                "bands_numbers": [5,10],
                 "comparison_methods": ["jaccard"],
                 "attribute_weights": [1],
                 "attribute_thresholds": [0]

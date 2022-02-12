@@ -49,10 +49,9 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
 
     return docs_shingled, all_shingles, all_shingles_docs_dict
 
-def create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experiment_mode, all_shingles_weights, all_shingles):
+def create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experiment_mode, all_shingles_weights, all_shingles_weights_only_weight, all_shingles):
     shingles_weights_in_docs_dict = [{} for i in range(len(docs_shingled))]
     #test_mode
-    all_shingles_weights_only_weight = {}
     if shingle_weight == 'tf-idf-0':
         idf_shingles = {}
         for shingle_in_doc in all_shingles_docs_dict:
@@ -125,9 +124,10 @@ def main(docs, shingle_type, shingle_size, shingle_weight, experiment_mode):
     print("----//Converting docs to shingles took --- %s seconds ---" % (time.time() - start_time))
 
     all_shingles_weights = {}
+    all_shingles_weights_only_weight = {}
     if shingle_weight != "none":
         print("----Started calculating weights of shingles...")
-        shingles_weights_in_docs_dict, all_shingles_weights, all_shingles_weights_only_weight = create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experiment_mode, all_shingles_weights, all_shingles)
+        shingles_weights_in_docs_dict, all_shingles_weights, all_shingles_weights_only_weight = create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experiment_mode, all_shingles_weights, all_shingles_weights_only_weight, all_shingles)
         print("----//Calculating weights of shingles took --- %s seconds ---" % (time.time() - start_time))
     else:
         for doc_index, shingles_in_doc in enumerate(docs_shingled):

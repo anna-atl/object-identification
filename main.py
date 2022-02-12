@@ -68,7 +68,7 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_weighted_minhash_name_url_best_ind_comb', 'r') as json_file:
+    with open('scenarios/scenario_minhash_name', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
     # checks needed for the dataset:
     # dataset_size_to_import > dataset_size
+    # at least one att should be bucketed
     # if bucket type == no buckets/one bucket, then signature size =0 and number of bands = 0
     # if shingle_weight!= none, then buckets_types = cws or i2cws
 
@@ -204,8 +205,6 @@ if __name__ == "__main__":
 
                                                         experiment_results = exporting_experiment_results.main(len(df_matches_with_estimation), mats.scenario_name, experiment_number, mats.dataset_size, final_time, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative, attribute_name, shingle_type, shingle_size, shingle_weight, buckets_type, signature_size, bands_number, attribute_threshold, attribute_weight)
                                                         df_experiment_results = df_experiment_results.append(experiment_results, ignore_index=True)
-                                                        if mats.experiment_mode == 'test':
-                                                            df_experiment_results.to_csv("df_results_{}_{}.csv".format(matching_attribute, str(datetime.datetime.now())))
 
                                             del df_matches_full
                                             del df_matches
@@ -221,5 +220,7 @@ if __name__ == "__main__":
                                                                                                    shingle_weight, buckets_type, signature_size,
                                                                                                    bands_number, "no matches", "no matches")
                                             df_experiment_results = df_experiment_results.append(experiment_results, ignore_index=True)
+    df_experiment_results.to_csv("results_{}_{}.csv".format(mats.scenario_name, str(datetime.datetime.now())))
+
     del df_with_attributes
     print('end')
