@@ -21,13 +21,16 @@
   <component name="ChangeListManager">
     <list default="true" id="7fdd36f4-85c6-45c1-aeb1-61fdd4e49384" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comparison.py" beforeDir="false" afterPath="$PROJECT_DIR$/comparison.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/archive_results_comparison.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/df_imports.py" beforeDir="false" afterPath="$PROJECT_DIR$/df_imports.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exporting_experiment_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/exporting_experiment_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/df_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/df_labeled.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scenarios/scenario_weighted_minhash_name_url_best_ind_comb" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_weighted_minhash_name_url_best_ind_comb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name" beforeDir="false" afterPath="$PROJECT_DIR$/scenarios/scenario_minhash_name" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_best_ind_comb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_minhash_name_url_best_ind_comb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scenarios/scenario_weighted_minhash_name_url_best_ind_comb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/shingling.py" beforeDir="false" afterPath="$PROJECT_DIR$/shingling.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -98,6 +101,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="м" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="object-identification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/м.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="comparison" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="object-identification" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -111,27 +135,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/comparison.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="df_imports" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="object-identification" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/df_imports.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -188,7 +191,6 @@
         <item itemvalue="Python.оо" />
         <item itemvalue="Python.df_labeled" />
         <item itemvalue="Python.comparison" />
-        <item itemvalue="Python.df_imports" />
       </list>
     </recent_temporary>
   </component>
@@ -227,7 +229,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>225</line>
+          <line>237</line>
           <option name="timeStamp" value="408" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

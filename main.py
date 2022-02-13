@@ -119,12 +119,14 @@ if __name__ == "__main__":
                     shingles_weights_in_docs_dict[attribute_name][shingle_type] = {}
                     buckets[attribute_name][shingle_type] = {}
                     for shingle_size in attribute_pars.shingle_sizes:
+
                         docs_shingled[attribute_name][shingle_type][shingle_size] = {}
                         all_shingles_weights[attribute_name][shingle_type][shingle_size] = {}
                         all_shingles_weights_only_weight[attribute_name][shingle_type][shingle_size] = {}
                         shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size] = {}
                         buckets[attribute_name][shingle_type][shingle_size] = {}
                         for shingle_weight in attribute_pars.shingle_weights:
+                            processing_time = time.time()
                             print('--Started preprocessing {} '.format(attribute_name))
                             docs_shingled[attribute_name][shingle_type][shingle_size][shingle_weight], all_shingles_weights[attribute_name][shingle_type][shingle_size][shingle_weight]\
                                 , all_shingles_weights_only_weight[attribute_name][shingle_type][shingle_size][shingle_weight], shingles_weights_in_docs_dict[attribute_name][shingle_type][shingle_size][shingle_weight] = shingling.main(docs_to_match[attribute_name], shingle_type, shingle_size, shingle_weight, mats.experiment_mode)
@@ -133,9 +135,15 @@ if __name__ == "__main__":
                             for buckets_type in attribute_pars.buckets_types:
                                 buckets[attribute_name][shingle_type][shingle_size][shingle_weight][buckets_type] = {}
                                 for signature_size in attribute_pars.signature_sizes:
+
                                     buckets[attribute_name][shingle_type][shingle_size][shingle_weight][
                                         buckets_type][signature_size] = {}
                                     for bands_number in attribute_pars.bands_numbers:
+                                        print('')
+                                        print(
+                                            'Started to work on {} {} {} {} {} {} {}'.format(matching_attribute, shingle_type,
+                                                                                       shingle_size, shingle_weight,
+                                                                                       buckets_type, signature_size, bands_number))
                                         buckets[attribute_name][shingle_type][shingle_size][shingle_weight][
                                             buckets_type][signature_size][bands_number] = []
                                         if buckets_type != 'no buckets' and buckets_type != 'one bucket':
@@ -194,7 +202,7 @@ if __name__ == "__main__":
                                                         df_matches_full = add_attributes_to_matches(df_matches, df_with_attributes)
                                                         print("----//Finished adding matches attributes...")
 
-                                                        final_time = time.time() - start_time
+                                                        final_time = time.time() - processing_time
                                                         print("The whole algorithm took for {} size --- {} seconds ---".format(len(df_to_bucket.index), final_time))
                                                         print("----Started preparing results outputs and evaluation")
                                                         df_matches_with_estimation, labeled_number_of_matches, false_positive, false_negative, true_positive, true_negative = results_evaluation.main(df_matches_full, df_labeled_data, labeled_positive, labeled_negative)
@@ -220,6 +228,10 @@ if __name__ == "__main__":
                                                                                                    shingle_weight, buckets_type, signature_size,
                                                                                                    bands_number, "no matches", "no matches")
                                             df_experiment_results = df_experiment_results.append(experiment_results, ignore_index=True)
+    df_experiment_results = df_experiment_results.sort_values(by='shingle_size', ascending=False)
+    df_experiment_results = df_experiment_results.sort_values(by='signature_size', ascending=False)
+    df_experiment_results = df_experiment_results.sort_values(by='shingle_type', ascending=False)
+    df_experiment_results = df_experiment_results.sort_values(by='bands_number', ascending=False)
     df_experiment_results.to_csv("results_{}_{}.csv".format(mats.scenario_name, str(datetime.datetime.now())))
 
     del df_with_attributes

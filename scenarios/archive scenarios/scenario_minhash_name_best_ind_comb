@@ -9,7 +9,7 @@
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["shingle"],
+                "shingle_types": ["shingle", "token", "shingle words"],
                 "shingle_sizes": [2,3,4],
                 "shingle_weights": ["none"],
                 "buckets_types": ["minhash"],

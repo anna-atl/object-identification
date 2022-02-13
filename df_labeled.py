@@ -6,7 +6,9 @@ def import_labeled_data():
     labeled_data = "labeled_data/labeled_data_final_2.csv"
     df_labeled_data = pd.read_csv(labeled_data, sep=';', error_bad_lines=False)
     df_labeled_data = df_labeled_data.dropna(subset=['is_duplicate'])
-    df_labeled_data = df_labeled_data.loc[(df_labeled_data['is_duplicate'] == 2) | (df_labeled_data['is_duplicate'] == 0)]
+    #df_labeled_data = df_labeled_data.loc[(df_labeled_data['is_duplicate'] == 2) | (df_labeled_data['is_duplicate'] == 0)]
+    df_labeled_data = df_labeled_data.loc[df_labeled_data['is_duplicate'] == 0]
+
     df_labeled_data = df_labeled_data[['id_x', 'id_y', 'is_duplicate', 'name_x', 'name_y']] ##this is correct! (id_x, not doc_1 indexes)
 
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
@@ -18,12 +20,11 @@ def import_labeled_data():
     return df_labeled_data
 
 def import_labeled_data_2():
-    labeled_data = "labeled_data/uk_companies_2_M_2.csv"
-    df_labeled_data = pd.read_csv(labeled_data, sep=';', error_bad_lines=False)
-    df_labeled_data = df_labeled_data.dropna(subset=['duplicate_id'])
+    labeled_data = "labeled_data/uk_companies_2_M_5.csv"
+    df_labeled_data_imported = pd.read_csv(labeled_data, sep=',', error_bad_lines=False)
+    df_labeled_data = df_labeled_data_imported.dropna(subset=['duplicate_id'])
     df_labeled_data = df_labeled_data[['id', 'duplicate_id']] ##this is correct! (id_x, not doc_1 indexes)
     df_labeled_data = df_labeled_data.rename(columns={'id': 'id_x', 'duplicate_id': 'id_y'}, inplace=False)
-
     df_labeled_data['is_duplicate'] = 2
     b = df_labeled_data.loc[df_labeled_data['id_x'] < df_labeled_data['id_y']] #should be fixed later
     c = df_labeled_data.loc[df_labeled_data['id_x'] > df_labeled_data['id_y']]
@@ -31,6 +32,17 @@ def import_labeled_data_2():
     c = c[['id_x', 'id_y', 'is_duplicate']]
     df_labeled_data = b.append(c)
 
+    df_labeled_data_2 = df_labeled_data_imported.dropna(subset=['not_duplicate'])
+    df_labeled_data_2 = df_labeled_data_2[['id', 'not_duplicate']] ##this is correct! (id_x, not doc_1 indexes)
+    df_labeled_data_2 = df_labeled_data_2.rename(columns={'id': 'id_x', 'not_duplicate': 'id_y'}, inplace=False)
+    df_labeled_data_2['is_duplicate'] = 0
+    d = df_labeled_data_2.loc[df_labeled_data_2['id_x'] < df_labeled_data_2['id_y']] #should be fixed later
+    e = df_labeled_data_2.loc[df_labeled_data_2['id_x'] > df_labeled_data_2['id_y']]
+    e = e.rename(columns={'id_x': 'id_y', 'id_y': 'id_x'}, inplace=False)
+    e = e[['id_x', 'id_y', 'is_duplicate']]
+    df_labeled_data_2 = d.append(e)
+
+    df_labeled_data = df_labeled_data.append(df_labeled_data_2)
     return df_labeled_data
 
 def find_labeled_data_in_df(df_labeled_data, df):
@@ -53,6 +65,8 @@ def find_labeled_data_in_df(df_labeled_data, df):
 def main(df):
     print('----Started to download the labeled data')
     df_labeled_data = import_labeled_data_2()
+    df_labeled_data_2 = import_labeled_data()
+    df_labeled_data = df_labeled_data.append(df_labeled_data_2, ignore_index=True)
 
     start_time = time.time()
     print('----Identifying which labeled data is in imported df')
