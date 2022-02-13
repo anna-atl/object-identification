@@ -68,7 +68,7 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_minhash_name', 'r') as json_file:
+    with open('scenarios/scenario_cws_name', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
@@ -228,10 +228,10 @@ if __name__ == "__main__":
                                                                                                    shingle_weight, buckets_type, signature_size,
                                                                                                    bands_number, "no matches", "no matches")
                                             df_experiment_results = df_experiment_results.append(experiment_results, ignore_index=True)
-    df_experiment_results = df_experiment_results.sort_values(by='shingle_size', ascending=False)
-    df_experiment_results = df_experiment_results.sort_values(by='signature_size', ascending=False)
-    df_experiment_results = df_experiment_results.sort_values(by='shingle_type', ascending=False)
-    df_experiment_results = df_experiment_results.sort_values(by='bands_number', ascending=False)
+    df_experiment_results = df_experiment_results.sort_values(by='shingle_size', ascending=True)
+    df_experiment_results = df_experiment_results.sort_values(by='signature_size', ascending=True)
+    df_experiment_results = df_experiment_results.sort_values(by='shingle_type', ascending=True)
+    df_experiment_results = df_experiment_results.sort_values(by='bands_number', ascending=True)
     df_experiment_results.to_csv("results_{}_{}.csv".format(mats.scenario_name, str(datetime.datetime.now())))
 
     del df_with_attributes

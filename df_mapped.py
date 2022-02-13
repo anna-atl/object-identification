@@ -23,14 +23,14 @@ def create_mapping(df, matching_attribute):
 
 def main(df, dataset_size, experiment_mode, attribute_params):
     for attribute_name, attribute_pars in attribute_params.items():
-        if experiment_mode != 'individual combinations':
+        if (experiment_mode != 'individual combinations') and (experiment_mode != 'test'):
             attributes_to_bucket = {k: v for k, v in attribute_params.items() if v.buckets_type != 'no buckets'}
             df_to_bucket = df.dropna(subset=[v.matching_attribute for k, v in attributes_to_bucket.items()])
             try:
                 df_to_bucket = df_to_bucket.sample(n=dataset_size)
             except:
                 print('Warning: dataset size {} is larger than the imported {} dataset size'.format(dataset_size, len(df_to_bucket.index)))
-        elif experiment_mode == 'individual combinations':
+        elif (experiment_mode == 'individual combinations') or (experiment_mode == 'test'):
             for buckets_type in attribute_pars.buckets_types:
                 for matching_attribute in attribute_pars.matching_attributes:
                     if buckets_type != 'no buckets':
