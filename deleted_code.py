@@ -1,3 +1,20 @@
+non_duplicates_dict = {}
+
+# Option 2
+for index, row in df_labeled_data.iterrows():
+    if row['duplicate_id'] > 0:
+
+        df_labeled_non_duplicate = df_labeled_data[df_labeled_data.duplicate_id.isnull()]
+        for index, row in df_labeled_data[:index].iterrows():
+            non_duplicates_dict.setdefault(row[0], []).append(row['id'])
+
+# Option 1
+df_labeled_non_duplicate = df_labeled_data[df_labeled_data.duplicate_id.isnull()]
+for index, row in df_labeled_non_duplicate.iterrows():
+    non_duplicates_dict.setdefault(row[0], []).append(row['id'])
+
+
+
 for shingle_in_doc in shingle_counts:
     tf_shingle_in_doc = shingle_counts[shingle_in_doc] / len(shingles_in_doc)
     shingle_weight_in_doc = tf_shingle_in_doc * idf_shingles[shingle_in_doc]

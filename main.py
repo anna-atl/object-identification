@@ -68,7 +68,7 @@ def add_attributes_to_matches(df_matches, df_with_attributes):
     return df_matches_full
 
 if __name__ == "__main__":
-    with open('scenarios/scenario_minhash_name_2', 'r') as json_file:
+    with open('scenarios/scenario_minhash_all', 'r') as json_file:
         data = json.loads(json_file.read())
 
     mats = scenario_matching_params(data["scenario_name"], data["experiment_mode"], data["number_of_experiments"], data["dataset_size_to_import"], data["dataset_size"],
@@ -228,8 +228,8 @@ if __name__ == "__main__":
                                                                                                    shingle_weight, buckets_type, signature_size,
                                                                                                    bands_number, "no matches", "no matches")
                                             df_experiment_results = df_experiment_results.append(experiment_results, ignore_index=True)
-    df_experiment_results = df_experiment_results.sort_values(by=['bands_number', 'signature_size','shingle_type', 'shingle_size', 'attribute_threshold'], ascending=True)
-    df_experiment_results.loc[(df_experiment_results['precision'] >= 0.7) |(df_experiment_results['recall'] >= 0.7)|(df_experiment_results['f1score'] >= 0.7), 'result_07'] = 1
+    df_experiment_results = df_experiment_results.sort_values(by=['attribute_threshold','bands_number', 'signature_size','shingle_type', 'shingle_size'], ascending=True)
+    df_experiment_results.loc[(df_experiment_results['precision'] >= 0.5) |(df_experiment_results['recall'] >= 0.5)|(df_experiment_results['f1score'] >= 0.5), 'result_05'] = 1
 
     df_experiment_results.to_csv("results_{}_{}.csv".format(mats.scenario_name, str(datetime.datetime.now())))
 

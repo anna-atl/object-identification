@@ -9,15 +9,15 @@
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["token"],
-                "shingle_sizes": [0],
-                "shingle_weights": ["tf-idf-0"],
+                "shingle_types": ["shingle","shingle words"],
+                "shingle_sizes": [2,3,4],
+                "shingle_weights": ["tf-0","idf-0","tf-idf-0"],
                 "buckets_types": ["cws"],
-                "signature_sizes": [20],
-                "bands_numbers": [10],
+                "signature_sizes": [14],
+                "bands_numbers": [7],
                 "comparison_methods": ["weighted jaccard"],
                 "attribute_weights": [1],
-                "attribute_thresholds": [0]
+                "attribute_thresholds": [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
             }
         }
   }

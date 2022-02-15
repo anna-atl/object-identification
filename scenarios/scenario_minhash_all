@@ -1,6 +1,6 @@
 {
     "scenario_name": "scenario_minhash_all",
-    "experiment_mode": "individual combinations",
+    "experiment_mode": "test",
     "number_of_experiments": 1,
     "dataset_size_to_import": 1000,
     "dataset_size": 1000,
@@ -9,22 +9,22 @@
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["token"],
-                "shingle_sizes": [0],
+                "shingle_types": ["shingle words"],
+                "shingle_sizes": [3],
                 "shingle_weights": ["none"],
                 "buckets_types": ["minhash"],
                 "signature_sizes": [20],
                 "bands_numbers": [10],
                 "comparison_methods": ["jaccard"],
                 "attribute_weights": [1],
-                "attribute_thresholds": [0]
+                "attribute_thresholds": [0.7]
             }
-            , "url": {
-                "matching_attributes": ["url_clean"],
+            , "street": {
+                "matching_attributes": ["street_clean"],
                 "shingle_types": ["shingle"],
                 "shingle_sizes": [2,3,4,5,6,7],
                 "shingle_weights": ["none"],
-                "buckets_types": ["no bucket"],
+                "buckets_types": ["no buckets"],
                 "signature_sizes": [0],
                 "bands_numbers": [0],
                 "comparison_methods": ["jaccard"],
