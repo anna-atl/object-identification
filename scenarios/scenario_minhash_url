@@ -1,0 +1,24 @@
+{
+    "scenario_name": "scenario_minhash_url",
+    "experiment_mode": "individual combinations",
+    "number_of_experiments": 1,
+    "dataset_size_to_import": 1000,
+    "dataset_size": 1000,
+    "sum_score": "sum",
+    "attribute_params":
+        {
+            "url": {
+                "matching_attributes": ["url_clean"],
+                "shingle_types": ["shingle", "shingle words"],
+                "shingle_sizes": [2,3,4,5,6,7],
+                "shingle_weights": ["none"],
+                "buckets_types": ["minhash"],
+                "signature_sizes": [20,30,40,50],
+                "bands_numbers": [5,10],
+                "comparison_methods": ["jaccard"],
+                "attribute_weights": [1],
+                "attribute_thresholds": [0]
+            }
+        }
+  }
+

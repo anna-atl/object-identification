@@ -37,7 +37,6 @@ def create_shingled_docs(docs, shingle_type, shingle_size, shingle_weight, exper
                 shingles_in_word = create_shingles(word, k)
                 shingles_in_doc.extend(shingles_in_word)
         docs_shingled[doc_index] = shingles_in_doc #every doc as a list of shingle
-
         for shingle_index_in_doc, shingle_in_doc in enumerate(shingles_in_doc):
             all_shingles_docs.setdefault(shingle_in_doc, []).append(doc_index) # key - shingle, value - doc index
 
@@ -61,7 +60,7 @@ def create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experi
                 shingle_counts[shingle_in_doc] += 1  # can be used for cp, instead of +=1 can be the position
             for shingle_in_doc in shingle_counts:
                 tf_shingle_in_doc = shingle_counts[shingle_in_doc] / len(shingles_in_doc)
-                shingle_weight_in_doc = int(round(tf_shingle_in_doc *100, 0))
+                shingle_weight_in_doc = int(round(tf_shingle_in_doc *10, 0))
                 shingles_weights_in_docs_dict[doc_index][shingle_in_doc] = shingle_weight_in_doc #each doc has dict. key - shingle index, value - shingle's weight in doc
 
                 all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_doc_dict[shingle_in_doc])) #key - shingle, value - all weights of the shingle
@@ -77,7 +76,7 @@ def create_weights(docs_shingled, all_shingles_docs_dict, shingle_weight, experi
         for (doc_index, shingles_in_doc), shingles_weights_in_doc_dict in zip(enumerate(docs_shingled), shingles_weights_in_docs_dict):
             shingle_counts = {}
             for shingle_in_doc in shingles_in_doc:
-                shingle_weight_in_doc = int(round(idf_shingles[shingle_in_doc], 0))
+                shingle_weight_in_doc = int(round(idf_shingles[shingle_in_doc]*10, 0))
                 shingles_weights_in_docs_dict[doc_index][shingle_in_doc] = shingle_weight_in_doc #each doc has dict. key - shingle index, value - shingle's weight in doc
 
                 all_shingles_weights.setdefault(shingle_in_doc, []).append((doc_index, shingles_weights_in_doc_dict[shingle_in_doc])) #key - shingle, value - all weights of the shingle

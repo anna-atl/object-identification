@@ -9,9 +9,9 @@
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["shingle", "shingle words"],
-                "shingle_sizes": [2,3,4],
-                "shingle_weights": ["tf-0"],
+                "shingle_types": ["token"],
+                "shingle_sizes": [0],
+                "shingle_weights": ["tf-idf-0"],
                 "buckets_types": ["cws"],
                 "signature_sizes": [20],
                 "bands_numbers": [10],

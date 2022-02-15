@@ -66,5 +66,5 @@ def main(number_of_matches, scenario_name, experiment_number, dataset_size, fina
                           'precision': precision,
                           'recall': recall,
                           'f1score': f1score
-    }
+                          }
     return experiment_results
