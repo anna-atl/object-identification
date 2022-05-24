@@ -29,8 +29,11 @@ def calculate_matches_ratios(buckets_of_bands, docs_shingled, docs_mapping_old_n
     return matched_pairs
 
 def gen_jaccard_comparison(doc_shingled_1, doc_shingled_2, shingles_weights_in_doc_1, shingles_weights_in_doc_2): #is not counting duplicate hashes
-    intersection = Multiset(doc_shingled_1).intersection(doc_shingled_2)
-    union = Multiset(doc_shingled_1).union(doc_shingled_2)
+    #intersection = Multiset(doc_shingled_1).intersection(doc_shingled_2)
+    #union = Multiset(doc_shingled_1).union(doc_shingled_2)
+
+    intersection = set(doc_shingled_1).intersection(doc_shingled_2)
+    union = set(doc_shingled_1).union(doc_shingled_2)
 
     try:
         min_weight = sum([min(shingles_weights_in_doc_1[shingle], shingles_weights_in_doc_2[shingle]) for shingle in intersection])

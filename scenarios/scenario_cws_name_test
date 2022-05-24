@@ -1,5 +1,5 @@
 {
-    "scenario_name": "scenario_cws_name",
+    "scenario_name": "scenario_cws_name_test",
     "experiment_mode": "individual combinations",
     "number_of_experiments": 1,
     "dataset_size_to_import": 1000,
@@ -9,15 +9,16 @@
         {
             "name": {
                 "matching_attributes": ["name_clean"],
-                "shingle_types": ["shingle","shingle words"],
-                "shingle_sizes": [2,3,4],
-                "shingle_weights": ["tf-0","idf-log","tf-0-idf-log"],
+                "shingle_types": ["shingle"],
+                "shingle_sizes": [2],
+                "shingle_weights": ["idf-log"],
                 "buckets_types": ["cws"],
-                "signature_sizes": [8],
-                "bands_numbers": [4],
+                "signature_sizes": [14],
+                "bands_numbers": [7],
                 "comparison_methods": ["weighted jaccard"],
                 "attribute_weights": [1],
-                "attribute_thresholds": [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+                "attribute_thresholds": [0]
             }
         }
   }
+
